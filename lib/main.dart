@@ -1,3 +1,4 @@
+import 'package:ct312h_project/screens/home_page_screen.dart';
 import 'package:ct312h_project/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -15,7 +16,11 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
+        colorScheme: ColorScheme.dark(
+          primary: Colors.white,
+          onPrimary: Colors.black,
+        ),
+        useMaterial3: true,
       ),
       home: LoginScreen(),
     );

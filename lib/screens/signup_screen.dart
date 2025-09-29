@@ -18,6 +18,7 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -30,17 +31,19 @@ class _SignupScreenState extends State<SignupScreen> {
                 padding: const EdgeInsets.only(top: 20),
                 child: TextFormField(
                   controller: nicknameController,
+                  style: TextStyle(color: Colors.black),
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.all(8),
                     hintText: "Enter your nickname",
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black54),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    hintStyle: TextStyle(color: Colors.black87),
                   ),
                 ),
               ),
@@ -48,17 +51,19 @@ class _SignupScreenState extends State<SignupScreen> {
                 padding: const EdgeInsets.only(top: 20),
                 child: TextFormField(
                   controller: emailController,
+                  style: TextStyle(color: Colors.black),
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.all(8),
                     hintText: "Enter your email",
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black54),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    hintStyle: TextStyle(color: Colors.black),
                   ),
                 ),
               ),
@@ -67,6 +72,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: TextFormField(
                   obscureText: passwordVisible,
                   controller: passwordController,
+                  style: TextStyle(color: Colors.black),
                   decoration: InputDecoration(
                     suffixIcon: IconButton(
                       onPressed: () {
@@ -78,18 +84,20 @@ class _SignupScreenState extends State<SignupScreen> {
                         passwordVisible
                             ? Icons.visibility
                             : Icons.visibility_off,
+                        color: Colors.black,
                       ),
                     ),
                     contentPadding: EdgeInsets.all(8),
                     hintText: "Enter your password",
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black54),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    hintStyle: TextStyle(color: Colors.black),
                   ),
                 ),
               ),
@@ -115,7 +123,10 @@ class _SignupScreenState extends State<SignupScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Already have an account?"),
+                  Text(
+                    "Already have an account?",
+                    style: TextStyle(color: Colors.black87),
+                  ),
                   TextButton(
                     onPressed: () {
                       Navigator.push(

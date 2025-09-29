@@ -1,3 +1,4 @@
+import 'package:ct312h_project/screens/home_page_screen.dart';
 import 'package:ct312h_project/screens/signup_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -17,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -29,17 +31,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.only(top: 20),
                 child: TextFormField(
                   controller: emailController,
+                  style: TextStyle(color: Colors.black),
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.all(8),
                     hintText: "Enter your email",
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black54),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    hintStyle: TextStyle(color: Colors.black87),
                   ),
                 ),
               ),
@@ -48,6 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: TextFormField(
                   obscureText: passwordVisible,
                   controller: passwordController,
+                  style: TextStyle(color: Colors.black),
                   decoration: InputDecoration(
                     suffixIcon: IconButton(
                       onPressed: () {
@@ -59,18 +64,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         passwordVisible
                             ? Icons.visibility
                             : Icons.visibility_off,
+                        color: Colors.black,
                       ),
                     ),
                     contentPadding: EdgeInsets.all(8),
                     hintText: "Enter your password",
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
+                    hintStyle: TextStyle(color: Colors.black87),
+
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black54),
                       borderRadius: BorderRadius.circular(10),
                     ),
+
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    labelStyle: TextStyle(color: Colors.black),
                   ),
                 ),
               ),
@@ -90,7 +100,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 height: 42,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomePageScreen()),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                   ),
@@ -102,7 +117,10 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Don't have an account yet?"),
+                  Text(
+                    "Don't have an account yet?",
+                    style: TextStyle(color: Colors.black87),
+                  ),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
