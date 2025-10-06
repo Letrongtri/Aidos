@@ -1,5 +1,5 @@
 import 'package:ct312h_project/screens/home_page_screen.dart';
-import 'package:ct312h_project/screens/login_screen.dart';
+// import 'package:ct312h_project/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: LoginScreen(),
+      home: HomePageScreen(),
     );
   }
 }
