@@ -1,4 +1,5 @@
-import 'package:ct312h_project/screens/posts/single_post.dart';
+import 'package:ct312h_project/ui/posts/posts_manager.dart';
+import 'package:ct312h_project/ui/posts/single_post.dart';
 import 'package:flutter/material.dart';
 
 class FeedScreen extends StatefulWidget {
@@ -11,6 +12,8 @@ class FeedScreen extends StatefulWidget {
 class _FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
+    final postsManager = PostsManager();
+
     return Scaffold(
       appBar: AppBar(
         // backgroundColor: Colors.white,
@@ -20,22 +23,12 @@ class _FeedScreenState extends State<FeedScreen> {
         title: Image.asset("assets/images/logo.png", width: 30),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              children: [
-                SizedBox(height: 10),
-                SinglePost(),
-                SinglePost(),
-                SinglePost(),
-                SinglePost(),
-                SinglePost(),
-                SinglePost(),
-                SinglePost(),
-                SinglePost(),
-              ],
-            ),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: ListView.builder(
+            itemCount: postsManager.postCount,
+            itemBuilder: (context, idx) =>
+                SinglePost(post: postsManager.posts[idx]),
           ),
         ),
       ),

@@ -9,7 +9,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final nicknameController = TextEditingController();
+  final usernameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool passwordVisible = true;
@@ -30,11 +30,11 @@ class _SignupScreenState extends State<SignupScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: TextFormField(
-                  controller: nicknameController,
+                  controller: usernameController,
                   style: TextStyle(color: Colors.black),
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.all(8),
-                    hintText: "Enter your nickname",
+                    hintText: "Enter your username",
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black54),
                       borderRadius: BorderRadius.circular(10),

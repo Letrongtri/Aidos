@@ -1,7 +1,13 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:ct312h_project/utils/time_control.dart';
 import 'package:flutter/material.dart';
 
+import 'package:ct312h_project/models/post.dart';
+
 class SinglePost extends StatelessWidget {
-  const SinglePost({super.key});
+  const SinglePost({super.key, required this.post});
+
+  final Post post;
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +19,7 @@ class SinglePost extends StatelessWidget {
             CircleAvatar(
               radius: 25,
               backgroundImage: NetworkImage(
-                "https://robohash.org/${Uri.encodeComponent("username123")}.png?set=set2&size=200x200",
+                "https://robohash.org/${Uri.encodeComponent(post.userId)}.png?set=set2&size=200x200",
               ),
             ),
             SizedBox(width: 8),
@@ -23,11 +29,11 @@ class SinglePost extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        "Trai đẹp vct",
+                        "Trai đẹp",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Spacer(),
-                      Text("5 min"),
+                      Text(TimeControl.getTimeDifference(post.createdAt)),
                       IconButton(
                         onPressed: () {},
                         icon: Icon(Icons.more_horiz),
@@ -36,7 +42,7 @@ class SinglePost extends StatelessWidget {
                   ),
                   Column(
                     children: [
-                      Text("Hi everyone! Let's share me your secret ☺️"),
+                      Text(post.content),
                       Row(
                         children: [
                           IconButton(
