@@ -1,11 +1,11 @@
 import 'package:ct312h_project/models/post.dart';
-import 'package:uuid/uuid.dart';
+// import 'package:uuid/uuid.dart';
 
 class PostsManager {
   final List<Post> _posts = [
     Post(
-      id: Uuid().v4(),
-      userId: 'user_001',
+      id: 'p001', // Uuid().v4()
+      userId: 'u001',
       content: 'Flutter 3.24 mới có quá nhiều cải tiến! Bạn đã thử chưa?',
       topicId: 'topic_flutter',
       parentId: '',
@@ -17,8 +17,8 @@ class PostsManager {
       updatedAt: DateTime.now().subtract(const Duration(hours: 2)),
     ),
     Post(
-      id: Uuid().v4(),
-      userId: 'user_002',
+      id: 'p002',
+      userId: 'u002',
       content: 'Dart có nên hỗ trợ pattern matching như Swift không nhỉ?',
       topicId: 'topic_dart',
       parentId: '',
@@ -30,8 +30,8 @@ class PostsManager {
       updatedAt: DateTime.now().subtract(const Duration(days: 1, hours: 4)),
     ),
     Post(
-      id: Uuid().v4(),
-      userId: 'user_003',
+      id: 'p003',
+      userId: 'u003',
       content: 'Mình vừa build app đầu tiên với FlutterFlow, nhanh thật sự 😍',
       topicId: 'topic_tools',
       parentId: '',
@@ -43,8 +43,8 @@ class PostsManager {
       updatedAt: DateTime.now().subtract(const Duration(days: 2, hours: 20)),
     ),
     Post(
-      id: Uuid().v4(),
-      userId: 'user_004',
+      id: 'p004',
+      userId: 'u004',
       content:
           'Có ai đang làm app social với Flutter không? Mình muốn học hỏi thêm 😄',
       topicId: 'topic_community',
@@ -57,8 +57,8 @@ class PostsManager {
       updatedAt: DateTime.now().subtract(const Duration(days: 3, hours: 20)),
     ),
     Post(
-      id: Uuid().v4(),
-      userId: 'user_005',
+      id: 'p005',
+      userId: 'u005',
       content:
           'Mình thấy Riverpod 3.0 sắp ra bản stable rồi — đáng để chờ đấy!',
       topicId: 'topic_state_management',

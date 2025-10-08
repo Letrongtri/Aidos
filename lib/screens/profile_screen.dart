@@ -1,6 +1,5 @@
 import 'package:ct312h_project/screens/edit_profile_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/diagnostics.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class ProfileScreen extends StatefulWidget {

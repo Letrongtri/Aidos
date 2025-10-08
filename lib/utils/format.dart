@@ -1,4 +1,4 @@
-class TimeControl {
+class Format {
   static String getTimeDifference(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
@@ -11,6 +11,18 @@ class TimeControl {
       return '${difference.inHours} hr';
     } else {
       return '${difference.inDays} day';
+    }
+  }
+
+  static String getCountNumber(int count) {
+    if (count / 1000 < 1) {
+      return count.toString();
+    } else if (count / 1000000 < 1) {
+      double result = count / 1000;
+      return "${result.toStringAsFixed(2)}K";
+    } else {
+      double result = count / 1000000;
+      return "${result.toStringAsFixed(2)}M";
     }
   }
 }

@@ -1,5 +1,5 @@
 import 'package:ct312h_project/ui/posts/posts_manager.dart';
-import 'package:ct312h_project/ui/posts/single_post.dart';
+import 'package:ct312h_project/ui/posts/single_post_item.dart';
 import 'package:flutter/material.dart';
 
 class FeedScreen extends StatefulWidget {
@@ -28,7 +28,7 @@ class _FeedScreenState extends State<FeedScreen> {
           child: ListView.builder(
             itemCount: postsManager.postCount,
             itemBuilder: (context, idx) =>
-                SinglePost(post: postsManager.posts[idx]),
+                SinglePostItem(post: postsManager.posts[idx]),
           ),
         ),
       ),
