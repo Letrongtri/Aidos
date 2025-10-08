@@ -1,3 +1,4 @@
+import 'package:ct312h_project/screens/favorite_screen.dart';
 import 'package:ct312h_project/screens/feed_screen.dart';
 import 'package:ct312h_project/screens/post_screen.dart';
 import 'package:ct312h_project/screens/profile_screen.dart';
@@ -23,7 +24,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
       const FeedScreen(),
       const Center(child: Text("Search")),
       PostScreen(panelController: panelController),
-      const Center(child: Text("Favorite")),
+      const FavoriteScreen(),
       const ProfileScreen(),
     ];
 
