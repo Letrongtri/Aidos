@@ -4,6 +4,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 class PostScreen extends StatefulWidget {
   const PostScreen({super.key, required this.panelController});
   final PanelController panelController;
+
   @override
   State<PostScreen> createState() => _PostScreenState();
 }
@@ -23,6 +24,7 @@ class _PostScreenState extends State<PostScreen> {
   Future<void> _showTopicSelection(BuildContext context) async {
     final result = await showModalBottomSheet<String>(
       context: context,
+      backgroundColor: Colors.black87,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -41,7 +43,7 @@ class _PostScreenState extends State<PostScreen> {
                 ),
               ),
             ),
-            const Divider(),
+            const Divider(color: Colors.white54),
             Flexible(
               child: ListView.builder(
                 shrinkWrap: true,
@@ -77,6 +79,7 @@ class _PostScreenState extends State<PostScreen> {
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
+          // ====== Thanh header ======
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Row(
@@ -116,6 +119,8 @@ class _PostScreenState extends State<PostScreen> {
             ),
           ),
           const Divider(thickness: 1, color: Colors.grey),
+
+          // ====== Nội dung bài post ======
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
             child: Row(
@@ -124,22 +129,43 @@ class _PostScreenState extends State<PostScreen> {
                 const CircleAvatar(
                   foregroundImage: AssetImage(
                     'assets/images/logo.png',
-                  ), //đổi hình
+                  ), // đổi hình avatar ở đây
                   radius: 25,
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Trai đẹp vct',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                      // username > topic
+                      Row(
+                        children: [
+                          const Text(
+                            'leminhc',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          if (_selectedTopic != null) ...[
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.chevron_right,
+                              size: 18,
+                              color: Colors.grey,
+                            ),
+                            Text(
+                              _selectedTopic!,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
+
+                      // Nội dung bài viết
                       TextFormField(
                         style: const TextStyle(color: Colors.black),
                         decoration: const InputDecoration(
@@ -150,41 +176,34 @@ class _PostScreenState extends State<PostScreen> {
                           ),
                           border: InputBorder.none,
                         ),
-                        maxLines: null, //số dòng
+                        maxLines: null,
                       ),
                       const SizedBox(height: 15),
-                      //chọn topic
-                      GestureDetector(
-                        onTap: () {
-                          _showTopicSelection(context);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                _selectedTopic == null
-                                    ? Icons.add
-                                    : Icons.label_outline,
-                                color: Colors.grey.shade700,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                _selectedTopic ?? 'Thêm chủ đề',
-                                style: TextStyle(color: Colors.grey.shade700),
-                              ),
-                            ],
+
+                      // Nút chọn chủ đề (chip)
+                      ActionChip(
+                        avatar: Icon(
+                          _selectedTopic == null
+                              ? Icons.add
+                              : Icons.label_outline,
+                          color: Colors.grey.shade700,
+                          size: 18,
+                        ),
+                        label: Text(
+                          _selectedTopic ?? 'Chọn chủ đề',
+                          style: TextStyle(
+                            color: Colors.grey.shade800,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: BorderSide(color: Colors.grey.shade400),
+                        ),
+                        backgroundColor: Colors.transparent,
+                        onPressed: () {
+                          _showTopicSelection(context);
+                        },
                       ),
                     ],
                   ),
