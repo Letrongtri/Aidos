@@ -1,10 +1,13 @@
-import 'package:ct312h_project/models/post.dart';
+import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:ct312h_project/utils/format.dart';
+import 'package:ct312h_project/viewmodels/detail_post_manager.dart';
+import 'package:ct312h_project/viewmodels/post_item_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DetailPostContent extends StatelessWidget {
   const DetailPostContent({super.key, required this.post});
-  final Post post;
+  final PostItemViewModel post;
 
   @override
   Widget build(BuildContext context) {
@@ -13,14 +16,9 @@ class DetailPostContent extends StatelessWidget {
       children: [
         Row(
           children: [
-            CircleAvatar(
-              radius: 25,
-              backgroundImage: NetworkImage(
-                "https://robohash.org/${Uri.encodeComponent(post.userId)}.png?set=set2&size=150x150",
-              ),
-            ),
+            Avatar(userId: post.userId, size: 25),
             SizedBox(width: 8),
-            Text("traidepvct", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(post.username, style: TextStyle(fontWeight: FontWeight.bold)),
             Spacer(),
             Text(
               Format.getTimeDifference(post.createdAt),
@@ -33,9 +31,14 @@ class DetailPostContent extends StatelessWidget {
         Row(
           children: [
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                context.read<DetailPostManager>().onLikePostPressed(post.id);
+              },
               label: Text(Format.getCountNumber(post.likeCount)),
-              icon: Icon(Icons.favorite_outline),
+              icon: Icon(
+                post.isLiked ? Icons.favorite : Icons.favorite_outline,
+                color: post.isLiked ? Colors.red : Colors.white,
+              ),
             ),
             SizedBox(width: 4),
             TextButton.icon(

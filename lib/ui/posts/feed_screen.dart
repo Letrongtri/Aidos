@@ -1,6 +1,7 @@
-import 'package:ct312h_project/ui/posts/posts_manager.dart';
+import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:ct312h_project/ui/posts/single_post_item.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -11,9 +12,28 @@ class FeedScreen extends StatefulWidget {
 
 class _FeedScreenState extends State<FeedScreen> {
   @override
-  Widget build(BuildContext context) {
-    final postsManager = PostsManager();
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final postsManager = context.read<PostsManager>();
+      await postsManager.fetchPostsViewModel();
 
+      if (!mounted) return; // <-- thêm dòng này để tránh notify sau dispose
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final postsManager = context.watch<PostsManager>();
+
+    if (postsManager.isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (postsManager.errorMessage != null) {
+      return Center(child: Text('Lỗi: ${postsManager.errorMessage}'));
+    }
     return Scaffold(
       appBar: AppBar(
         // backgroundColor: Colors.white,

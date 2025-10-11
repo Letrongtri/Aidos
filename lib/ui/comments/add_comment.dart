@@ -1,5 +1,5 @@
-import 'package:ct312h_project/models/comment.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
+import 'package:ct312h_project/viewmodels/comment_item_view_model.dart';
 import 'package:flutter/material.dart';
 
 class AddComment extends StatelessWidget {
@@ -14,7 +14,7 @@ class AddComment extends StatelessWidget {
 
   final TextEditingController controller;
   final FocusNode focusNode;
-  final Comment? replyingTo;
+  final CommentItemViewModel? replyingTo;
   final Function(String text) onSend;
   final VoidCallback onCancelReply;
 
