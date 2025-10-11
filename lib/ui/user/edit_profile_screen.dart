@@ -1,48 +1,41 @@
+import 'package:ct312h_project/models/user.dart';
+import 'package:ct312h_project/viewmodels/edit_profile_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
-class EditProfileScreen extends StatefulWidget {
-  const EditProfileScreen({super.key, required this.panelController});
+class EditProfileScreen extends StatelessWidget {
+  const EditProfileScreen({
+    super.key,
+    required this.panelController,
+    required this.user,
+  });
 
   final PanelController panelController;
+  final User user;
 
-  @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
-}
-
-class _EditProfileScreenState extends State<EditProfileScreen> {
-  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+  Future<void> _showDeleteConfirmationDialog(
+    BuildContext context,
+    EditProfileViewModel viewModel,
+  ) async {
     return showDialog<void>(
       context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('Confirm to delete account'),
-          content: const SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Are you sure to delete it?'),
-                SizedBox(height: 8),
-                Text(
-                  'All of your data can be delete forever',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
+          title: const Text('Confirm Delete Account'),
+          content: const Text('Are you sure? This action cannot be undone.'),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             TextButton(
               child: const Text('Delete', style: TextStyle(color: Colors.red)),
-              onPressed: () {
-                print('Account deletion requested!');
-                Navigator.of(context).pop();
-                widget.panelController.close();
+              onPressed: () async {
+                await viewModel.deleteAccount();
+
+                if (dialogContext.mounted) Navigator.of(dialogContext).pop();
+                panelController.close();
               },
             ),
           ],
@@ -51,174 +44,135 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  bool isChecked = false;
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return ChangeNotifierProvider(
+      create: (_) => EditProfileViewModel(user: user),
+      child: Consumer<EditProfileViewModel>(
+        builder: (context, viewModel, child) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
               children: [
-                TextButton(
-                  onPressed: () {
-                    widget.panelController.close();
-                  },
-                  child: const Text(
-                    "Cancel",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
+                _buildHeader(context, viewModel),
+                const Divider(thickness: 1, color: Colors.grey),
+                Expanded(child: _buildForm(context, viewModel)),
+                if (viewModel.isLoading)
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator(),
                   ),
-                ),
-                const Text(
-                  'Edit profile',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text(
-                    'Done',
-                    style: TextStyle(
-                      color: Color.fromARGB(255, 20, 132, 237),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
               ],
             ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, EditProfileViewModel viewModel) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextButton(
+            onPressed: panelController.close,
+            child: const Text(
+              "Cancel",
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-          const Divider(thickness: 1, color: Colors.black),
-
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey, width: 0.5),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ListTile(
-                          title: const Text(
-                            'Name',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                          subtitle: const Text(
-                            'username',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                          trailing: InkWell(
-                            onTap: () {},
-                            child: const CircleAvatar(
-                              backgroundImage: AssetImage(
-                                'assets/images/logo.png',
-                              ),
-                              radius: 20,
-                            ),
-                          ),
-                        ),
-                        const Divider(color: Colors.grey, height: 1),
-                        ListTile(
-                          title: const Text(
-                            'Bio',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                          subtitle: TextFormField(
-                            style: const TextStyle(color: Colors.black),
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.zero,
-                              border: InputBorder.none,
-                              hintText: 'Bio needs to be here...',
-                              hintStyle: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const Divider(color: Colors.grey, height: 1),
-                        ListTile(
-                          title: const Text(
-                            'Link',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                          subtitle: TextFormField(
-                            style: const TextStyle(color: Colors.black),
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.zero,
-                              border: InputBorder.none,
-                              hintText: 'Yourlink/@yourlink',
-                              hintStyle: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const Divider(color: Colors.grey, height: 1),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Private profile',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              Switch(
-                                value: isChecked,
-                                onChanged: (value) {
-                                  setState(() => isChecked = value);
-                                },
-                                activeColor: Colors.black,
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 20.0,
-                          ),
-                          child: TextButton(
-                            onPressed: () {
-                              _showDeleteConfirmationDialog(context);
-                            },
-                            child: const Text(
-                              'Delete Account',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
+          const Text(
+            'Edit profile',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 17,
+            ),
+          ),
+          TextButton(
+            onPressed: viewModel.isLoading
+                ? null
+                : () async {
+                    final success = await viewModel.saveProfile();
+                    if (success) {
+                      panelController.close();
+                    }
+                  },
+            child: const Text(
+              'Done',
+              style: TextStyle(
+                color: Color.fromARGB(255, 20, 132, 237),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildForm(BuildContext context, EditProfileViewModel viewModel) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      children: [
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey, width: 0.5),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Column(
+            children: [
+              ListTile(
+                title: Text(viewModel.user.name),
+                subtitle: Text(viewModel.user.username),
+                trailing: CircleAvatar(
+                  backgroundImage: AssetImage(viewModel.user.avatarUrl),
+                  radius: 20,
+                ),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                title: const Text('Bio'),
+                subtitle: TextFormField(
+                  controller: viewModel.bioController,
+                  decoration: const InputDecoration(border: InputBorder.none),
+                ),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                title: const Text('Link'),
+                subtitle: TextFormField(
+                  controller: viewModel.linkController,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Add link...',
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+              SwitchListTile(
+                title: const Text('Private profile'),
+                value: viewModel.isPrivateProfile,
+                onChanged: (value) => viewModel.setPrivateProfile(value),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        TextButton(
+          onPressed: () => _showDeleteConfirmationDialog(context, viewModel),
+          child: const Text(
+            'Delete Account',
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
     );
   }
 }

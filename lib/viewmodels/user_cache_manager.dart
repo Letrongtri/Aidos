@@ -8,9 +8,16 @@ class UserCacheManager {
   UserCacheManager({required this.userRepo});
 
   Future<User> getUser(String userId) async {
-    if (_cache.containsKey(userId)) return _cache[userId]!;
+    if (_cache.containsKey(userId)) {
+      return _cache[userId]!;
+    }
 
-    final user = await userRepo.getUsersById(userId);
+    final user = await userRepo.getUserById(userId);
+
+    if (user == null) {
+      throw Exception('User with id $userId not found in repository');
+    }
+
     _cache[userId] = user;
     return user;
   }

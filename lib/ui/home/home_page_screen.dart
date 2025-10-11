@@ -34,15 +34,28 @@ class _HomePageScreenState extends State<HomePageScreen> {
 
   void _onItemTapped(int index) {
     if (index == 2) {
-      // Tab Post mở panel
+      // Nút Post ở giữa
       panelController.isPanelOpen
           ? panelController.close()
           : panelController.open();
-    } else {
-      panelController.close();
-      // Dùng navigationShell thay vì context.go()
-      widget.navigationShell.goBranch(index);
+      return;
     }
+
+    // Ánh xạ index UI sang index của branch
+    int branchIndex = index > 2 ? index - 1 : index;
+
+    panelController.close();
+    widget.navigationShell.goBranch(branchIndex);
+  }
+
+  // THÊM HÀM MỚI NÀY
+  int _calculateBottomNavIndex() {
+    final currentBranchIndex = widget.navigationShell.currentIndex;
+    // Ánh xạ ngược lại: branch index sang UI index
+    if (currentBranchIndex >= 2) {
+      return currentBranchIndex + 1;
+    }
+    return currentBranchIndex;
   }
 
   @override
@@ -72,7 +85,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
         bottomNavigationBar: isDetail
             ? null
             : BottomNavigationBar(
-                currentIndex: widget.navigationShell.currentIndex,
+                currentIndex: _calculateBottomNavIndex(),
                 selectedItemColor: Colors.white,
                 unselectedItemColor: const Color.fromARGB(255, 120, 120, 120),
                 showSelectedLabels: false,

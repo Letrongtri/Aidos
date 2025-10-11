@@ -1,9 +1,11 @@
+import 'package:ct312h_project/ui/activity/favorite_screen.dart';
 import 'package:ct312h_project/ui/posts/detail_post_screen.dart';
 import 'package:ct312h_project/ui/home/home_page_screen.dart';
 import 'package:ct312h_project/ui/auth/login_screen.dart';
 import 'package:ct312h_project/ui/auth/signup_screen.dart';
 import 'package:ct312h_project/ui/posts/feed_screen.dart';
 import 'package:ct312h_project/ui/search/search_screen.dart';
+import 'package:ct312h_project/ui/user/profile_screen.dart';
 import 'package:go_router/go_router.dart';
 
 final GoRouter router = GoRouter(
@@ -59,14 +61,26 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
-        // StatefulShellBranch(routes: [
-        //     GoRoute(
-        //       path: '/home/notification',
-        //       name: 'notification',
-        //       builder: (context, state) => const NotificationScreen(),
-        //     ),
-        //   ]),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/home/notification',
+              name: 'notification',
+              builder: (context, state) => const FavoriteScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/home/profile',
+              name: 'profile',
+              builder: (context, state) => const ProfileScreen(),
+            ),
+          ],
+        ),
       ],
+
       // redirect: (context, state) {
       //   final loggedIn = false;
       //   final loggingIn = state.subloc == '/login';
