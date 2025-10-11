@@ -1,15 +1,15 @@
-import 'package:ct312h_project/screens/login_screen.dart';
+import 'package:ct312h_project/ui/home/home_page_screen.dart';
+import 'package:ct312h_project/ui/auth/signup_screen.dart';
 import 'package:flutter/material.dart';
 
-class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
-  final nicknameController = TextEditingController();
+class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool passwordVisible = true;
@@ -30,26 +30,6 @@ class _SignupScreenState extends State<SignupScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: TextFormField(
-                  controller: nicknameController,
-                  style: TextStyle(color: Colors.black),
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.all(8),
-                    hintText: "Enter your nickname",
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black54),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    hintStyle: TextStyle(color: Colors.black87),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: TextFormField(
                   controller: emailController,
                   style: TextStyle(color: Colors.black),
                   decoration: InputDecoration(
@@ -63,7 +43,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    hintStyle: TextStyle(color: Colors.black),
+                    hintStyle: TextStyle(color: Colors.black87),
                   ),
                 ),
               ),
@@ -89,33 +69,47 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     contentPadding: EdgeInsets.all(8),
                     hintText: "Enter your password",
+                    hintStyle: TextStyle(color: Colors.black87),
+
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black54),
                       borderRadius: BorderRadius.circular(10),
                     ),
+
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    hintStyle: TextStyle(color: Colors.black),
+                    labelStyle: TextStyle(color: Colors.black),
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 42,
-                  child: ElevatedButton(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
                     onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                    ),
                     child: Text(
-                      "Sign up",
-                      style: TextStyle(color: Colors.white),
+                      "Forgot password",
+                      style: TextStyle(color: Colors.black),
                     ),
                   ),
+                ],
+              ),
+              SizedBox(
+                width: double.infinity,
+                height: 42,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) => HomePageScreen()),
+                    // );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                  ),
+                  child: Text("Login", style: TextStyle(color: Colors.white)),
                 ),
               ),
               Spacer(),
@@ -124,18 +118,18 @@ class _SignupScreenState extends State<SignupScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Already have an account?",
+                    "Don't have an account yet?",
                     style: TextStyle(color: Colors.black87),
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                        MaterialPageRoute(builder: (context) => SignupScreen()),
                       );
                     },
                     child: Text(
-                      "Login",
+                      "Sign up",
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
