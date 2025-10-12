@@ -18,6 +18,7 @@ class ProfileScreen extends StatelessWidget {
           return DefaultTabController(
             length: 3,
             child: Scaffold(
+              backgroundColor: const Color.fromARGB(255, 0, 0, 0),
               body: SlidingUpPanel(
                 controller: viewModel.panelController,
                 minHeight: 0,
@@ -28,29 +29,51 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 panelBuilder: (ScrollController sc) {
                   if (viewModel.user == null) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    );
                   }
                   return EditProfileScreen(
                     panelController: viewModel.panelController,
                     user: viewModel.user!,
                   );
                 },
-
                 body: SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
+                        // Hiển thị tiến trình tải user
                         if (viewModel.isLoading)
-                          const Center(child: CircularProgressIndicator())
+                          const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
                         else if (viewModel.user != null)
                           ProfileHeader(user: viewModel.user!),
+
+                        const SizedBox(height: 15),
+
                         if (viewModel.user != null)
                           ProfileActions(
-                            onEditProfile: viewModel.openEditPanel,
+                            onEditProfile: () {
+                              if (viewModel.user != null) {
+                                viewModel.openEditPanel();
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Đang tải thông tin người dùng...',
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
                           ),
 
                         const SizedBox(height: 25),
+
                         const TabBar(
                           labelColor: Colors.white,
                           indicatorColor: Colors.white,
@@ -64,9 +87,24 @@ class ProfileScreen extends StatelessWidget {
                         const Expanded(
                           child: TabBarView(
                             children: [
-                              Center(child: Text('Your posts here')),
-                              Center(child: Text('Your replies here')),
-                              Center(child: Text('Your reposts here')),
+                              Center(
+                                child: Text(
+                                  'Your posts here',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              Center(
+                                child: Text(
+                                  'Your replies here',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              Center(
+                                child: Text(
+                                  'Your reposts here',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
                             ],
                           ),
                         ),

@@ -11,12 +11,14 @@ class UserRepository {
         email: 'nguyenvana@example.com',
         password: 'hashedpassword123',
         bio: 'Yêu công nghệ, thích code Flutter.',
+        link: 'Ngvan@fb.com',
         avatarUrl: 'assets/images/logo.png',
         followerCount: 152,
         createdAt: DateTime(2024, 3, 15),
         updatedAt: DateTime(2024, 5, 10),
         deletedAt: null,
         isblock: false,
+        isPrivate: false,
       ),
       User(
         id: 'u002',
@@ -25,12 +27,14 @@ class UserRepository {
         email: 'tranthib@example.com',
         password: 'securePass456',
         bio: 'Front-end dev, thích UI tinh tế.',
+        link: 'Nvb@yahoo.com',
         avatarUrl: 'assets/images/avatar2.png',
         followerCount: 2048,
         createdAt: DateTime(2024, 6, 2),
         updatedAt: DateTime(2024, 8, 20),
         deletedAt: null,
         isblock: false,
+        isPrivate: false,
       ),
       User(
         id: 'u003',
@@ -39,12 +43,14 @@ class UserRepository {
         email: 'leminhc@example.com',
         password: 'encrypted789',
         bio: 'Back-end engineer, ghét bug.',
+        link: 'leminhc@gmail.com',
         avatarUrl: 'assets/images/avatar3.png',
         followerCount: 768,
         createdAt: DateTime(2024, 1, 25),
         updatedAt: DateTime(2025, 1, 1),
         deletedAt: null,
         isblock: true,
+        isPrivate: false,
       ),
       User(
         id: 'u004',
@@ -53,12 +59,14 @@ class UserRepository {
         email: 'phamquangd@example.com',
         password: 'supersecurepass',
         bio: 'DevOps, thích tự động hóa mọi thứ.',
+        link: 'thisqd@gmail.com',
         avatarUrl: 'assets/images/avatar4.png',
         followerCount: 1200,
         createdAt: DateTime(2023, 12, 10),
         updatedAt: DateTime(2025, 3, 12),
         deletedAt: DateTime(2025, 5, 1),
         isblock: true,
+        isPrivate: false,
       ),
     ];
   }
@@ -110,5 +118,11 @@ class UserRepository {
     print('Deleting user $userId...');
     await Future.delayed(const Duration(seconds: 2));
     print('User $userId deleted successfully.');
+  }
+
+  Future<void> logout() async {
+    print('Đang đăng xuất...');
+    await Future.delayed(const Duration(seconds: 1));
+    print('Đã đăng xuất thành công.');
   }
 }

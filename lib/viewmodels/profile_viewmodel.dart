@@ -21,13 +21,21 @@ class ProfileViewModel with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _user = await _userRepository.fetchCurrentUser();
+    try {
+      _user = await _userRepository.fetchCurrentUser();
+    } catch (e) {
+      debugPrint("Error loading user profile: $e");
+    }
 
     _isLoading = false;
     notifyListeners();
   }
 
   void openEditPanel() {
-    panelController.open();
+    if (_user != null) {
+      panelController.open();
+    } else {
+      debugPrint("Cannot open panel: user is null");
+    }
   }
 }

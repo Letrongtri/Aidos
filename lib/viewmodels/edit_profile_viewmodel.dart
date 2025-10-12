@@ -17,6 +17,8 @@ class EditProfileViewModel with ChangeNotifier {
   EditProfileViewModel({required User user}) : _initialUser = user {
     bioController = TextEditingController(text: user.bio);
     linkController = TextEditingController(text: '');
+
+    isPrivateProfile = user.isPrivate ?? false;
   }
 
   void setPrivateProfile(bool value) {
