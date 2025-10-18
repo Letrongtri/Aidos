@@ -23,17 +23,15 @@ class EditProfileScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('Xác nhận Xóa Tài khoản'),
-          content: const Text(
-            'Bạn có chắc không? Hành động này không thể hoàn tác.',
-          ),
+          title: const Text('Confirm account deletion'),
+          content: const Text('Are you sure? This action cannot be undone.'),
           actions: <Widget>[
             TextButton(
-              child: const Text('Hủy'),
+              child: const Text('Cancel'),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             TextButton(
-              child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
               onPressed: () async {
                 await viewModel.deleteAccount();
                 if (dialogContext.mounted) Navigator.of(dialogContext).pop();
@@ -53,18 +51,15 @@ class EditProfileScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('Đăng xuất'),
-          content: const Text('Bạn có chắc muốn đăng xuất không?'),
+          title: const Text('Log out'),
+          content: const Text('Are you sure you want to log out?'),
           actions: [
             TextButton(
-              child: const Text('Hủy'),
+              child: const Text('Cancel'),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             TextButton(
-              child: const Text(
-                'Đăng xuất',
-                style: TextStyle(color: Colors.red),
-              ),
+              child: const Text('Log out', style: TextStyle(color: Colors.red)),
               onPressed: () async {
                 await userRepo.logout();
 
@@ -186,10 +181,13 @@ class EditProfileScreen extends StatelessWidget {
 
                     final success = await viewModel.saveProfile();
                     if (success) {
-                      _showSnack(context, 'Lưu hồ sơ thành công.');
+                      _showSnack(context, 'Profile saved successfully.');
                       panelController.close();
                     } else {
-                      _showSnack(context, 'Lưu hồ sơ thất bại. Thử lại.');
+                      _showSnack(
+                        context,
+                        'Failed to save profile. Please try again.',
+                      );
                     }
                   },
             child: const Text(
@@ -246,7 +244,7 @@ class EditProfileScreen extends StatelessWidget {
                 TextFormField(
                   controller: viewModel.usernameController,
                   decoration: InputDecoration(
-                    hintText: 'Nhập username...',
+                    hintText: 'Enter username...',
                     hintStyle: const TextStyle(color: Colors.grey),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -288,7 +286,7 @@ class EditProfileScreen extends StatelessWidget {
                 TextFormField(
                   controller: viewModel.bioController,
                   decoration: InputDecoration(
-                    hintText: 'Thêm tiểu sử...',
+                    hintText: 'Add a short bio...',
                     hintStyle: const TextStyle(color: Colors.grey),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -332,7 +330,7 @@ class EditProfileScreen extends StatelessWidget {
                   controller: viewModel.emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    hintText: 'Nhập email...',
+                    hintText: 'Enter email...',
                     hintStyle: const TextStyle(color: Colors.grey),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -370,7 +368,7 @@ class EditProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Mật khẩu mới',
+                  'New password',
                   style: TextStyle(color: Colors.black),
                 ),
                 const SizedBox(height: 6),
@@ -378,7 +376,7 @@ class EditProfileScreen extends StatelessWidget {
                   controller: viewModel.newPasswordController,
                   obscureText: true,
                   decoration: InputDecoration(
-                    hintText: 'Mật khẩu mới',
+                    hintText: 'New password',
                     hintStyle: const TextStyle(color: Colors.grey),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -406,7 +404,7 @@ class EditProfileScreen extends StatelessWidget {
                   controller: viewModel.confirmPasswordController,
                   obscureText: true,
                   decoration: InputDecoration(
-                    hintText: 'Xác nhận mật khẩu',
+                    hintText: 'Confirm password',
                     hintStyle: const TextStyle(color: Colors.grey),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -453,7 +451,7 @@ class EditProfileScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'Tài khoản ở chế độ riêng tư.',
+                        'Your account is private.',
                         style: TextStyle(color: Colors.grey),
                       ),
                     ],

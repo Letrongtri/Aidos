@@ -59,7 +59,7 @@ class _PostScreenState extends State<PostScreen> {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Nhập chủ đề',
+                  'Enter a topic',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -72,7 +72,7 @@ class _PostScreenState extends State<PostScreen> {
                 controller: _topicInputController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Nhập chủ đề...',
+                  hintText: 'Type your topic...',
                   hintStyle: const TextStyle(color: Colors.white54),
                   filled: true,
                   fillColor: Colors.white10,
@@ -100,13 +100,13 @@ class _PostScreenState extends State<PostScreen> {
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.white24),
+                        side: const BorderSide(color: Colors.white24),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       onPressed: () => Navigator.pop(ctx, null),
-                      child: const Text('Hủy'),
+                      child: const Text('Cancel'),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -130,12 +130,12 @@ class _PostScreenState extends State<PostScreen> {
                         } else {
                           ScaffoldMessenger.of(ctx).showSnackBar(
                             const SnackBar(
-                              content: Text('Vui lòng nhập chủ đề'),
+                              content: Text('Please enter a topic'),
                             ),
                           );
                         }
                       },
-                      child: const Text('Sử dụng'),
+                      child: const Text('Use'),
                     ),
                   ),
                 ],
@@ -157,7 +157,7 @@ class _PostScreenState extends State<PostScreen> {
   void _onPost(User user) {
     final content = _contentController.text.trim();
     final topic = _selectedTopic;
-    // TODO: thêm logic gửi post lên server (kèm topic nếu có)
+    // TODO: Add logic to send the post to the server (include topic if any)
     debugPrint('Post by ${user.username}: $content (${topic ?? "no topic"})');
   }
 
@@ -171,7 +171,7 @@ class _PostScreenState extends State<PostScreen> {
         }
 
         if (!snapshot.hasData) {
-          return const Center(child: Text("Không tìm thấy user"));
+          return const Center(child: Text("User not found"));
         }
 
         final user = snapshot.data!;
@@ -259,7 +259,7 @@ class _PostScreenState extends State<PostScreen> {
                             ],
                           ),
 
-                          // Ô nhập bài viết
+                          // Post content input
                           TextFormField(
                             controller: _contentController,
                             style: const TextStyle(color: Colors.black),
