@@ -66,12 +66,14 @@ class EditProfileScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.red),
               ),
               onPressed: () async {
-                await userRepo.logout(); // gọi hàm logout
+                await userRepo.logout();
+
                 if (dialogContext.mounted) {
                   Navigator.of(dialogContext).pop();
+
                   Navigator.of(
                     context,
-                  ).pushReplacementNamed('/login'); // quay về login
+                  ).pushNamedAndRemoveUntil('/login', (route) => false);
                 }
               },
             ),
@@ -81,9 +83,15 @@ class EditProfileScreen extends StatelessWidget {
     );
   }
 
+  void _showSnack(BuildContext context, String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
+    return ChangeNotifierProvider<EditProfileViewModel>(
       create: (_) => EditProfileViewModel(user: user),
       child: Consumer<EditProfileViewModel>(
         builder: (context, viewModel, child) {
@@ -98,7 +106,6 @@ class EditProfileScreen extends StatelessWidget {
                   _buildForm(context, viewModel),
                   const SizedBox(height: 20),
 
-                  // 🔹 Logout button
                   TextButton(
                     onPressed: () => _showLogoutDialog(context),
                     child: const Text(
@@ -110,7 +117,6 @@ class EditProfileScreen extends StatelessWidget {
                     ),
                   ),
 
-                  // 🔹 Delete account button
                   TextButton(
                     onPressed: () =>
                         _showDeleteConfirmationDialog(context, viewModel),
@@ -122,6 +128,7 @@ class EditProfileScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+
                   if (viewModel.isLoading)
                     const Padding(
                       padding: EdgeInsets.all(16.0),
@@ -165,9 +172,24 @@ class EditProfileScreen extends StatelessWidget {
             onPressed: viewModel.isLoading
                 ? null
                 : () async {
+                    String? validationError;
+                    try {
+                      validationError = viewModel.validateBeforeSave();
+                    } catch (_) {
+                      validationError = null;
+                    }
+
+                    if (validationError != null) {
+                      _showSnack(context, validationError);
+                      return;
+                    }
+
                     final success = await viewModel.saveProfile();
                     if (success) {
+                      _showSnack(context, 'Lưu hồ sơ thành công.');
                       panelController.close();
+                    } else {
+                      _showSnack(context, 'Lưu hồ sơ thất bại. Thử lại.');
                     }
                   },
             child: const Text(
@@ -210,6 +232,48 @@ class EditProfileScreen extends StatelessWidget {
           ),
           const Divider(height: 1),
 
+          // Username
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Username', style: TextStyle(color: Colors.black)),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: viewModel.usernameController,
+                  decoration: InputDecoration(
+                    hintText: 'Nhập username...',
+                    hintStyle: const TextStyle(color: Colors.grey),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Colors.black54,
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Colors.black,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  style: const TextStyle(color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+
           // Bio
           Padding(
             padding: const EdgeInsets.symmetric(
@@ -228,7 +292,7 @@ class EditProfileScreen extends StatelessWidget {
                     hintStyle: const TextStyle(color: Colors.grey),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
-                      vertical: 8,
+                      vertical: 12,
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -246,13 +310,14 @@ class EditProfileScreen extends StatelessWidget {
                     ),
                   ),
                   style: const TextStyle(color: Colors.black),
+                  maxLines: 3,
                 ),
               ],
             ),
           ),
           const Divider(height: 1),
 
-          // Link
+          // Email
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16.0,
@@ -261,16 +326,17 @@ class EditProfileScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Link', style: TextStyle(color: Colors.black)),
+                const Text('Email', style: TextStyle(color: Colors.black)),
                 const SizedBox(height: 6),
                 TextFormField(
-                  controller: viewModel.linkController,
+                  controller: viewModel.emailController,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    hintText: 'Thêm liên kết...',
+                    hintText: 'Nhập email...',
                     hintStyle: const TextStyle(color: Colors.grey),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
-                      vertical: 8,
+                      vertical: 12,
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -294,14 +360,107 @@ class EditProfileScreen extends StatelessWidget {
           ),
           const Divider(height: 1),
 
-          // Private profile
-          SwitchListTile(
-            title: const Text(
-              'Private profile',
-              style: TextStyle(color: Colors.black),
+          // Password
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
             ),
-            value: viewModel.isPrivateProfile,
-            onChanged: (value) => viewModel.setPrivateProfile(value),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Mật khẩu mới',
+                  style: TextStyle(color: Colors.black),
+                ),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: viewModel.newPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: 'Mật khẩu mới',
+                    hintStyle: const TextStyle(color: Colors.grey),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Colors.black54,
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Colors.black,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  style: const TextStyle(color: Colors.black),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: viewModel.confirmPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: 'Xác nhận mật khẩu',
+                    hintStyle: const TextStyle(color: Colors.grey),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Colors.black54,
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Colors.black,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  style: const TextStyle(color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+            child: Row(
+              children: const [
+                Icon(Icons.lock, color: Colors.grey),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Private profile',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Tài khoản ở chế độ riêng tư.',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

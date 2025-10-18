@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:ct312h_project/repository/user_repository.dart';
-import 'package:ct312h_project/repository/topic_repository.dart';
 import 'package:ct312h_project/models/user.dart';
-import 'package:ct312h_project/models/topic.dart';
 
 class PostScreen extends StatefulWidget {
   const PostScreen({super.key, required this.panelController});
@@ -16,14 +14,20 @@ class PostScreen extends StatefulWidget {
 class _PostScreenState extends State<PostScreen> {
   String? _selectedTopic;
   final TextEditingController _contentController = TextEditingController();
+  final TextEditingController _topicInputController = TextEditingController();
   final UserRepository _userRepository = UserRepository();
-  final TopicRepository _topicRepository = TopicRepository();
 
   Future<User?> _fetchCurrentUser() => _userRepository.fetchCurrentUser();
-  Future<List<Topic>> _fetchTopics() => _topicRepository.fetchTopics();
 
-  Future<void> _showTopicSelection(BuildContext context) async {
-    final topics = await _fetchTopics();
+  @override
+  void dispose() {
+    _contentController.dispose();
+    _topicInputController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showTopicInputSheet(BuildContext context) async {
+    _topicInputController.text = _selectedTopic ?? '';
 
     final result = await showModalBottomSheet<String>(
       context: context,
@@ -31,40 +35,114 @@ class _PostScreenState extends State<PostScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (BuildContext context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Chọn một chủ đề',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Colors.white,
+      isScrollControlled: true,
+      builder: (BuildContext ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 12,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white30,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-            ),
-            const Divider(color: Colors.white54),
-            Flexible(
-              child: ListView.builder(
-                itemCount: topics.length,
-                itemBuilder: (context, index) {
-                  final topic = topics[index];
-                  return ListTile(
-                    title: Text(
-                      topic.name,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context, topic.name);
-                    },
-                  );
+              const SizedBox(height: 12),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Nhập chủ đề',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _topicInputController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Nhập chủ đề...',
+                  hintStyle: const TextStyle(color: Colors.white54),
+                  filled: true,
+                  fillColor: Colors.white10,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                ),
+                textInputAction: TextInputAction.done,
+                onSubmitted: (value) {
+                  final trimmed = value.trim();
+                  if (trimmed.isNotEmpty) {
+                    Navigator.pop(ctx, trimmed);
+                  }
                 },
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: BorderSide(color: Colors.white24),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(ctx, null),
+                      child: const Text('Hủy'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          20,
+                          132,
+                          237,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        final trimmed = _topicInputController.text.trim();
+                        if (trimmed.isNotEmpty) {
+                          Navigator.pop(ctx, trimmed);
+                        } else {
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                            const SnackBar(
+                              content: Text('Vui lòng nhập chủ đề'),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text('Sử dụng'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
         );
       },
     );
@@ -74,6 +152,13 @@ class _PostScreenState extends State<PostScreen> {
         _selectedTopic = result;
       });
     }
+  }
+
+  void _onPost(User user) {
+    final content = _contentController.text.trim();
+    final topic = _selectedTopic;
+    // TODO: thêm logic gửi post lên server (kèm topic nếu có)
+    debugPrint('Post by ${user.username}: $content (${topic ?? "no topic"})');
   }
 
   @override
@@ -94,7 +179,6 @@ class _PostScreenState extends State<PostScreen> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              // ===== Header =====
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(
@@ -119,11 +203,7 @@ class _PostScreenState extends State<PostScreen> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {
-                        debugPrint(
-                          'Post by ${user.username}: ${_contentController.text} (${_selectedTopic ?? "no topic"})',
-                        );
-                      },
+                      onPressed: () => _onPost(user),
                       child: const Text(
                         'Post',
                         style: TextStyle(
@@ -137,7 +217,6 @@ class _PostScreenState extends State<PostScreen> {
               ),
               const Divider(thickness: 1, color: Colors.grey),
 
-              // ===== Nội dung =====
               Padding(
                 padding: const EdgeInsets.only(top: 12.0),
                 child: Row(
@@ -196,9 +275,8 @@ class _PostScreenState extends State<PostScreen> {
                           ),
                           const SizedBox(height: 10),
 
-                          // Nút chọn chủ đề
                           GestureDetector(
-                            onTap: () => _showTopicSelection(context),
+                            onTap: () => _showTopicInputSheet(context),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 10,

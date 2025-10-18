@@ -13,7 +13,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -56,18 +56,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                       ),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Tab(text: 'Follows'),
-                  ),
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: _currentIndexTab == 2
-                            ? Colors.transparent
-                            : Colors.grey,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
                     child: const Tab(text: 'Replies'),
                   ),
                 ],
@@ -77,11 +65,9 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         ),
         body: Padding(
           padding: const EdgeInsets.only(top: 20.0),
-
           child: TabBarView(
             children: [
               const Center(child: Text('All screen')),
-              const Center(child: Text('Nothing to see here yet')),
               const Center(child: Text('Nothing to see here yet')),
             ],
           ),
