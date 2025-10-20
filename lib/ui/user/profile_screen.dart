@@ -1,5 +1,4 @@
 import 'package:ct312h_project/ui/user/edit_profile_screen.dart';
-import 'package:ct312h_project/ui/user/widgets/profile_actions.dart';
 import 'package:ct312h_project/ui/user/widgets/profile_header.dart';
 import 'package:ct312h_project/viewmodels/profile_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +17,7 @@ class ProfileScreen extends StatelessWidget {
           return DefaultTabController(
             length: 3,
             child: Scaffold(
-              backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+              backgroundColor: Colors.black,
               body: SlidingUpPanel(
                 controller: viewModel.panelController,
                 minHeight: 0,
@@ -42,8 +41,36 @@ class ProfileScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Hiển thị tiến trình tải user
+                        // Edit button only
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.dehaze,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                              onPressed: () {
+                                if (viewModel.user != null) {
+                                  viewModel.openEditPanel();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Đang tải thông tin người dùng...',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+
+                        // Profile header (you'll need to modify ProfileHeader widget to hide bio, name, followers)
                         if (viewModel.isLoading)
                           const Center(
                             child: CircularProgressIndicator(
@@ -54,25 +81,6 @@ class ProfileScreen extends StatelessWidget {
                           ProfileHeader(user: viewModel.user!),
 
                         const SizedBox(height: 15),
-
-                        if (viewModel.user != null)
-                          ProfileActions(
-                            onEditProfile: () {
-                              if (viewModel.user != null) {
-                                viewModel.openEditPanel();
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Đang tải thông tin người dùng...',
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-
-                        const SizedBox(height: 25),
 
                         const TabBar(
                           labelColor: Colors.white,

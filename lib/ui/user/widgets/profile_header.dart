@@ -7,27 +7,29 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ListTile(
-          title: Text(user.name),
-          subtitle: Text(user.username),
-          contentPadding: EdgeInsets.zero,
-          trailing: CircleAvatar(
-            backgroundImage: AssetImage(user.avatarUrl),
-            radius: 25,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Avatar
+          CircleAvatar(backgroundImage: AssetImage(user.avatarUrl), radius: 35),
+
+          const SizedBox(width: 16),
+
+          // Username
+          Expanded(
+            child: Text(
+              user.username,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
-        ),
-        Text(user.bio),
-        Padding(
-          padding: const EdgeInsets.only(top: 15.0),
-          child: Text(
-            '${user.followerCount} followers',
-            style: const TextStyle(color: Colors.grey),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

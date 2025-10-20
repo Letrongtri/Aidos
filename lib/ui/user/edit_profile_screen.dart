@@ -213,15 +213,15 @@ class EditProfileScreen extends StatelessWidget {
         children: [
           ListTile(
             title: Text(
-              viewModel.user.name,
+              "@${viewModel.user.username}",
               style: const TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            subtitle: Text(
-              "@${viewModel.user.username}",
-              style: const TextStyle(color: Colors.grey),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
             ),
             trailing: CircleAvatar(
               backgroundImage: AssetImage(viewModel.user.avatarUrl),
@@ -266,49 +266,6 @@ class EditProfileScreen extends StatelessWidget {
                     ),
                   ),
                   style: const TextStyle(color: Colors.black),
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-
-          // Bio
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Bio', style: TextStyle(color: Colors.black)),
-                const SizedBox(height: 6),
-                TextFormField(
-                  controller: viewModel.bioController,
-                  decoration: InputDecoration(
-                    hintText: 'Add a short bio...',
-                    hintStyle: const TextStyle(color: Colors.grey),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                        color: Colors.black54,
-                        width: 1,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
-                        width: 1.5,
-                      ),
-                    ),
-                  ),
-                  style: const TextStyle(color: Colors.black),
-                  maxLines: 3,
                 ),
               ],
             ),
