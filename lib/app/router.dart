@@ -6,6 +6,7 @@ import 'package:ct312h_project/ui/auth/signup_screen.dart';
 import 'package:ct312h_project/ui/posts/feed_screen.dart';
 import 'package:ct312h_project/ui/search/search_screen.dart';
 import 'package:ct312h_project/ui/user/profile_screen.dart';
+import 'package:ct312h_project/ui/posts/post_screen.dart';
 import 'package:go_router/go_router.dart';
 
 final GoRouter router = GoRouter(
@@ -27,6 +28,7 @@ final GoRouter router = GoRouter(
         return HomePageScreen(navigationShell: navigationShell);
       },
       branches: [
+        // Branch 0: Feed
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -49,6 +51,8 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
+
+        // Branch 1: Search
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -61,6 +65,19 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
+
+        // Branch 2: Post
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/home/post',
+              name: 'post',
+              builder: (context, state) => const PostScreen(),
+            ),
+          ],
+        ),
+
+        // Branch 3: Notification
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -70,6 +87,8 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
+
+        // Branch 4: Profile
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -80,15 +99,6 @@ final GoRouter router = GoRouter(
           ],
         ),
       ],
-
-      // redirect: (context, state) {
-      //   final loggedIn = false;
-      //   final loggingIn = state.subloc == '/login';
-
-      //   if (!loggedIn) return loggingIn ? null : '/login';
-      //   if (loggedIn && loggingIn) return '/';
-      //   return null;
-      // },)
     ),
   ],
 );
