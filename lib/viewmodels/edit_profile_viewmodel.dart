@@ -22,8 +22,8 @@ class EditProfileViewModel with ChangeNotifier {
 
   EditProfileViewModel({required User user}) : _initialUser = user {
     usernameController = TextEditingController(text: user.username);
-    bioController = TextEditingController(text: user.bio ?? '');
-    emailController = TextEditingController(text: user.email ?? '');
+    bioController = TextEditingController(text: user.bio);
+    emailController = TextEditingController(text: user.email);
     newPasswordController = TextEditingController();
     confirmPasswordController = TextEditingController();
   }
@@ -38,12 +38,15 @@ class EditProfileViewModel with ChangeNotifier {
     if (username.isEmpty) return 'Username không được để trống.';
     if (email.isEmpty) return 'Email không được để trống.';
     // đơn giản check email basic
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email))
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
       return 'Email không hợp lệ.';
-    if (newPass.isNotEmpty && newPass.length < 6)
+    }
+    if (newPass.isNotEmpty && newPass.length < 6) {
       return 'Mật khẩu mới phải có ít nhất 6 ký tự.';
-    if (newPass.isNotEmpty && newPass != confirm)
+    }
+    if (newPass.isNotEmpty && newPass != confirm) {
       return 'Mật khẩu và xác nhận mật khẩu không khớp.';
+    }
     return null;
   }
 
@@ -53,7 +56,6 @@ class EditProfileViewModel with ChangeNotifier {
     final validationError = validateBeforeSave();
     if (validationError != null) {
       // có thể xử lý hiển thị lỗi ở UI bằng cách ném hoặc trả về false
-      print('Validation error: $validationError');
       return false;
     }
 
@@ -61,12 +63,12 @@ class EditProfileViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final updatedUsername = usernameController.text.trim();
-      final updatedBio = bioController.text.trim();
-      final updatedEmail = emailController.text.trim();
-      final newPassword = newPasswordController.text.isNotEmpty
-          ? newPasswordController.text
-          : null;
+      // final updatedUsername = usernameController.text.trim();
+      // final updatedBio = bioController.text.trim();
+      // final updatedEmail = emailController.text.trim();
+      // final newPassword = newPasswordController.text.isNotEmpty
+      //     ? newPasswordController.text
+      //     : null;
 
       // TODO: Điều chỉnh method gọi repo nếu API của bạn khác.
       // Giả sử UserRepository có method:
@@ -82,7 +84,6 @@ class EditProfileViewModel with ChangeNotifier {
 
       return true;
     } catch (e) {
-      print('Error saving profile: $e');
       return false;
     } finally {
       _isLoading = false;
@@ -98,7 +99,6 @@ class EditProfileViewModel with ChangeNotifier {
       await _userRepository.deleteUser(_initialUser.id);
       return true;
     } catch (e) {
-      print('Error deleting account: $e');
       return false;
     } finally {
       _isLoading = false;

@@ -62,7 +62,7 @@ class User {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
-      isblock: isBlocked ?? this.isblock,
+      isblock: isBlocked ?? isblock,
       isPrivate: isPrivate ?? this.isPrivate,
     );
   }

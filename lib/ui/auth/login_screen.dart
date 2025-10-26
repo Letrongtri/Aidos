@@ -1,4 +1,3 @@
-import 'package:ct312h_project/ui/home/home_page_screen.dart';
 import 'package:ct312h_project/ui/auth/signup_screen.dart';
 import 'package:flutter/material.dart';
 
