@@ -4,20 +4,18 @@ class User {
   final String id;
   final String username;
   final String email;
-  final String avatarUrl;
-  final String password;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final dynamic avatarUrl;
+  final DateTime created;
+  final DateTime updated;
   final DateTime? deletedAt;
 
   User({
     required this.id,
     required this.username,
     required this.email,
-    required this.avatarUrl,
-    required this.password,
-    required this.createdAt,
-    required this.updatedAt,
+    this.avatarUrl,
+    required this.created,
+    required this.updated,
     this.deletedAt,
   });
 
@@ -25,8 +23,7 @@ class User {
     String? id,
     String? username,
     String? email,
-    String? avatarUrl,
-    String? password,
+    dynamic avatarUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? deletedAt,
@@ -36,9 +33,8 @@ class User {
       username: username ?? this.username,
       email: email ?? this.email,
       avatarUrl: avatarUrl ?? this.avatarUrl,
-      password: password ?? this.password,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      created: createdAt ?? created,
+      updated: updatedAt ?? updated,
       deletedAt: deletedAt ?? this.deletedAt,
     );
   }
@@ -49,10 +45,9 @@ class User {
       'username': username,
       'email': email,
       'avatarUrl': avatarUrl,
-      'password': password,
-      'createdAt': createdAt.millisecondsSinceEpoch,
-      'updatedAt': updatedAt.millisecondsSinceEpoch,
-      'deletedAt': deletedAt?.millisecondsSinceEpoch,
+      'created': created.toIso8601String(),
+      'updated': updated.toIso8601String(),
+      'deletedAt': deletedAt?.toIso8601String(),
     };
   }
 
@@ -61,12 +56,11 @@ class User {
       id: map['id'] as String,
       username: map['username'] as String,
       email: map['email'] as String,
-      avatarUrl: map['avatarUrl'] as String,
-      password: map['password'] as String,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int),
-      deletedAt: map['deletedAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['deletedAt'] as int)
+      created: DateTime.parse(map['created'] as String),
+      updated: DateTime.parse(map['updated'] as String),
+      deletedAt:
+          (map['deletedAt'] != null && (map['deletedAt'] as String).isNotEmpty)
+          ? DateTime.parse(map['deletedAt'] as String)
           : null,
     );
   }
@@ -78,7 +72,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, username: $username, email: $email, avatarUrl: $avatarUrl, password: $password, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'User(id: $id, username: $username, email: $email, createdAt: $created, updatedAt: $updated, deletedAt: $deletedAt)';
   }
 
   @override
@@ -88,10 +82,8 @@ class User {
     return other.id == id &&
         other.username == username &&
         other.email == email &&
-        other.avatarUrl == avatarUrl &&
-        other.password == password &&
-        other.createdAt == createdAt &&
-        other.updatedAt == updatedAt &&
+        other.created == created &&
+        other.updated == updated &&
         other.deletedAt == deletedAt;
   }
 
@@ -100,10 +92,8 @@ class User {
     return id.hashCode ^
         username.hashCode ^
         email.hashCode ^
-        avatarUrl.hashCode ^
-        password.hashCode ^
-        createdAt.hashCode ^
-        updatedAt.hashCode ^
+        created.hashCode ^
+        updated.hashCode ^
         deletedAt.hashCode;
   }
 }
