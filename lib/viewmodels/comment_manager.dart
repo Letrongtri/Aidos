@@ -1,5 +1,5 @@
 import 'package:ct312h_project/models/comment.dart';
-import 'package:ct312h_project/repository/comment_repository.dart';
+import 'package:ct312h_project/services/comment_service.dart';
 import 'package:ct312h_project/viewmodels/comment_item_view_model.dart';
 import 'package:ct312h_project/viewmodels/user_cache_manager.dart';
 import 'package:flutter/material.dart';

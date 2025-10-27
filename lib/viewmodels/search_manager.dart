@@ -1,6 +1,6 @@
 import 'package:ct312h_project/models/topic.dart';
-import 'package:ct312h_project/repository/post_repository.dart';
-import 'package:ct312h_project/repository/topic_repository.dart';
+import 'package:ct312h_project/services/post_service.dart';
+import 'package:ct312h_project/services/topic_service.dart';
 import 'package:ct312h_project/viewmodels/post_item_view_model.dart';
 import 'package:ct312h_project/viewmodels/topic_manager.dart';
 import 'package:ct312h_project/viewmodels/user_cache_manager.dart';

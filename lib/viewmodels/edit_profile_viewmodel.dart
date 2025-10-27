@@ -1,5 +1,5 @@
 import 'package:ct312h_project/models/user.dart';
-import 'package:ct312h_project/repository/user_repository.dart';
+import 'package:ct312h_project/services/user_service.dart';
 import 'package:flutter/material.dart';
 
 class EditProfileViewModel with ChangeNotifier {
@@ -22,7 +22,6 @@ class EditProfileViewModel with ChangeNotifier {
 
   EditProfileViewModel({required User user}) : _initialUser = user {
     usernameController = TextEditingController(text: user.username);
-    bioController = TextEditingController(text: user.bio);
     emailController = TextEditingController(text: user.email);
     newPasswordController = TextEditingController();
     confirmPasswordController = TextEditingController();

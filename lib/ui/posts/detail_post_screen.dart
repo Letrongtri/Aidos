@@ -1,4 +1,3 @@
-import 'package:ct312h_project/app/locator.dart';
 import 'package:ct312h_project/ui/comments/add_comment.dart';
 import 'package:ct312h_project/ui/comments/comment_list.dart';
 import 'package:ct312h_project/ui/shared/show_post_actions_bottom_sheet.dart';
@@ -22,10 +21,10 @@ class DetailPostScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => getIt<DetailPostManager>()..fetchPostById(id),
-        ),
-        ChangeNotifierProvider(create: (_) => getIt<CommentManager>()),
+        // ChangeNotifierProvider(
+        //   create: (_) => getIt<DetailPostManager>()..fetchPostById(id),
+        // ),
+        // ChangeNotifierProvider(create: (_) => getIt<CommentManager>()),
       ],
       child: _DetailPostBody(focusComment: focusComment),
     );

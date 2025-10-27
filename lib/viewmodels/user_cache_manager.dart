@@ -1,5 +1,5 @@
 import 'package:ct312h_project/models/user.dart';
-import 'package:ct312h_project/repository/user_repository.dart';
+import 'package:ct312h_project/services/user_service.dart';
 
 class UserCacheManager {
   final UserRepository userRepo;

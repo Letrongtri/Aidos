@@ -1,5 +1,5 @@
 import 'package:ct312h_project/models/topic.dart';
-import 'package:ct312h_project/repository/topic_repository.dart';
+import 'package:ct312h_project/services/topic_service.dart';
 import 'package:flutter/material.dart';
 
 class TopicManager extends ChangeNotifier {

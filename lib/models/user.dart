@@ -6,10 +6,8 @@ class User {
   final String email;
   final String avatarUrl;
   final String password;
-  final String bio;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final bool isBlocked;
   final DateTime? deletedAt;
 
   User({
@@ -18,10 +16,8 @@ class User {
     required this.email,
     required this.avatarUrl,
     required this.password,
-    required this.bio,
     required this.createdAt,
     required this.updatedAt,
-    required this.isBlocked,
     this.deletedAt,
   });
 
@@ -31,10 +27,8 @@ class User {
     String? email,
     String? avatarUrl,
     String? password,
-    String? bio,
     DateTime? createdAt,
     DateTime? updatedAt,
-    bool? isBlocked,
     DateTime? deletedAt,
   }) {
     return User(
@@ -43,10 +37,8 @@ class User {
       email: email ?? this.email,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       password: password ?? this.password,
-      bio: bio ?? this.bio,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      isBlocked: isBlocked ?? this.isBlocked,
       deletedAt: deletedAt ?? this.deletedAt,
     );
   }
@@ -58,10 +50,8 @@ class User {
       'email': email,
       'avatarUrl': avatarUrl,
       'password': password,
-      'bio': bio,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'updatedAt': updatedAt.millisecondsSinceEpoch,
-      'isBlocked': isBlocked,
       'deletedAt': deletedAt?.millisecondsSinceEpoch,
     };
   }
@@ -73,10 +63,8 @@ class User {
       email: map['email'] as String,
       avatarUrl: map['avatarUrl'] as String,
       password: map['password'] as String,
-      bio: map['bio'] as String,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int),
-      isBlocked: map['isBlocked'] as bool,
       deletedAt: map['deletedAt'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['deletedAt'] as int)
           : null,
@@ -90,7 +78,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, username: $username, email: $email, avatarUrl: $avatarUrl, password: $password, bio: $bio, createdAt: $createdAt, updatedAt: $updatedAt, isBlocked: $isBlocked, deletedAt: $deletedAt)';
+    return 'User(id: $id, username: $username, email: $email, avatarUrl: $avatarUrl, password: $password, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -102,10 +90,8 @@ class User {
         other.email == email &&
         other.avatarUrl == avatarUrl &&
         other.password == password &&
-        other.bio == bio &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
-        other.isBlocked == isBlocked &&
         other.deletedAt == deletedAt;
   }
 
@@ -116,10 +102,8 @@ class User {
         email.hashCode ^
         avatarUrl.hashCode ^
         password.hashCode ^
-        bio.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode ^
-        isBlocked.hashCode ^
         deletedAt.hashCode;
   }
 }
