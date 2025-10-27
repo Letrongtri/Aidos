@@ -2,108 +2,84 @@ import 'dart:convert';
 
 class User {
   final String id;
-  final String name;
   final String username;
   final String email;
+  final String avatarUrl;
   final String password;
   final String bio;
-  final String? link;
-  final String avatarUrl;
-  final int followerCount;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool isBlocked;
   final DateTime? deletedAt;
-  final bool isblock;
-  final bool isPrivate;
 
   User({
     required this.id,
-    required this.name,
     required this.username,
     required this.email,
+    required this.avatarUrl,
     required this.password,
     required this.bio,
-    required this.link,
-    required this.avatarUrl,
-    required this.followerCount,
     required this.createdAt,
     required this.updatedAt,
+    required this.isBlocked,
     this.deletedAt,
-    required this.isblock,
-    required this.isPrivate,
   });
 
   User copyWith({
     String? id,
-    String? name,
     String? username,
     String? email,
+    String? avatarUrl,
     String? password,
     String? bio,
-    String? link,
-    String? avatarUrl,
-    int? followerCount,
     DateTime? createdAt,
     DateTime? updatedAt,
-    DateTime? deletedAt,
     bool? isBlocked,
-    bool? isPrivate,
+    DateTime? deletedAt,
   }) {
     return User(
       id: id ?? this.id,
-      name: name ?? this.name,
       username: username ?? this.username,
       email: email ?? this.email,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       password: password ?? this.password,
       bio: bio ?? this.bio,
-      link: link ?? this.link,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
-      followerCount: followerCount ?? this.followerCount,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      isBlocked: isBlocked ?? this.isBlocked,
       deletedAt: deletedAt ?? this.deletedAt,
-      isblock: isBlocked ?? this.isblock,
-      isPrivate: isPrivate ?? this.isPrivate,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+    return {
       'id': id,
-      'name': name,
       'username': username,
       'email': email,
+      'avatarUrl': avatarUrl,
       'password': password,
       'bio': bio,
-      'link': link,
-      'avatarUrl': avatarUrl,
-      'followerCount': followerCount,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'updatedAt': updatedAt.millisecondsSinceEpoch,
+      'isBlocked': isBlocked,
       'deletedAt': deletedAt?.millisecondsSinceEpoch,
-      'isBlocked': isblock,
-      'isPrivate': isPrivate,
     };
   }
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
       id: map['id'] as String,
-      name: map['name'] as String,
       username: map['username'] as String,
       email: map['email'] as String,
+      avatarUrl: map['avatarUrl'] as String,
       password: map['password'] as String,
       bio: map['bio'] as String,
-      link: map['link'] as String,
-      avatarUrl: map['avatarUrl'] as String,
-      followerCount: map['followerCount'] as int,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int),
+      isBlocked: map['isBlocked'] as bool,
       deletedAt: map['deletedAt'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['deletedAt'] as int)
           : null,
-      isblock: map['isBlocked'] as bool,
-      isPrivate: map['isPrivate'] as bool,
     );
   }
 
@@ -114,7 +90,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, name: $name, username: $username, email: $email, password: $password, bio: $bio, link: $link, avatarUrl: $avatarUrl, followerCount: $followerCount, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt, isBlocked: $isblock, isPrivate: $isPrivate)';
+    return 'User(id: $id, username: $username, email: $email, avatarUrl: $avatarUrl, password: $password, bio: $bio, createdAt: $createdAt, updatedAt: $updatedAt, isBlocked: $isBlocked, deletedAt: $deletedAt)';
   }
 
   @override
@@ -122,36 +98,28 @@ class User {
     if (identical(this, other)) return true;
 
     return other.id == id &&
-        other.name == name &&
         other.username == username &&
         other.email == email &&
+        other.avatarUrl == avatarUrl &&
         other.password == password &&
         other.bio == bio &&
-        other.link == link &&
-        other.avatarUrl == avatarUrl &&
-        other.followerCount == followerCount &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
-        other.deletedAt == deletedAt &&
-        other.isblock == isblock &&
-        other.isPrivate == isPrivate;
+        other.isBlocked == isBlocked &&
+        other.deletedAt == deletedAt;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-        name.hashCode ^
         username.hashCode ^
         email.hashCode ^
+        avatarUrl.hashCode ^
         password.hashCode ^
         bio.hashCode ^
-        link.hashCode ^
-        avatarUrl.hashCode ^
-        followerCount.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode ^
-        deletedAt.hashCode ^
-        isblock.hashCode ^
-        isPrivate.hashCode;
+        isBlocked.hashCode ^
+        deletedAt.hashCode;
   }
 }
