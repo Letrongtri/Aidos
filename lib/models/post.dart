@@ -1,31 +1,42 @@
 import 'dart:convert';
 
+import 'package:ct312h_project/models/topic.dart';
+import 'package:ct312h_project/models/user.dart';
+import 'package:pocketbase/pocketbase.dart';
+
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 class Post {
   final String id;
   final String userId;
   final String content;
-  final String topicId;
+  final String? topicId;
   final String? parentId;
-  final int likeCount;
-  final int commentCount;
-  final int repostCount;
-  final int reportCount;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final int likes;
+  final int comments;
+  final int reposts;
+  final int reports;
+  final DateTime created;
+  final DateTime updated;
+
+  final User? user;
+  final Topic? topic;
+  final bool? isLiked;
 
   Post({
     required this.id,
     required this.userId,
     required this.content,
-    required this.topicId,
+    this.topicId,
     this.parentId,
-    required this.likeCount,
-    required this.commentCount,
-    required this.repostCount,
-    required this.reportCount,
-    required this.createdAt,
-    required this.updatedAt,
+    required this.likes,
+    required this.comments,
+    required this.reposts,
+    required this.reports,
+    required this.created,
+    required this.updated,
+    this.user,
+    this.topic,
+    this.isLiked,
   });
 
   Post copyWith({
@@ -34,12 +45,15 @@ class Post {
     String? content,
     String? topicId,
     String? parentId,
-    int? likeCount,
-    int? commentCount,
-    int? repostCount,
-    int? reportCount,
+    int? likes,
+    int? comments,
+    int? reposts,
+    int? reports,
     DateTime? createdAt,
     DateTime? updatedAt,
+    User? user,
+    Topic? topic,
+    bool? isLiked,
   }) {
     return Post(
       id: id ?? this.id,
@@ -47,12 +61,15 @@ class Post {
       content: content ?? this.content,
       topicId: topicId ?? this.topicId,
       parentId: parentId ?? this.parentId,
-      likeCount: likeCount ?? this.likeCount,
-      commentCount: commentCount ?? this.commentCount,
-      repostCount: repostCount ?? this.repostCount,
-      reportCount: reportCount ?? this.reportCount,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      likes: likes ?? this.likes,
+      comments: comments ?? this.comments,
+      reposts: reposts ?? this.reposts,
+      reports: reports ?? this.reports,
+      created: createdAt ?? created,
+      updated: updatedAt ?? updated,
+      user: user ?? this.user,
+      topic: topic ?? this.topic,
+      isLiked: isLiked ?? this.isLiked,
     );
   }
 
@@ -63,12 +80,14 @@ class Post {
       'content': content,
       'topicId': topicId,
       'parentId': parentId,
-      'likeCount': likeCount,
-      'commentCount': commentCount,
-      'repostCount': repostCount,
-      'reportCount': reportCount,
-      'createdAt': createdAt.millisecondsSinceEpoch,
-      'updatedAt': updatedAt.millisecondsSinceEpoch,
+      'likes': likes,
+      'comments': comments,
+      'reposts': reposts,
+      'reports': reports,
+      'created': created.toIso8601String(),
+      'updated': updated.toIso8601String(),
+      'user': user,
+      'topic': topic,
     };
   }
 
@@ -77,14 +96,16 @@ class Post {
       id: map['id'] as String,
       userId: map['userId'] as String,
       content: map['content'] as String,
-      topicId: map['topicId'] as String,
+      topicId: map['topicId'] != null ? map['topicId'] as String : null,
       parentId: map['parentId'] != null ? map['parentId'] as String : null,
-      likeCount: map['likeCount'] as int,
-      commentCount: map['commentCount'] as int,
-      repostCount: map['repostCount'] as int,
-      reportCount: map['reportCount'] as int,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int),
+      likes: map['likes'] as int,
+      comments: map['comments'] as int,
+      reposts: map['reposts'] as int,
+      reports: map['reports'] as int,
+      created: DateTime.parse(map['created'] as String),
+      updated: DateTime.parse(map['updated'] as String),
+      user: map['user'] != null ? map['user'] as User : null,
+      topic: map['topic'] != null ? map['topic'] as Topic : null,
     );
   }
 
@@ -95,7 +116,7 @@ class Post {
 
   @override
   String toString() {
-    return 'Post(id: $id, userId: $userId, content: $content, topicId: $topicId, parentId: $parentId, likeCount: $likeCount, commentCount: $commentCount, repostCount: $repostCount, reportCount: $reportCount, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Post(id: $id, userId: $userId, content: $content, topicId: $topicId, parentId: $parentId, likeCount: $likes, commentCount: $comments, repostCount: $reposts, reportCount: $reports, createdAt: $created, updatedAt: $updated, user: $user, topic: $topic, isLiked: $isLiked)';
   }
 
   @override
@@ -107,12 +128,15 @@ class Post {
         other.content == content &&
         other.topicId == topicId &&
         other.parentId == parentId &&
-        other.likeCount == likeCount &&
-        other.commentCount == commentCount &&
-        other.repostCount == repostCount &&
-        other.reportCount == reportCount &&
-        other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.likes == likes &&
+        other.comments == comments &&
+        other.reposts == reposts &&
+        other.reports == reports &&
+        other.created == created &&
+        other.updated == updated &&
+        other.user == user &&
+        other.topic == topic &&
+        other.isLiked == isLiked;
   }
 
   @override
@@ -122,25 +146,55 @@ class Post {
         content.hashCode ^
         topicId.hashCode ^
         parentId.hashCode ^
-        likeCount.hashCode ^
-        commentCount.hashCode ^
-        repostCount.hashCode ^
-        reportCount.hashCode ^
-        createdAt.hashCode ^
-        updatedAt.hashCode;
+        likes.hashCode ^
+        comments.hashCode ^
+        reposts.hashCode ^
+        reports.hashCode ^
+        created.hashCode ^
+        updated.hashCode ^
+        user.hashCode ^
+        topic.hashCode ^
+        isLiked.hashCode;
   }
 
   factory Post.empty() => Post(
     id: '',
     userId: '',
     content: '',
-    topicId: '',
     parentId: null,
-    likeCount: 0,
-    commentCount: 0,
-    repostCount: 0,
-    reportCount: 0,
-    createdAt: DateTime.now(),
-    updatedAt: DateTime.now(),
+    likes: 0,
+    comments: 0,
+    reposts: 0,
+    reports: 0,
+    created: DateTime.now(),
+    updated: DateTime.now(),
   );
+
+  factory Post.fromPocketbase({
+    required RecordModel record,
+    RecordModel? userRecord,
+    RecordModel? topicRecord,
+    bool? isLiked,
+  }) {
+    return Post(
+      id: record.id,
+      userId: record.getStringValue('userId'),
+      content: record.getStringValue('content'),
+      likes: record.getIntValue('likes'),
+      comments: record.getIntValue('comments'),
+      reposts: record.getIntValue('reposts'),
+      reports: record.getIntValue('reports'),
+      created: DateTime.parse(record.getStringValue('created')),
+      updated: DateTime.parse(record.getStringValue('updated')),
+      topicId: record.getStringValue('topicId'),
+      parentId: record.getStringValue('parentId'),
+      user: (userRecord != null && userRecord.data.isNotEmpty)
+          ? User.fromMap(userRecord.data)
+          : null,
+      topic: (topicRecord != null && topicRecord.data.isNotEmpty)
+          ? Topic.fromMap(topicRecord.data)
+          : null,
+      isLiked: isLiked,
+    );
+  }
 }

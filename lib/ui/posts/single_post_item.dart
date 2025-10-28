@@ -1,8 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:ct312h_project/ui/shared/show_post_actions_bottom_sheet.dart';
 import 'package:ct312h_project/utils/format.dart';
-import 'package:ct312h_project/viewmodels/post_item_view_model.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 
 class SinglePostItem extends StatelessWidget {
   const SinglePostItem({super.key, required this.post});
-  final PostItemViewModel post;
+  final Post post;
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +32,11 @@ class SinglePostItem extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          post.username,
+                          post.user?.username ?? 'Ẩn danh',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
 
-                        if (post.topicName != null)
+                        if (post.topic != null)
                           Row(
                             children: [
                               SizedBox(width: 4),
@@ -45,18 +45,18 @@ class SinglePostItem extends StatelessWidget {
                                 onPressed: () {
                                   context.goNamed(
                                     'search',
-                                    queryParameters: {'q': post.topicName},
+                                    queryParameters: {'q': post.topic!.name},
                                   );
                                 },
                                 child: Text(
-                                  post.topicName!,
+                                  post.topic!.name,
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ],
                           ),
                         Spacer(),
-                        Text(Format.getTimeDifference(post.createdAt)),
+                        Text(Format.getTimeDifference(post.created)),
                         IconButton(
                           onPressed: () {
                             showPostActionsBottomSheet(
@@ -79,14 +79,14 @@ class SinglePostItem extends StatelessWidget {
                                   post.id,
                                 );
                               },
-                              label: Text(
-                                Format.getCountNumber(post.likeCount),
-                              ),
+                              label: Text(Format.getCountNumber(post.likes)),
                               icon: Icon(
-                                post.isLiked
+                                post.isLiked ?? false
                                     ? Icons.favorite
                                     : Icons.favorite_outline,
-                                color: post.isLiked ? Colors.red : Colors.white,
+                                color: (post.isLiked != null && post.isLiked!)
+                                    ? Colors.red
+                                    : Colors.white,
                               ),
                             ),
                             SizedBox(width: 5),
@@ -98,17 +98,13 @@ class SinglePostItem extends StatelessWidget {
                                   extra: {'focusComment': true},
                                 );
                               },
-                              label: Text(
-                                Format.getCountNumber(post.commentCount),
-                              ),
+                              label: Text(Format.getCountNumber(post.comments)),
                               icon: Icon(Icons.mode_comment_outlined),
                             ),
                             SizedBox(width: 5),
                             TextButton.icon(
                               onPressed: () {},
-                              label: Text(
-                                Format.getCountNumber(post.repostCount),
-                              ),
+                              label: Text(Format.getCountNumber(post.reposts)),
                               icon: Icon(Icons.repeat_outlined),
                             ),
                           ],

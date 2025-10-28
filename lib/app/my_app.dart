@@ -8,6 +8,7 @@ import 'package:ct312h_project/ui/search/search_screen.dart';
 import 'package:ct312h_project/ui/splash_screen.dart';
 import 'package:ct312h_project/ui/user/profile_screen.dart';
 import 'package:ct312h_project/viewmodels/auth_manager.dart';
+import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
     final authManager = AuthManager();
 
     final router = GoRouter(
-      initialLocation: '/home/feed',
+      initialLocation: '/auto-login',
       refreshListenable: authManager, // listen to auth state changes
       redirect: (context, state) {
         final authManager = context.read<AuthManager>();
@@ -55,6 +56,16 @@ class MyApp extends StatelessWidget {
             );
           },
         ),
+        GoRoute(
+          path: '/logout',
+          builder: (context, state) {
+            return FutureBuilder(
+              future: context.read<AuthManager>().logout(),
+              builder: (context, authSnapshot) =>
+                  SafeArea(child: SplashScreen()),
+            );
+          },
+        ),
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) {
             return HomePageScreen(navigationShell: navigationShell);
@@ -68,35 +79,35 @@ class MyApp extends StatelessWidget {
                   name: 'feed',
                   builder: (context, state) => FeedScreen(),
                   routes: [
-                    GoRoute(
-                      path: 'posts/:id',
-                      name: 'detail',
-                      builder: (context, state) {
-                        final id = state.pathParameters['id']!;
-                        final focus =
-                            (state.extra is Map &&
-                            (state.extra as Map)['focusComment'] == true);
-                        return DetailPostScreen(id: id, focusComment: focus);
-                      },
-                    ),
+                    // GoRoute(
+                    //   path: 'posts/:id',
+                    //   name: 'detail',
+                    //   builder: (context, state) {
+                    //     final id = state.pathParameters['id']!;
+                    //     final focus =
+                    //         (state.extra is Map &&
+                    //         (state.extra as Map)['focusComment'] == true);
+                    //     return DetailPostScreen(id: id, focusComment: focus);
+                    //   },
+                    // ),
                   ],
                 ),
               ],
             ),
 
             // Branch 1: Search
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: '/home/search',
-                  name: 'search',
-                  builder: (context, state) {
-                    final keyword = state.uri.queryParameters['q'];
-                    return SearchScreen(keyword: keyword);
-                  },
-                ),
-              ],
-            ),
+            // StatefulShellBranch(
+            //   routes: [
+            //     GoRoute(
+            //       path: '/home/search',
+            //       name: 'search',
+            //       builder: (context, state) {
+            //         final keyword = state.uri.queryParameters['q'];
+            //         return SearchScreen(keyword: keyword);
+            //       },
+            //     ),
+            //   ],
+            // ),
 
             // Branch 2: Post
             StatefulShellBranch(
@@ -138,7 +149,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: authManager),
-        // ChangeNotifierProvider(create: (_) => getIt<PostsManager>()),
+        ChangeNotifierProvider(create: (_) => PostsManager()),
         // ChangeNotifierProvider(create: (_) => getIt<SearchManager>()),
       ],
       child: MaterialApp.router(

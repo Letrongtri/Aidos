@@ -53,9 +53,7 @@ class AuthService {
 
       final data = record.toJson();
 
-      data['email'] = email;
-
-      return User.fromMap(data);
+      return User.fromMap(data['record']);
     } catch (e) {
       if (e is ClientException) {
         throw Exception(e.message);
