@@ -79,17 +79,17 @@ class MyApp extends StatelessWidget {
                   name: 'feed',
                   builder: (context, state) => FeedScreen(),
                   routes: [
-                    // GoRoute(
-                    //   path: 'posts/:id',
-                    //   name: 'detail',
-                    //   builder: (context, state) {
-                    //     final id = state.pathParameters['id']!;
-                    //     final focus =
-                    //         (state.extra is Map &&
-                    //         (state.extra as Map)['focusComment'] == true);
-                    //     return DetailPostScreen(id: id, focusComment: focus);
-                    //   },
-                    // ),
+                    GoRoute(
+                      path: 'posts/:id',
+                      name: 'detail',
+                      builder: (context, state) {
+                        final id = state.pathParameters['id']!;
+                        final focus =
+                            (state.extra is Map &&
+                            (state.extra as Map)['focusComment'] == true);
+                        return DetailPostScreen(id: id, focusComment: focus);
+                      },
+                    ),
                   ],
                 ),
               ],

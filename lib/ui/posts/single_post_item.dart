@@ -32,7 +32,7 @@ class SinglePostItem extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          post.user?.username ?? 'Ẩn danh',
+                          post.user?.username ?? 'Ẩn danh ${post.userId}',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
 
