@@ -1,4 +1,5 @@
 import 'package:ct312h_project/services/pocketbase_client.dart';
+import 'package:flutter/material.dart';
 
 class LikeService {
   Future<Set<String>> fetchLikedPostIds(List<String> postIds) async {
@@ -21,6 +22,126 @@ class LikeService {
       return likedPostIds;
     } catch (e) {
       return likedPostIds;
+    }
+  }
+
+  Future<Set<String>> fetchLikedCommentIds(List<String> commentIds) async {
+    Set<String> likedCommentIds = {};
+    if (commentIds.isEmpty) return {};
+    try {
+      final pb = await getPocketbaseInstance();
+      final userId = pb.authStore.record!.id;
+      final idsString = commentIds.join("' || commentId~'");
+      final filter = "userId = '$userId' && (commentId~'$idsString')";
+
+      final result = await pb
+          .collection('likes')
+          .getFullList(filter: filter, fields: 'commentId');
+
+      likedCommentIds = result
+          .map((record) => record.getStringValue('commentId'))
+          .toSet();
+
+      return likedCommentIds;
+    } catch (e) {
+      return likedCommentIds;
+    }
+  }
+
+  Future<void> likePost(String postId, int likeCount) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      final userId = pb.authStore.record!.id;
+
+      await pb
+          .collection('likes')
+          .create(body: {'postId': postId, 'userId': userId});
+
+      await pb
+          .collection('posts')
+          .update(postId, body: {'likesCount': likeCount + 1});
+    } catch (e) {
+      debugPrint(e.toString());
+      throw Exception();
+    }
+  }
+
+  Future<void> unlikePost(String postId, int likeCount) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      final userId = pb.authStore.record!.id;
+
+      // Tìm bản ghi like
+      final likes = await pb
+          .collection('likes')
+          .getList(
+            filter: 'postId = "$postId" && userId = "$userId"',
+            perPage: 1,
+          );
+
+      if (likes.items.isEmpty) {
+        throw Exception("Cannot get like to delete");
+      }
+
+      final likeId = likes.items.first.id;
+
+      await pb.collection('likes').delete(likeId);
+
+      await pb
+          .collection('posts')
+          .update(postId, body: {'likesCount': likeCount + 1});
+    } catch (e) {
+      debugPrint(e.toString());
+      throw Exception();
+    }
+  }
+
+  Future<void> likeComment(String commentId, int likeCount) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      final userId = pb.authStore.record!.id;
+
+      await pb
+          .collection('likes')
+          .create(body: {'commentId': commentId, 'userId': userId});
+
+      await pb
+          .collection('comments')
+          .update(commentId, body: {'likesCount': likeCount + 1});
+    } catch (e) {
+      debugPrint(e.toString());
+      throw Exception();
+    }
+  }
+
+  Future<void> unlikeComment(String commentId, int likeCount) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      final userId = pb.authStore.record!.id;
+
+      // Tìm bản ghi like
+      final likes = await pb
+          .collection('likes')
+          .getList(
+            filter: 'commentId = "$commentId" && userId = "$userId"',
+            perPage: 1,
+          );
+
+      if (likes.items.isEmpty) {
+        throw Exception("Cannot get like to delete");
+      }
+
+      final likeId = likes.items.first.id;
+
+      // Xóa like
+      await pb.collection('likes').delete(likeId);
+
+      await pb
+          .collection('comments')
+          .update(commentId, body: {'likesCount': likeCount + 1});
+    } catch (e) {
+      debugPrint(e.toString());
+      throw Exception();
     }
   }
 }

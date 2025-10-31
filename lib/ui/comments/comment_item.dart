@@ -1,6 +1,7 @@
+import 'package:ct312h_project/models/comment.dart';
 import 'package:ct312h_project/ui/shared/show_post_actions_bottom_sheet.dart';
 import 'package:ct312h_project/utils/format.dart';
-import 'package:ct312h_project/viewmodels/comment_item_view_model.dart';
+import 'package:ct312h_project/utils/ui.dart';
 import 'package:ct312h_project/viewmodels/comment_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +15,7 @@ class CommentItem extends StatelessWidget {
     this.isRoot = false,
   });
 
-  final CommentItemViewModel comment;
+  final Comment comment;
   final VoidCallback? onReply;
   final String? replyingToUser;
   final bool isRoot;
@@ -34,11 +35,11 @@ class CommentItem extends StatelessWidget {
           Row(
             children: [
               Text(
-                comment.username,
+                comment.user?.username ?? generateUsername(comment.userId),
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Spacer(),
-              Text(Format.getTimeDifference(comment.createdAt)),
+              Text(Format.getTimeDifference(comment.created)),
               IconButton(
                 onPressed: () {
                   showPostActionsBottomSheet(context, onUpdate: () {});
@@ -56,13 +57,18 @@ class CommentItem extends StatelessWidget {
                   TextButton.icon(
                     onPressed: () {
                       context.read<CommentManager>().onLikeCommentPressed(
-                        comment.id,
+                        comment.id!,
+                        comment.likesCount,
                       );
                     },
-                    label: Text(Format.getCountNumber(comment.likeCount)),
+                    label: Text(Format.getCountNumber(comment.likesCount)),
                     icon: Icon(
-                      comment.isLiked ? Icons.favorite : Icons.favorite_outline,
-                      color: comment.isLiked ? Colors.red : Colors.white,
+                      comment.isLiked ?? false
+                          ? Icons.favorite
+                          : Icons.favorite_outline,
+                      color: comment.isLiked ?? false
+                          ? Colors.red
+                          : Colors.white,
                     ),
                   ),
                   SizedBox(width: 5),

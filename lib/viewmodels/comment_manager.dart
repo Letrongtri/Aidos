@@ -1,56 +1,62 @@
-import 'package:ct312h_project/models/comment.dart';
-import 'package:ct312h_project/services/comment_service.dart';
-import 'package:ct312h_project/viewmodels/comment_item_view_model.dart';
-import 'package:ct312h_project/viewmodels/user_cache_manager.dart';
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 
+import 'package:ct312h_project/models/comment.dart';
+import 'package:ct312h_project/services/comment_service.dart';
+import 'package:ct312h_project/services/like_service.dart';
+
 class CommentManager extends ChangeNotifier {
-  final CommentRepository commentRepo;
-  final UserCacheManager userCache;
+  CommentManager({required this.postId});
+  final String postId;
 
-  CommentManager({required this.commentRepo, required this.userCache});
+  final _commentService = CommentService();
+  final _likeService = LikeService();
 
-  List<CommentItemViewModel> _comments = [];
+  final List<Comment> _comments = [];
   final Set<String> _loadedRoots = {}; // để biết roots nào đã load replies
 
-  bool isLoading = false;
   String? errorMessage;
 
   int get commentCount {
     return _comments.length;
   }
 
-  List<CommentItemViewModel> get comments {
+  List<Comment> get comments {
     return [..._comments];
   }
 
   // Lấy comment gốc theo bài viết
-  Future<void> getRootCommentsByPostId(String postId) async {
+  Future<void> getRootCommentsByPostId() async {
     try {
-      isLoading = true;
-      notifyListeners();
+      final fetchedComments = await _commentService.fetchRootCommentsByPostId(
+        postId: postId,
+      );
 
-      final comments = await commentRepo.fetchRootCommentsByPostId(postId);
-
-      final userIds = comments.map((c) => c.userId).toSet().toList();
-      await userCache.preloadUsers(userIds);
-
-      final commentVMs = comments.map((c) {
-        final user = userCache.tryGetCached(c.userId);
-        return CommentItemViewModel.fromEntites(comment: c, user: user!);
-      }).toList();
-
+      List<Comment> comments = [];
+      List<String> commentIds = [];
       // Chỉ thêm comment mới, tránh trùng
-      for (final vm in commentVMs) {
-        if (!_comments.any((c) => c.id == vm.id)) {
-          _comments.add(vm);
+      for (final cmt in fetchedComments) {
+        if (!_comments.any((c) => c.id == cmt.id)) {
+          comments.add(cmt);
+          commentIds.add(cmt.id!);
         }
       }
+
+      final likedCommentIds = await _likeService.fetchLikedCommentIds(
+        commentIds,
+      );
+
+      if (likedCommentIds.isNotEmpty) {
+        comments = comments
+            .map((c) => c.copyWith(isLiked: likedCommentIds.contains(c.id)))
+            .toList();
+      }
+
+      _comments.addAll(comments);
     } catch (e, s) {
       debugPrint('get root comments error: $e\n$s');
       errorMessage = e.toString();
     } finally {
-      isLoading = false;
       notifyListeners();
     }
   }
@@ -59,20 +65,9 @@ class CommentManager extends ChangeNotifier {
   Future<void> getRepliesForRoot(String rootId) async {
     if (_loadedRoots.contains(rootId)) return; // đã load rồi thì bỏ qua
     try {
-      isLoading = true;
-      notifyListeners();
+      final replies = await _commentService.getAllRepliesRecursively(rootId);
 
-      final replies = await commentRepo.getRepliesForRootComment(rootId);
-
-      final userIds = replies.map((r) => r.userId).toSet().toList();
-      await userCache.preloadUsers(userIds);
-
-      final replyVMs = replies.map((r) {
-        final user = userCache.tryGetCached(r.userId);
-        return CommentItemViewModel.fromEntites(comment: r, user: user!);
-      }).toList();
-
-      for (final vm in replyVMs) {
+      for (final vm in replies) {
         if (!_comments.any((c) => c.id == vm.id)) {
           _comments.add(vm);
         }
@@ -83,133 +78,117 @@ class CommentManager extends ChangeNotifier {
       debugPrint('getRepliesForRoot error: $e\n$s');
       errorMessage = e.toString();
     } finally {
-      isLoading = false;
       notifyListeners();
     }
   }
 
   // Comment root (parentId == null)
-  List<CommentItemViewModel> getRootCommentsByPostIdLocal(String id) {
+  List<Comment> getRootCommentsByPostIdLocal() {
     return _comments
-        .where((c) => c.parentId == null && c.postId == id)
+        .where(
+          (c) =>
+              (c.parentId == null || c.parentId!.isEmpty) && c.postId == postId,
+        )
         .toList();
   }
 
   // Comment reply của một root (kể cả reply lồng nhau)
-  List<CommentItemViewModel> getRepliesForRootLocal(String rootId) {
+  List<Comment> getRepliesForRootLocal(String rootId) {
     final allReplies = _comments.where((c) => c.parentId != null).toList();
     return allReplies.where((r) {
       var parent = _comments.firstWhere(
         (c) => c.id == r.parentId,
-        orElse: () => CommentItemViewModel.empty(),
+        orElse: () => Comment.empty(),
       );
       while (parent.parentId != null) {
         parent = _comments.firstWhere(
           (c) => c.id == parent.parentId,
-          orElse: () => CommentItemViewModel.empty(),
+          orElse: () => Comment.empty(),
         );
       }
       return parent.id == rootId;
     }).toList();
   }
 
-  CommentItemViewModel? findCommentByIdLocal(String id) {
+  Comment? findCommentByIdLocal(String id) {
     return _comments.firstWhere(
       (c) => c.id == id,
-      orElse: () => CommentItemViewModel.empty(),
+      orElse: () => Comment.empty(),
     );
-  }
-
-  Future<void> fetchCommentsByPostId(String postId) async {
-    try {
-      isLoading = true;
-      errorMessage = null;
-      notifyListeners();
-
-      final comments = await commentRepo.fetchCommentsByPostId(postId);
-
-      // Lấy danh sách userId duy nhất từ các comments
-      final userIds = comments.map((c) => c.userId).toSet().toList();
-      await userCache.preloadUsers(userIds);
-
-      // Gộp lại: comment + username
-      _comments = comments.map((comment) {
-        final user = userCache.tryGetCached(comment.userId);
-        if (user == null) {
-          throw Exception(
-            "Comment ${comment.id}: Missing user ${comment.userId} in cache",
-          );
-        }
-
-        return CommentItemViewModel.fromEntites(comment: comment, user: user);
-      }).toList();
-    } catch (e) {
-      errorMessage = e.toString();
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
   }
 
   Future<void> addComment({
     required String text,
-    required String postId,
-    required String currentUserId,
-    String? parentId,
+    int postCommentCount = 0,
+    Comment? parentComment,
   }) async {
     try {
       final newComment = Comment(
-        id: UniqueKey().toString(),
         postId: postId,
-        userId: currentUserId,
+        userId: '',
         content: text,
-        parentId: parentId,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        likeCount: 0,
+        parentId: parentComment?.id,
+        created: DateTime.now(),
+        updated: DateTime.now(),
+        likesCount: 0,
         replyCount: 0,
       );
-      await commentRepo.addComment(newComment);
 
-      final user = userCache.tryGetCached(currentUserId);
-      final vm = CommentItemViewModel.fromEntites(
-        comment: newComment,
-        user: user!,
+      final comment = await _commentService.addComment(
+        newComment,
+        postCommentCount,
+        parentComment,
       );
-      _comments.insert(0, vm);
-      notifyListeners();
+
+      if (comment == null) {
+        throw Exception("Cannot add your comment");
+      }
+
+      if (parentComment != null && comment.parentId!.isNotEmpty) {
+        final newCount = parentComment.replyCount + 1;
+
+        final index = _comments.indexWhere((c) => c.id == parentComment.id);
+        if (index != -1) {
+          _comments[index] = parentComment.copyWith(relyCount: newCount);
+        }
+      }
+
+      _comments.insert(0, comment);
     } catch (e) {
       errorMessage = e.toString();
+    } finally {
       notifyListeners();
     }
   }
 
-  Future<void> onLikeCommentPressed(String id) async {
-    final index = _comments.indexWhere((c) => c.id == id);
+  Future<void> onLikeCommentPressed(
+    String commentId,
+    int currentLikeCount,
+  ) async {
+    final index = _comments.indexWhere((c) => c.id == commentId);
     if (index == -1) return;
     final comment = _comments[index];
 
     try {
-      final currentLiked = comment.isLiked;
+      final currentLiked = comment.isLiked ?? false;
       final updatedLikeCount = currentLiked
-          ? comment.likeCount - 1
-          : comment.likeCount + 1;
+          ? comment.likesCount - 1
+          : comment.likesCount + 1;
 
       _comments[index] = comment.copyWith(
-        likeCount: updatedLikeCount,
+        likesCount: updatedLikeCount,
         isLiked: !currentLiked,
       );
-      notifyListeners();
 
-      // TODO: gọi repo để cập nhật dữ liệu
-      // if (currentLiked) {
-      //   await commentRepo.unlikePost(id);
-      // } else {
-      //   await commentRepo.likePost(id);
-      // }
+      if (currentLiked) {
+        await _likeService.unlikeComment(commentId, currentLikeCount);
+      } else {
+        await _likeService.likeComment(commentId, currentLikeCount);
+      }
     } catch (e) {
       errorMessage = e.toString();
       _comments[index] = comment; // rollback
+    } finally {
       notifyListeners();
     }
   }

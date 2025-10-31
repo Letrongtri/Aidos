@@ -20,19 +20,27 @@ class PostsManager extends ChangeNotifier {
 
   Future<void> fetchPosts() async {
     try {
-      List<Post> posts = await _postService.fetchPosts();
-      final postIds = posts.map((p) => p.id).toList();
+      final fetchedPosts = await _postService.fetchPosts();
+
+      List<Post> posts = [];
+      List<String> postIds = [];
+
+      // Chỉ thêm comment mới, tránh trùng
+      for (final post in fetchedPosts) {
+        if (!_posts.any((p) => p.id == post.id)) {
+          posts.add(post);
+          postIds.add(post.id);
+        }
+      }
+
       final likedPostIds = await _likeService.fetchLikedPostIds(postIds);
-      print(likedPostIds);
+
       posts = posts
           .map((p) => p.copyWith(isLiked: likedPostIds.contains(p.id)))
           .toList();
 
-      _posts.addAll(
-        posts.map((p) => p.copyWith(isLiked: likedPostIds.contains(p.id))),
-      );
+      _posts.addAll(posts);
     } catch (e) {
-      print(e);
       errorMessage = e.toString();
     } finally {
       notifyListeners();
@@ -89,22 +97,12 @@ class PostsManager extends ChangeNotifier {
     // }
   }
 
-  Future<void> createPost({
-    required String userId,
-    required String content,
-    String? topicId,
-  }) async {
-    try {
-      final newPost = await _postService.createPost(
-        userId: userId,
-        content: content,
-        topicId: topicId,
-      );
+  void incrementCommentCount(String postId) {
+    final postIndex = _posts.indexWhere((p) => p.id == postId);
+    if (postIndex != -1) {
+      final newCount = _posts[postIndex].comments + 1;
+      _posts[postIndex] = _posts[postIndex].copyWith(comments: newCount);
 
-      _posts.insert(0, newPost);
-      notifyListeners();
-    } catch (e) {
-      errorMessage = e.toString();
       notifyListeners();
     }
   }

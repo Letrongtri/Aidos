@@ -1,27 +1,35 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:ct312h_project/models/user.dart';
+import 'package:pocketbase/pocketbase.dart';
+
 class Comment {
-  final String id;
+  final String? id;
   final String postId;
   final String userId;
   final String content;
   final String? parentId;
-  final int likeCount;
+  final int likesCount;
   final int replyCount;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime created;
+  final DateTime updated;
+
+  final User? user;
+  final bool? isLiked;
 
   Comment({
-    required this.id,
+    this.id,
     required this.postId,
     required this.userId,
     required this.content,
     this.parentId,
-    required this.likeCount,
+    required this.likesCount,
     required this.replyCount,
-    required this.createdAt,
-    required this.updatedAt,
+    required this.created,
+    required this.updated,
+    this.user,
+    this.isLiked,
   });
 
   Comment copyWith({
@@ -30,10 +38,12 @@ class Comment {
     String? userId,
     String? content,
     String? parentId,
-    int? likeCount,
+    int? likesCount,
     int? relyCount,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+    DateTime? created,
+    DateTime? updated,
+    User? user,
+    bool? isLiked,
   }) {
     return Comment(
       id: id ?? this.id,
@@ -41,10 +51,12 @@ class Comment {
       userId: userId ?? this.userId,
       content: content ?? this.content,
       parentId: parentId ?? this.parentId,
-      likeCount: likeCount ?? this.likeCount,
+      likesCount: likesCount ?? this.likesCount,
       replyCount: relyCount ?? replyCount,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      created: created ?? this.created,
+      updated: updated ?? this.updated,
+      user: user ?? this.user,
+      isLiked: isLiked ?? this.isLiked,
     );
   }
 
@@ -55,24 +67,28 @@ class Comment {
       'userId': userId,
       'content': content,
       'parentId': parentId,
-      'likeCount': likeCount,
+      'likeCount': likesCount,
       'relyCount': replyCount,
-      'createdAt': createdAt.millisecondsSinceEpoch,
-      'updatedAt': updatedAt.millisecondsSinceEpoch,
+      'created': created.toIso8601String(),
+      'updated': updated.toIso8601String(),
+      'user': user,
+      'isLiked': isLiked,
     };
   }
 
   factory Comment.fromMap(Map<String, dynamic> map) {
     return Comment(
-      id: map['id'] as String,
+      id: map['id'] != null ? map['id'] as String : null,
       postId: map['postId'] as String,
       userId: map['userId'] as String,
       content: map['content'] as String,
       parentId: map['parentId'] != null ? map['parentId'] as String : null,
-      likeCount: map['likeCount'] as int,
+      likesCount: map['likesCount'] as int,
       replyCount: map['relyCount'] as int,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] as int),
+      created: DateTime.parse(map['created'] as String),
+      updated: DateTime.parse(map['updated'] as String),
+      user: map['user'] != null ? map['user'] as User : null,
+      isLiked: map['isLiked'] != null ? map['isLiked'] as bool : null,
     );
   }
 
@@ -83,7 +99,7 @@ class Comment {
 
   @override
   String toString() {
-    return 'Comment(id: $id, postId: $postId, userId: $userId, content: $content, parentId: $parentId, likeCount: $likeCount, relyCount: $replyCount, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Comment(id: $id, postId: $postId, userId: $userId, content: $content, parentId: $parentId, likesCount: $likesCount, relyCount: $replyCount, createdAt: $created, updatedAt: $updated, user: $user, isLiked: $isLiked)';
   }
 
   @override
@@ -95,10 +111,12 @@ class Comment {
         other.userId == userId &&
         other.content == content &&
         other.parentId == parentId &&
-        other.likeCount == likeCount &&
+        other.likesCount == likesCount &&
         other.replyCount == replyCount &&
-        other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.created == created &&
+        other.updated == updated &&
+        other.user == user &&
+        other.isLiked == isLiked;
   }
 
   @override
@@ -108,10 +126,12 @@ class Comment {
         userId.hashCode ^
         content.hashCode ^
         parentId.hashCode ^
-        likeCount.hashCode ^
+        likesCount.hashCode ^
         replyCount.hashCode ^
-        createdAt.hashCode ^
-        updatedAt.hashCode;
+        created.hashCode ^
+        updated.hashCode ^
+        user.hashCode ^
+        isLiked.hashCode;
   }
 
   factory Comment.empty() => Comment(
@@ -120,9 +140,43 @@ class Comment {
     userId: '',
     content: '',
     parentId: null,
-    likeCount: 0,
+    likesCount: 0,
     replyCount: 0,
-    createdAt: DateTime.now(),
-    updatedAt: DateTime.now(),
+    created: DateTime.now(),
+    updated: DateTime.now(),
   );
+
+  factory Comment.fromPocketbase({
+    required RecordModel record,
+    RecordModel? userRecord,
+    bool? isLiked,
+  }) {
+    return Comment(
+      id: record.id,
+      postId: record.getStringValue('postId'),
+      userId: record.getStringValue('userId'),
+      content: record.getStringValue('content'),
+      likesCount: record.getIntValue('likesCount'),
+      replyCount: record.getIntValue('replyCount'),
+      created: DateTime.parse(record.getStringValue('created')),
+      updated: DateTime.parse(record.getStringValue('updated')),
+      parentId: record.getStringValue('parentId'),
+      user: (userRecord != null && userRecord.data.isNotEmpty)
+          ? User.fromMap(userRecord.data)
+          : null,
+      isLiked: isLiked,
+    );
+  }
+
+  Map<String, dynamic> toPocketBase() {
+    return <String, dynamic>{
+      'postId': postId,
+      'content': content,
+      'parentId': parentId,
+      'likeCount': likesCount,
+      'relyCount': replyCount,
+      'created': created.toIso8601String(),
+      'updated': updated.toIso8601String(),
+    };
+  }
 }
