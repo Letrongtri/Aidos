@@ -8,6 +8,8 @@ import 'package:ct312h_project/ui/search/search_screen.dart';
 import 'package:ct312h_project/ui/splash_screen.dart';
 import 'package:ct312h_project/ui/user/profile_screen.dart';
 import 'package:ct312h_project/viewmodels/auth_manager.dart';
+import 'package:ct312h_project/viewmodels/nofication_manager.dart';
+import 'package:ct312h_project/viewmodels/pofile_manager.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:ct312h_project/viewmodels/search_manager.dart';
 import 'package:device_preview/device_preview.dart';
@@ -152,6 +154,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: authManager),
         ChangeNotifierProvider(create: (_) => PostsManager()),
         ChangeNotifierProvider(create: (_) => SearchManager()),
+        ChangeNotifierProvider(create: (_) => ProfileManager()),
+        ChangeNotifierProvider(create: (_) => NotificationManager()),
       ],
       child: MaterialApp.router(
         title: 'Aido',

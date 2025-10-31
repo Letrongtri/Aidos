@@ -47,11 +47,6 @@ class PostsManager extends ChangeNotifier {
     }
   }
 
-  // void addPost(PostItemViewModel post) {
-  //   _posts.add(post);
-  //   notifyListeners();
-  // }
-
   Post? findPostById(String id) {
     try {
       return _posts.firstWhere((item) => item.id == id);
@@ -68,33 +63,28 @@ class PostsManager extends ChangeNotifier {
   }
 
   Future<void> onLikePostPressed(String id) async {
-    // final index = _posts.indexWhere((p) => p.id == id);
-    // if (index == -1) return;
-    // final post = _posts[index];
+    try {
+      void toggleLike(List<Post> list) {
+        final index = list.indexWhere((p) => p.id == id);
+        if (index != -1) {
+          final post = list[index];
+          final isLiked = post.isLiked ?? false;
+          final updated = post.copyWith(
+            isLiked: !isLiked,
+            likes: isLiked ? post.likes - 1 : post.likes + 1,
+          );
+          list[index] = updated;
+        }
+      }
 
-    // try {
-    //   final currentLiked = post.isLiked;
-    //   final updatedLikeCount = currentLiked
-    //       ? post.likeCount - 1
-    //       : post.likeCount + 1;
+      toggleLike(_posts);
+      toggleLike(userPosts);
+      toggleLike(repliedPosts);
 
-    //   _posts[index] = post.copyWith(
-    //     likeCount: updatedLikeCount,
-    //     isLiked: !currentLiked,
-    //   );
-    //   notifyListeners();
-
-    // TODO: gọi repo để cập nhật dữ liệu
-    // if (currentLiked) {
-    //   await postRepo.unlikePost(id);
-    // } else {
-    //   await postRepo.likePost(id);
-    // }
-    // } catch (e) {
-    //   errorMessage = e.toString();
-    //   _posts[index] = post; // rollback
-    //   notifyListeners();
-    // }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error toggling like: $e');
+    }
   }
 
   void incrementCommentCount(String postId) {
@@ -102,7 +92,6 @@ class PostsManager extends ChangeNotifier {
     if (postIndex != -1) {
       final newCount = _posts[postIndex].comments + 1;
       _posts[postIndex] = _posts[postIndex].copyWith(comments: newCount);
-
       notifyListeners();
     }
   }
@@ -121,6 +110,8 @@ class PostsManager extends ChangeNotifier {
 
       _posts.insert(0, newPost);
       errorMessage = null;
+      await fetchUserPosts(userId);
+
       notifyListeners();
     } catch (e) {
       errorMessage = e.toString();
@@ -128,4 +119,44 @@ class PostsManager extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  List<Post> userPosts = [];
+  List<Post> repliedPosts = [];
+  List<Post> reposts = [];
+
+  Future<void> fetchUserPosts(String userId) async {
+    try {
+      userPosts = await _postService.fetchPostsByUser(userId);
+      errorMessage = null;
+    } catch (e) {
+      errorMessage = e.toString();
+      debugPrint('Error fetching user posts: $errorMessage');
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchRepliedPosts(String userId) async {
+    try {
+      repliedPosts = await _postService.fetchRepliedPosts(userId);
+      errorMessage = null;
+    } catch (e) {
+      errorMessage = e.toString();
+      debugPrint('Error fetching replied posts: $errorMessage');
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  // Future<void> fetchReposts(String userId) async {
+  //   try {
+  //     reposts = await _postService.fetchReposts(userId);
+  //     errorMessage = null;
+  //   } catch (e) {
+  //     errorMessage = e.toString();
+  //     debugPrint('Error fetching reposts: $errorMessage');
+  //   } finally {
+  //     notifyListeners();
+  //   }
+  // }
 }

@@ -128,4 +128,54 @@ class PostService {
       topicRecord: topic,
     );
   }
+
+  Future<List<Post>> fetchPostsByUser(String userId) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      final expandFields = 'userId,topicId';
+      final result = await pb
+          .collection('posts')
+          .getList(
+            filter: 'userId="$userId"',
+            sort: '-created',
+            expand: expandFields,
+          );
+
+      return result.items.map((record) {
+        final user = record.get<RecordModel>('expand.userId');
+        final topic = record.get<RecordModel>('expand.topicId');
+        return Post.fromPocketbase(
+          record: record,
+          userRecord: user,
+          topicRecord: topic,
+        );
+      }).toList();
+    } catch (e) {
+      print('Error fetching user posts: $e');
+      return [];
+    }
+  }
+
+  Future<List<Post>> fetchRepliedPosts(String userId) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      final expandFields = 'userId,topicId';
+
+      // Lấy danh sách bài viết mà user đã comment vào
+      final comments = await pb
+          .collection('comments')
+          .getList(filter: 'userId="$userId"', expand: 'postId');
+
+      final posts = comments.items
+          .map((c) => c.get<RecordModel>('expand.postId'))
+          .whereType<RecordModel>()
+          .map((r) => Post.fromPocketbase(record: r))
+          .toList();
+
+      return posts;
+    } catch (e) {
+      print('Error fetching replied posts: $e');
+      return [];
+    }
+  }
 }
