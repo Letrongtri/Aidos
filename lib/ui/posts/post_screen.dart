@@ -43,7 +43,7 @@ class _PostScreenState extends State<PostScreen> {
     await postsManager.createPost(
       userId: user.id,
       content: content,
-      topicId: topic.isNotEmpty ? topic : null,
+      topicName: topic,
     );
 
     if (mounted) {

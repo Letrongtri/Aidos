@@ -106,4 +106,26 @@ class PostsManager extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> createPost({
+    required String userId,
+    required String content,
+    String? topicName,
+  }) async {
+    try {
+      final newPost = await _postService.createPostWithTopicName(
+        userId: userId,
+        content: content,
+        topicName: topicName,
+      );
+
+      _posts.insert(0, newPost);
+      errorMessage = null;
+      notifyListeners();
+    } catch (e) {
+      errorMessage = e.toString();
+      debugPrint('Error creating post: $errorMessage');
+      notifyListeners();
+    }
+  }
 }
