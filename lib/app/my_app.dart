@@ -9,6 +9,7 @@ import 'package:ct312h_project/ui/splash_screen.dart';
 import 'package:ct312h_project/ui/user/profile_screen.dart';
 import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
+import 'package:ct312h_project/viewmodels/search_manager.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -96,18 +97,18 @@ class MyApp extends StatelessWidget {
             ),
 
             // Branch 1: Search
-            // StatefulShellBranch(
-            //   routes: [
-            //     GoRoute(
-            //       path: '/home/search',
-            //       name: 'search',
-            //       builder: (context, state) {
-            //         final keyword = state.uri.queryParameters['q'];
-            //         return SearchScreen(keyword: keyword);
-            //       },
-            //     ),
-            //   ],
-            // ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/home/search',
+                  name: 'search',
+                  builder: (context, state) {
+                    final keyword = state.uri.queryParameters['q'];
+                    return SearchScreen(keyword: keyword);
+                  },
+                ),
+              ],
+            ),
 
             // Branch 2: Post
             StatefulShellBranch(
@@ -150,7 +151,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: authManager),
         ChangeNotifierProvider(create: (_) => PostsManager()),
-        // ChangeNotifierProvider(create: (_) => getIt<SearchManager>()),
+        ChangeNotifierProvider(create: (_) => SearchManager()),
       ],
       child: MaterialApp.router(
         title: 'Aido',

@@ -44,13 +44,43 @@ class PostService {
   //   return filteredPost;
   // }
 
-  Future<List<Post>> findPostByKeywords(List<String> queries) async {
-    // TODO: join data
-    final posts = await fetchPosts();
+  Future<List<Post>> findPostByKeywords(
+    List<String> queries, {
+    int page = 1,
+    int perPage = 30,
+  }) async {
+    List<Post> posts = [];
+    try {
+      final pb = await getPocketbaseInstance();
+      final expandFields = 'userId,topicId,posts_via_topicId';
 
-    return posts.where((p) {
-      final content = p.content.toLowerCase();
-      return queries.any((q) => content.contains(q));
-    }).toList();
+      final filter = queries.isEmpty
+          ? ''
+          : '(${queries.map((q) => '(content ?~ "${q.trim()}" || topicId.name ?~ "${q.trim()}")').join(' || ')})';
+
+      final result = await pb
+          .collection('posts')
+          .getList(
+            page: page,
+            perPage: perPage,
+            filter: filter,
+            expand: expandFields,
+            sort: '-created',
+          );
+
+      posts = result.items.map((record) {
+        final user = record.get<RecordModel>('expand.userId');
+        final topic = record.get<RecordModel>('expand.topicId');
+        return Post.fromPocketbase(
+          record: record,
+          userRecord: user,
+          topicRecord: topic,
+        );
+      }).toList();
+
+      return posts;
+    } catch (e) {
+      return posts;
+    }
   }
 }

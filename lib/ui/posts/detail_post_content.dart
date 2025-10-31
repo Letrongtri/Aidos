@@ -1,6 +1,7 @@
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:ct312h_project/utils/format.dart';
+import 'package:ct312h_project/utils/ui.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +20,7 @@ class DetailPostContent extends StatelessWidget {
             Avatar(userId: post.userId, size: 25),
             SizedBox(width: 8),
             Text(
-              post.user?.username ?? "Ẩn danh ${post.userId}",
+              post.user?.username ?? generateUsername(post.userId),
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             Spacer(),
