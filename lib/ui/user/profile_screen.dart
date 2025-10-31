@@ -66,7 +66,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Menu icon
                 Padding(
                   padding: const EdgeInsets.only(right: 15, top: 10),
                   child: Align(
@@ -81,8 +80,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
-
-                // Header
                 if (vm.isLoading)
                   const Center(
                     child: CircularProgressIndicator(color: Colors.white),
@@ -134,7 +131,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// 🧩 Danh sách post (cho phép like/comment)
   Widget _buildPostList(
     BuildContext context,
     List<Post> posts,
@@ -164,7 +160,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔹 Header
               Row(
                 children: [
                   CircleAvatar(
@@ -194,8 +189,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
 
               const SizedBox(height: 10),
-
-              // 🔹 Nội dung
               Text(
                 post.content,
                 style: const TextStyle(color: Colors.white, fontSize: 16),
@@ -203,7 +196,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               const SizedBox(height: 12),
 
-              // 🔹 Action bar (like/comment)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [

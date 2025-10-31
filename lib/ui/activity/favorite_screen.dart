@@ -16,9 +16,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => context.read<NotificationManager>().fetchNotifications(),
-    );
+    Future.microtask(() async {
+      final vm = context.read<NotificationManager>();
+      final userId = vm.currentUserId;
+      if (userId != null && userId.isNotEmpty) {
+        await vm.fetchNotifications(userId);
+      }
+    });
   }
 
   @override
@@ -28,11 +32,15 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        backgroundColor: Colors.black,
         appBar: AppBar(
           centerTitle: true,
           elevation: 0,
           backgroundColor: Colors.black,
-          title: const Text('Activity', style: TextStyle(color: Colors.white)),
+          title: const Text(
+            'Activity',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          ),
           bottom: PreferredSize(
             preferredSize: Size.fromHeight(AppBar().preferredSize.height),
             child: Container(
@@ -76,20 +84,28 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             ),
           ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.only(top: 10.0),
-          child: TabBarView(
-            children: [
-              _buildNotificationList(vm.notifications),
-              _buildNotificationList(vm.replyNotifications),
-            ],
-          ),
-        ),
+        body: vm.isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              )
+            : Padding(
+                padding: const EdgeInsets.only(top: 10.0),
+                child: TabBarView(
+                  children: [
+                    _buildNotificationList(vm.notifications, vm),
+                    _buildNotificationList(vm.replyNotifications, vm),
+                  ],
+                ),
+              ),
       ),
     );
   }
 
-  Widget _buildNotificationList(List<app_model.Notification> notifications) {
+  /// 🧩 Widget hiển thị danh sách thông báo
+  Widget _buildNotificationList(
+    List<app_model.Notification> notifications,
+    NotificationManager vm,
+  ) {
     if (notifications.isEmpty) {
       return const Center(
         child: Text(
@@ -105,7 +121,10 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
           Divider(color: Colors.grey.shade800, height: 0),
       itemBuilder: (context, index) {
         final n = notifications[index];
+        final isUnread = !n.isRead;
+
         return ListTile(
+          tileColor: isUnread ? Colors.grey[900] : Colors.black,
           leading: Icon(
             n.type == 'like'
                 ? Icons.favorite
@@ -116,20 +135,25 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
           ),
           title: Text(
             n.message,
-            style: const TextStyle(color: Colors.white, fontSize: 15),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
           subtitle: Text(
             _formatTime(n.createdAt),
             style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
-          onTap: () => context.read<NotificationManager>().markAsRead(
-            n.id,
-          ), // 🧩 đánh dấu đã đọc
+          onTap: () async {
+            await vm.markAsRead(n.id);
+          },
         );
       },
     );
   }
 
+  /// 🕓 Định dạng thời gian hiển thị
   String _formatTime(DateTime time) {
     final diff = DateTime.now().difference(time);
     if (diff.inMinutes < 1) return 'Just now';
