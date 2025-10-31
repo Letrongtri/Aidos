@@ -1,41 +1,41 @@
-import 'package:ct312h_project/models/user.dart';
-import 'package:ct312h_project/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:ct312h_project/models/user.dart';
+import 'package:ct312h_project/services/user_service.dart';
 
-class ProfileViewModel with ChangeNotifier {
-  final UserRepository _userRepository = UserRepository();
-  final PanelController panelController = PanelController();
+class ProfileViewModel extends ChangeNotifier {
+  final _userService = UserService();
+  final panelController = PanelController();
 
-  User? _user;
-  bool _isLoading = false;
+  bool isLoading = false;
+  String? errorMessage;
+  User? user;
 
-  User? get user => _user;
-  bool get isLoading => _isLoading;
-
-  ProfileViewModel() {
-    loadUserProfile();
-  }
-
-  Future<void> loadUserProfile() async {
-    _isLoading = true;
-    notifyListeners();
-
+  Future<void> loadCurrentUser() async {
     try {
-      _user = await _userRepository.fetchCurrentUser();
-    } catch (e) {
-      debugPrint("Error loading user profile: $e");
-    }
+      isLoading = true;
+      notifyListeners();
 
-    _isLoading = false;
-    notifyListeners();
+      user = await _userService.fetchCurrentUser();
+
+      isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      errorMessage = e.toString();
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   void openEditPanel() {
-    if (_user != null) {
+    if (panelController.isPanelClosed) {
       panelController.open();
-    } else {
-      debugPrint("Cannot open panel: user is null");
+    }
+  }
+
+  void closeEditPanel() {
+    if (panelController.isPanelOpen) {
+      panelController.close();
     }
   }
 }

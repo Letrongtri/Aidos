@@ -88,4 +88,24 @@ class PostsManager extends ChangeNotifier {
     //   notifyListeners();
     // }
   }
+
+  Future<void> createPost({
+    required String userId,
+    required String content,
+    String? topicId,
+  }) async {
+    try {
+      final newPost = await _postService.createPost(
+        userId: userId,
+        content: content,
+        topicId: topicId,
+      );
+
+      _posts.insert(0, newPost);
+      notifyListeners();
+    } catch (e) {
+      errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
 }

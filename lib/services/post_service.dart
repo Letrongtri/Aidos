@@ -1,8 +1,10 @@
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/services/pocketbase_client.dart';
 import 'package:pocketbase/pocketbase.dart';
+import 'dart:async';
 
 class PostService {
+  final List<Post> _posts = [];
   Future<List<Post>> fetchPosts({int page = 1, int perPage = 10}) async {
     List<Post> posts = [];
     try {
@@ -52,5 +54,23 @@ class PostService {
       final content = p.content.toLowerCase();
       return queries.any((q) => content.contains(q));
     }).toList();
+  }
+
+  Future<Post> createPost({
+    required String userId,
+    required String content,
+    String? topicId,
+  }) async {
+    final pb = await getPocketbaseInstance();
+
+    final body = {
+      'userId': userId,
+      'content': content,
+      if (topicId != null) 'topicId': topicId,
+    };
+
+    final record = await pb.collection('posts').create(body: body);
+
+    return Post.fromPocketbase(record: record);
   }
 }

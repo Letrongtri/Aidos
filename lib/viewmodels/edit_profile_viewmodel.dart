@@ -1,117 +1,78 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/services/user_service.dart';
-import 'package:flutter/material.dart';
 
-class EditProfileViewModel with ChangeNotifier {
-  final UserRepository _userRepository = UserRepository();
-  final User _initialUser;
+class EditProfileViewModel extends ChangeNotifier {
+  final UserService _userService = UserService();
+  final User user;
 
-  late TextEditingController usernameController;
-  late TextEditingController bioController;
-  late TextEditingController emailController;
-  late TextEditingController newPasswordController;
-  late TextEditingController confirmPasswordController;
+  final usernameController = TextEditingController();
+  final emailController = TextEditingController();
+  final newPasswordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
-  // Luôn private
-  final bool isPrivateProfile = true;
+  bool isLoading = false;
 
-  bool _isLoading = false;
-
-  bool get isLoading => _isLoading;
-  User get user => _initialUser;
-
-  EditProfileViewModel({required User user}) : _initialUser = user {
-    usernameController = TextEditingController(text: user.username);
-    emailController = TextEditingController(text: user.email);
-    newPasswordController = TextEditingController();
-    confirmPasswordController = TextEditingController();
+  EditProfileViewModel({required this.user}) {
+    usernameController.text = user.username;
+    emailController.text = user.email;
   }
 
-  /// Validate before save; trả về message null nếu hợp lệ
   String? validateBeforeSave() {
-    final username = usernameController.text.trim();
-    final email = emailController.text.trim();
-    final newPass = newPasswordController.text;
-    final confirm = confirmPasswordController.text;
-
-    if (username.isEmpty) return 'Username không được để trống.';
-    if (email.isEmpty) return 'Email không được để trống.';
-    // đơn giản check email basic
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-      return 'Email không hợp lệ.';
+    if (usernameController.text.trim().isEmpty) {
+      return 'Username cannot be empty';
     }
-    if (newPass.isNotEmpty && newPass.length < 6) {
-      return 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+    if (emailController.text.trim().isEmpty) {
+      return 'Email cannot be empty';
     }
-    if (newPass.isNotEmpty && newPass != confirm) {
-      return 'Mật khẩu và xác nhận mật khẩu không khớp.';
+    if (newPasswordController.text.isNotEmpty &&
+        newPasswordController.text != confirmPasswordController.text) {
+      return 'Passwords do not match';
     }
     return null;
   }
 
-  /// Lưu profile (gọi repository).
-  /// Lưu ý: Điều chỉnh `_userRepository.updateUserProfile` cho phù hợp API backend của bạn.
-  Future<bool> saveProfile() async {
-    final validationError = validateBeforeSave();
-    if (validationError != null) {
-      // có thể xử lý hiển thị lỗi ở UI bằng cách ném hoặc trả về false
+  Future<bool> saveProfile({File? avatar}) async {
+    try {
+      isLoading = true;
+      notifyListeners();
+
+      final updatedUser = await _userService.updateUser(
+        username: usernameController.text.trim(),
+        email: emailController.text.trim(),
+        avatarFile: avatar,
+      );
+
+      if (updatedUser != null) {
+        isLoading = false;
+        notifyListeners();
+        return true;
+      }
+      isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      isLoading = false;
+      notifyListeners();
       return false;
     }
+  }
 
-    _isLoading = true;
-    notifyListeners();
-
+  Future<void> deleteAccount() async {
     try {
-      // final updatedUsername = usernameController.text.trim();
-      // final updatedBio = bioController.text.trim();
-      // final updatedEmail = emailController.text.trim();
-      // final newPassword = newPasswordController.text.isNotEmpty
-      //     ? newPasswordController.text
-      //     : null;
-
-      // TODO: Điều chỉnh method gọi repo nếu API của bạn khác.
-      // Giả sử UserRepository có method:
-      // Future<void> updateUserProfile(String id, {String? username, String? bio, String? email, String? password, bool? isPrivate})
-      //     await _userRepository.updateUserProfile(
-      //       _initialUser.id,
-      //       username: updatedUsername,
-      //       bio: updatedBio,
-      //       email: updatedEmail,
-      //       password: newPassword,
-      //       isPrivate: true,
-      //     );
-
-      return true;
+      isLoading = true;
+      notifyListeners();
+      await _userService.deleteUser();
+      isLoading = false;
+      notifyListeners();
     } catch (e) {
-      return false;
-    } finally {
-      _isLoading = false;
+      isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<bool> deleteAccount() async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      await _userRepository.deleteUser(_initialUser.id);
-      return true;
-    } catch (e) {
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  @override
-  void dispose() {
-    usernameController.dispose();
-    bioController.dispose();
-    emailController.dispose();
-    newPasswordController.dispose();
-    confirmPasswordController.dispose();
-    super.dispose();
+  Future<void> logout() async {
+    await _userService.logout();
   }
 }

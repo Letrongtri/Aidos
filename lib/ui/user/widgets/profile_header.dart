@@ -7,20 +7,23 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ImageProvider avatarProvider =
+        (user.avatarUrl != null &&
+            user.avatarUrl is String &&
+            (user.avatarUrl as String).isNotEmpty)
+        ? NetworkImage(user.avatarUrl)
+        : const AssetImage('assets/images/default_avatar.png');
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Avatar
-          CircleAvatar(backgroundImage: AssetImage(user.avatarUrl), radius: 35),
-
+          CircleAvatar(backgroundImage: avatarProvider, radius: 35),
           const SizedBox(width: 16),
-
-          // Username
           Expanded(
             child: Text(
-              user.username,
+              user.username.isNotEmpty ? user.username : 'Anonymous',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,

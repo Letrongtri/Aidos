@@ -1,91 +1,98 @@
-import 'dart:math';
+import 'dart:io';
 import 'package:ct312h_project/models/user.dart';
+import 'package:ct312h_project/services/pocketbase_client.dart';
+import 'package:pocketbase/pocketbase.dart';
 
-class UserRepository {
-  // 🔹 Giả lập API delay
-  Future<List<User>> fetchUsers() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    return [
-      User(
-        id: 'u001',
-        username: 'nguyenvana',
-        email: 'nguyenvana@example.com',
-        avatarUrl: _randomAvatar(),
-        created: DateTime(2024, 3, 15),
-        updated: DateTime(2024, 5, 10),
-        deletedAt: null,
-      ),
-      User(
-        id: 'u002',
-        username: 'tranthib',
-        email: 'tranthib@example.com',
-        avatarUrl: _randomAvatar(),
-        created: DateTime(2024, 6, 2),
-        updated: DateTime(2024, 8, 20),
-        deletedAt: null,
-      ),
-      User(
-        id: 'u003',
-        username: 'leminhc',
-        email: 'leminhc@example.com',
-        avatarUrl: _randomAvatar(),
-        created: DateTime(2024, 1, 25),
-        updated: DateTime(2025, 1, 1),
-        deletedAt: null,
-      ),
-      User(
-        id: 'u004',
-        username: 'phamquangd',
-        email: 'phamquangd@example.com',
-        avatarUrl: _randomAvatar(),
-        created: DateTime(2023, 12, 10),
-        updated: DateTime(2025, 3, 12),
-        deletedAt: DateTime(2025, 5, 1),
-      ),
-    ];
-  }
-
-  // 🔹 Lấy user hiện tại (ví dụ: user đang đăng nhập)
+class UserService {
   Future<User?> fetchCurrentUser() async {
-    final allUsers = await fetchUsers();
-    return allUsers.isNotEmpty ? allUsers.first : null;
-  }
-
-  // 🔹 Lấy danh sách user theo ID
-  Future<List<User>> getUsersByIds(List<String> ids) async {
-    final allUsers = await fetchUsers();
-    return allUsers.where((user) => ids.contains(user.id)).toList();
-  }
-
-  // 🔹 Lấy 1 user theo ID
-  Future<User?> getUserById(String id) async {
-    final allUsers = await fetchUsers();
     try {
-      return allUsers.firstWhere((user) => user.id == id);
+      final pb = await getPocketbaseInstance();
+      if (!pb.authStore.isValid) return null;
+
+      final record = await pb.collection('users').getOne(pb.authStore.model.id);
+
+      return User(
+        id: record.id,
+        username: record.data['username'] ?? '',
+        email: record.data['email'] ?? '',
+        avatarUrl:
+            (record.data['avatar'] != null &&
+                (record.data['avatar'] as String).isNotEmpty)
+            ? "${pb.baseUrl}/api/files/${record.collectionId}/${record.id}/${record.data['avatar']}"
+            : null,
+        created: DateTime.tryParse(record.created ?? '') ?? DateTime.now(),
+        updated: DateTime.tryParse(record.updated ?? '') ?? DateTime.now(),
+        deletedAt: record.data['deletedAt'] != null
+            ? DateTime.tryParse(record.data['deletedAt'])
+            : null,
+      );
     } catch (e) {
+      print('fetchCurrentUser error: $e');
       return null;
     }
   }
 
-  // 🔹 Xóa user (giả lập)
-  Future<void> deleteUser(String userId) async {
-    print('Đang xóa user $userId...');
-    await Future.delayed(const Duration(seconds: 2));
-    print('User $userId đã bị xóa.');
+  Future<User?> updateUser({
+    String? username,
+    String? email,
+    File? avatarFile,
+  }) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      if (!pb.authStore.isValid) throw Exception('User not authenticated');
+
+      final body = <String, dynamic>{};
+
+      if (username != null && username.isNotEmpty) {
+        body['username'] = username;
+      }
+      if (email != null && email.isNotEmpty) {
+        body['email'] = email;
+      }
+      if (avatarFile != null) {
+        body['avatar'] = avatarFile;
+      }
+
+      final record = await pb
+          .collection('users')
+          .update(pb.authStore.model.id, body: body);
+
+      return User(
+        id: record.id,
+        username: record.data['username'] ?? '',
+        email: record.data['email'] ?? '',
+        avatarUrl:
+            (record.data['avatar'] != null &&
+                (record.data['avatar'] as String).isNotEmpty)
+            ? "${pb.baseUrl}/api/files/${record.collectionId}/${record.id}/${record.data['avatar']}"
+            : null,
+        created: DateTime.tryParse(record.created ?? '') ?? DateTime.now(),
+        updated: DateTime.tryParse(record.updated ?? '') ?? DateTime.now(),
+        deletedAt: record.data['deletedAt'] != null
+            ? DateTime.tryParse(record.data['deletedAt'])
+            : null,
+      );
+    } catch (e) {
+      print('updateUser error: $e');
+      rethrow;
+    }
   }
 
-  // 🔹 Đăng xuất (giả lập)
+  Future<void> deleteUser() async {
+    try {
+      final pb = await getPocketbaseInstance();
+      if (!pb.authStore.isValid) throw Exception('User not authenticated');
+
+      await pb.collection('users').delete(pb.authStore.model.id);
+      pb.authStore.clear();
+    } catch (e) {
+      print('deleteUser error: $e');
+      rethrow;
+    }
+  }
+
   Future<void> logout() async {
-    print('Đang đăng xuất...');
-    await Future.delayed(const Duration(seconds: 1));
-    print('Đã đăng xuất thành công.');
-  }
-
-  // 🔹 Hàm random avatar (API miễn phí)
-  static String _randomAvatar() {
-    final random = Random();
-    final seed = random.nextInt(10000);
-    return 'https://api.dicebear.com/9.x/pixel-art/svg?seed=$seed';
+    final pb = await getPocketbaseInstance();
+    pb.authStore.clear();
   }
 }

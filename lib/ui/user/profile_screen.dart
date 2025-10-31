@@ -10,120 +10,113 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ProfileViewModel(),
-      child: Consumer<ProfileViewModel>(
-        builder: (context, viewModel, child) {
-          return DefaultTabController(
-            length: 3,
-            child: Scaffold(
-              backgroundColor: Colors.black,
-              body: SlidingUpPanel(
-                controller: viewModel.panelController,
-                minHeight: 0,
-                maxHeight: MediaQuery.of(context).size.height * 0.9,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(25),
-                  topRight: Radius.circular(25),
-                ),
-                panelBuilder: (ScrollController sc) {
-                  if (viewModel.user == null) {
-                    return const Center(
+    final vm = context.watch<ProfileViewModel>();
+
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: SlidingUpPanel(
+          controller: vm.panelController,
+          minHeight: 0,
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(25),
+            topRight: Radius.circular(25),
+          ),
+          panelBuilder: (ScrollController sc) {
+            if (vm.user == null) {
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              );
+            }
+            return EditProfileScreen(
+              panelController: vm.panelController,
+              user: vm.user!,
+            );
+          },
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Edit button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.dehaze,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                        onPressed: () {
+                          if (vm.user != null) {
+                            vm.openEditPanel();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Đang tải thông tin người dùng...',
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+
+                  // Profile header
+                  if (vm.isLoading)
+                    const Center(
                       child: CircularProgressIndicator(color: Colors.white),
-                    );
-                  }
-                  return EditProfileScreen(
-                    panelController: viewModel.panelController,
-                    user: viewModel.user!,
-                  );
-                },
-                body: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    )
+                  else if (vm.user != null)
+                    ProfileHeader(user: vm.user!),
+
+                  const SizedBox(height: 15),
+
+                  const TabBar(
+                    labelColor: Colors.white,
+                    indicatorColor: Colors.white,
+                    tabs: [
+                      Tab(text: 'Post'),
+                      Tab(text: 'Replied'),
+                      Tab(text: 'Reposts'),
+                    ],
+                  ),
+
+                  const Expanded(
+                    child: TabBarView(
                       children: [
-                        // Edit button only
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.dehaze,
-                                color: Colors.white,
-                                size: 22,
-                              ),
-                              onPressed: () {
-                                if (viewModel.user != null) {
-                                  viewModel.openEditPanel();
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Đang tải thông tin người dùng...',
-                                      ),
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          ],
+                        Center(
+                          child: Text(
+                            'Your posts here',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
-
-                        // Profile header (you'll need to modify ProfileHeader widget to hide bio, name, followers)
-                        if (viewModel.isLoading)
-                          const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          )
-                        else if (viewModel.user != null)
-                          ProfileHeader(user: viewModel.user!),
-
-                        const SizedBox(height: 15),
-
-                        const TabBar(
-                          labelColor: Colors.white,
-                          indicatorColor: Colors.white,
-                          tabs: [
-                            Tab(text: 'Post'),
-                            Tab(text: 'Replied'),
-                            Tab(text: 'Reposts'),
-                          ],
+                        Center(
+                          child: Text(
+                            'Your replies here',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
-
-                        const Expanded(
-                          child: TabBarView(
-                            children: [
-                              Center(
-                                child: Text(
-                                  'Your posts here',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                              Center(
-                                child: Text(
-                                  'Your replies here',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                              Center(
-                                child: Text(
-                                  'Your reposts here',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ],
+                        Center(
+                          child: Text(
+                            'Your reposts here',
+                            style: TextStyle(color: Colors.white),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
+                ],
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

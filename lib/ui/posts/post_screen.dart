@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:ct312h_project/services/user_service.dart';
-import 'package:ct312h_project/models/user.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import 'package:ct312h_project/models/user.dart';
+import 'package:ct312h_project/services/user_service.dart';
+import 'package:ct312h_project/viewmodels/posts_manager.dart';
 
 class PostScreen extends StatefulWidget {
   const PostScreen({super.key});
@@ -11,54 +14,54 @@ class PostScreen extends StatefulWidget {
 }
 
 class _PostScreenState extends State<PostScreen> {
-  String? _selectedTopic;
-  final TextEditingController _contentController = TextEditingController();
-  final TextEditingController _topicInputController = TextEditingController();
-  final UserRepository _userRepository = UserRepository();
-
-  Future<User?> _fetchCurrentUser() => _userRepository.fetchCurrentUser();
-
-  @override
-  void initState() {
-    super.initState();
-    _topicInputController.addListener(() {
-      final txt = _topicInputController.text.trim();
-      if (txt.isEmpty && _selectedTopic != null) {
-        setState(() => _selectedTopic = null);
-      } else if (txt.isNotEmpty && _selectedTopic != txt) {
-        setState(() => _selectedTopic = txt);
-      }
-    });
-  }
+  final _contentController = TextEditingController();
+  final _topicController = TextEditingController();
+  final _userService = UserService();
 
   @override
   void dispose() {
     _contentController.dispose();
-    _topicInputController.dispose();
+    _topicController.dispose();
     super.dispose();
   }
 
-  void _onPost(User user) {
+  Future<User?> _fetchCurrentUser() async => _userService.fetchCurrentUser();
+
+  Future<void> _onPost(User user) async {
     final content = _contentController.text.trim();
-    final topicText = _topicInputController.text.trim();
-    final topic = topicText.isNotEmpty ? topicText : null;
+    final topic = _topicController.text.trim();
 
-    debugPrint('Post by ${user.username}: $content (${topic ?? "no topic"})');
+    if (content.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter post content')),
+      );
+      return;
+    }
 
-    // Clear và quay về trang trước
-    _contentController.clear();
-    _topicInputController.clear();
-    setState(() => _selectedTopic = null);
+    final postsManager = context.read<PostsManager>();
 
-    // Có thể thêm snackbar thông báo
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Post created successfully!')));
+    await postsManager.createPost(
+      userId: user.id,
+      content: content,
+      topicId: topic.isNotEmpty ? topic : null,
+    );
+
+    if (mounted) {
+      _contentController.clear();
+      _topicController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Post created successfully!')),
+      );
+
+      context.go('/home/feed');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: FutureBuilder<User?>(
           future: _fetchCurrentUser(),
@@ -68,7 +71,12 @@ class _PostScreenState extends State<PostScreen> {
             }
 
             if (!snapshot.hasData) {
-              return const Center(child: Text("User not found"));
+              return const Center(
+                child: Text(
+                  "User not found",
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             final user = snapshot.data!;
@@ -92,7 +100,7 @@ class _PostScreenState extends State<PostScreen> {
                         ),
                       ),
                       const Text(
-                        'New post',
+                        'New Post',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -113,17 +121,22 @@ class _PostScreenState extends State<PostScreen> {
                   ),
 
                   const Divider(thickness: 1, color: Colors.grey),
-
                   const SizedBox(height: 12),
 
                   // Body: avatar, username, topic input, content input
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Avatar
                       CircleAvatar(
-                        foregroundImage: AssetImage(user.avatarUrl),
                         radius: 25,
+                        backgroundImage:
+                            user.avatarUrl != null &&
+                                user.avatarUrl.toString().isNotEmpty
+                            ? NetworkImage(user.avatarUrl.toString())
+                            : const AssetImage(
+                                    'assets/images/default_avatar.png',
+                                  )
+                                  as ImageProvider,
                       ),
                       const SizedBox(width: 14),
 
@@ -132,15 +145,19 @@ class _PostScreenState extends State<PostScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Username + Topic input inline
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  user.username,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    fontSize: 16,
+                                Flexible(
+                                  child: Text(
+                                    user.username,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -150,43 +167,22 @@ class _PostScreenState extends State<PostScreen> {
                                   color: Colors.grey,
                                 ),
                                 const SizedBox(width: 4),
-
-                                // Topic input
                                 Expanded(
                                   child: TextField(
-                                    controller: _topicInputController,
-                                    style: TextStyle(
-                                      color:
-                                          _topicInputController.text
-                                              .trim()
-                                              .isNotEmpty
-                                          ? Colors.black87
-                                          : Colors.grey.shade700,
-                                      fontWeight:
-                                          _topicInputController.text
-                                              .trim()
-                                              .isNotEmpty
-                                          ? FontWeight.w600
-                                          : FontWeight.w500,
+                                    controller: _topicController,
+                                    style: const TextStyle(
+                                      color: Colors.white,
                                       fontSize: 14,
                                     ),
-                                    decoration: InputDecoration(
-                                      isDense: true,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            vertical: 6,
-                                          ),
-                                      hintText: 'Enter a topic',
+                                    decoration: const InputDecoration(
+                                      hintText: 'Enter topic...',
                                       hintStyle: TextStyle(
-                                        color: Colors.grey.shade500,
+                                        color: Colors.grey,
                                         fontSize: 14,
                                       ),
                                       border: InputBorder.none,
+                                      isDense: true,
                                     ),
-                                    textInputAction: TextInputAction.done,
-                                    cursorColor: Colors.grey,
-                                    onSubmitted: (_) =>
-                                        FocusScope.of(context).unfocus(),
                                   ),
                                 ),
                               ],
@@ -197,11 +193,14 @@ class _PostScreenState extends State<PostScreen> {
                             // Main post content input
                             TextFormField(
                               controller: _contentController,
-                              style: const TextStyle(color: Colors.black),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                              ),
                               decoration: const InputDecoration(
-                                hintText: 'What\'s new?',
+                                hintText: "What's new?",
                                 hintStyle: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 15,
                                   color: Colors.grey,
                                 ),
                                 border: InputBorder.none,
@@ -209,39 +208,6 @@ class _PostScreenState extends State<PostScreen> {
                               maxLines: null,
                               autofocus: true,
                             ),
-
-                            const SizedBox(height: 10),
-
-                            // Topic preview chip
-                            if (_selectedTopic != null &&
-                                _selectedTopic!.isNotEmpty)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.label, size: 16),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      _selectedTopic!,
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                           ],
                         ),
                       ),
