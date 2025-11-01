@@ -1,4 +1,4 @@
-import 'package:ct312h_project/services/nofication_service.dart';
+import 'package:ct312h_project/viewmodels/notification_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ct312h_project/models/notification.dart' as app_model;
@@ -12,17 +12,21 @@ class FavoriteScreen extends StatefulWidget {
 
 class _FavoriteScreenState extends State<FavoriteScreen> {
   int _currentIndexTab = 0;
+  late Future<void> _initFuture;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() async {
-      final vm = context.read<NotificationManager>();
-      final userId = vm.currentUserId;
-      if (userId != null && userId.isNotEmpty) {
-        await vm.fetchNotifications(userId);
-      }
-    });
+    // Gọi init() của NotificationManager thông qua FutureBuilder
+    _initFuture = _initializeNotifications();
+  }
+
+  Future<void> _initializeNotifications() async {
+    final vm = context.read<NotificationManager>();
+    // Chờ manager hoàn tất khởi tạo và load
+    await Future.delayed(
+      const Duration(milliseconds: 300),
+    ); // đệm nhỏ tránh lag frame
   }
 
   @override
@@ -84,19 +88,31 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             ),
           ),
         ),
-        body: vm.isLoading
-            ? const Center(
+        body: FutureBuilder(
+          future: _initFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(
                 child: CircularProgressIndicator(color: Colors.white),
-              )
-            : Padding(
-                padding: const EdgeInsets.only(top: 10.0),
-                child: TabBarView(
-                  children: [
-                    _buildNotificationList(vm.notifications, vm),
-                    _buildNotificationList(vm.replyNotifications, vm),
-                  ],
-                ),
+              );
+            }
+
+            final notifications = vm.notifications;
+            final replyNotifications = notifications
+                .where((n) => n.type == 'reply')
+                .toList();
+
+            return Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: TabBarView(
+                children: [
+                  _buildNotificationList(notifications, vm),
+                  _buildNotificationList(replyNotifications, vm),
+                ],
               ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -153,7 +169,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     );
   }
 
-  /// 🕓 Định dạng thời gian hiển thị
   String _formatTime(DateTime time) {
     final diff = DateTime.now().difference(time);
     if (diff.inMinutes < 1) return 'Just now';

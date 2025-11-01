@@ -8,7 +8,7 @@ import 'package:ct312h_project/ui/search/search_screen.dart';
 import 'package:ct312h_project/ui/splash_screen.dart';
 import 'package:ct312h_project/ui/user/profile_screen.dart';
 import 'package:ct312h_project/viewmodels/auth_manager.dart';
-import 'package:ct312h_project/viewmodels/nofication_manager.dart';
+import 'package:ct312h_project/viewmodels/notification_manager.dart';
 import 'package:ct312h_project/viewmodels/pofile_manager.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:ct312h_project/viewmodels/search_manager.dart';
@@ -16,7 +16,7 @@ import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart'; // 👈 THÊM DÒNG NÀY
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -125,7 +125,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => NotificationManager()),
       ],
       child: ScreenUtilInit(
-        // 👈 BẮT ĐẦU Ở ĐÂY
         designSize: const Size(375, 812),
         minTextAdapt: true,
         splitScreenMode: true,
