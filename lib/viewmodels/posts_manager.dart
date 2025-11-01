@@ -106,30 +106,8 @@ class PostsManager extends ChangeNotifier {
     return _posts.where((p) => p.userId == userId).toList();
   }
 
-  Future<List<Post>> getUserRepliedPosts(String userId) async {
-    if (_isFetchingReplied) return List<Post>.from(_repliedPosts);
-    _isFetchingReplied = true;
-
-    try {
-      final replied = await _postService.fetchRepliedPosts(userId);
-      _repliedPosts = List<Post>.from(replied);
-
-      for (final post in replied) {
-        if (!_posts.any((p) => p.id == post.id)) {
-          _posts.add(post);
-        }
-      }
-
-      errorMessage = null;
-      return List<Post>.from(_repliedPosts);
-    } catch (e) {
-      debugPrint("Error fetching replied posts: $e");
-      errorMessage = e.toString();
-      return [];
-    } finally {
-      _isFetchingReplied = false;
-      notifyListeners();
-    }
+  Future<List<Map<String, dynamic>>> getUserRepliedPosts(String userId) async {
+    return await _postService.fetchRepliedPosts(userId);
   }
 
   void updateUserInfoInPosts(User updatedUser) {

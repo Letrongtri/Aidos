@@ -155,7 +155,7 @@ class PostService {
     }
   }
 
-  Future<List<Post>> fetchRepliedPosts(String userId) async {
+  Future<List<Map<String, dynamic>>> fetchRepliedPosts(String userId) async {
     try {
       final pb = await getPocketbaseInstance();
 
@@ -163,28 +163,32 @@ class PostService {
           .collection('comments')
           .getList(
             page: 1,
-            perPage: 20,
+            perPage: 30,
             filter: 'userId="$userId"',
             expand: 'postId,postId.userId,postId.topicId',
             sort: '-created',
           );
 
-      final posts = comments.items
-          .map((c) => c.expand['postId']?.firstOrNull)
-          .whereType<RecordModel>()
-          .map((r) {
-            final user = r.expand['userId']?.firstOrNull;
-            final topic = r.expand['topicId']?.firstOrNull;
-            return Post.fromPocketbase(
-              record: r,
+      final replied = comments.items
+          .map((c) {
+            final postRecord = c.expand['postId']?.firstOrNull;
+            if (postRecord == null) return null;
+
+            final user = postRecord.expand['userId']?.firstOrNull;
+            final topic = postRecord.expand['topicId']?.firstOrNull;
+
+            final post = Post.fromPocketbase(
+              record: postRecord,
               userRecord: user,
               topicRecord: topic,
             );
+
+            return {'post': post, 'comment': c.getStringValue('content')};
           })
+          .whereType<Map<String, dynamic>>()
           .toList();
 
-      print('fetchRepliedPosts: lấy được ${posts.length} bài');
-      return posts;
+      return replied;
     } catch (e) {
       print('Error fetching replied posts: $e');
       return [];
