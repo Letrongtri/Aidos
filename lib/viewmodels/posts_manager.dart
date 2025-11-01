@@ -9,8 +9,7 @@ class PostsManager extends ChangeNotifier {
   final LikeService _likeService = LikeService();
 
   List<Post> _posts = [];
-  List<Post> _repliedPosts = [];
-  bool _isFetchingReplied = false;
+  final List<Post> _repliedPosts = [];
 
   String? errorMessage;
 
@@ -36,7 +35,7 @@ class PostsManager extends ChangeNotifier {
     }
   }
 
-  Future<void> createPost({
+  Future<Post?> createPost({
     required String userId,
     required String content,
     String? topicName,
@@ -47,14 +46,16 @@ class PostsManager extends ChangeNotifier {
         content: content,
         topicName: topicName,
       );
-
       _posts = [newPost, ..._posts];
       errorMessage = null;
+      notifyListeners();
+
+      return newPost;
     } catch (e) {
       errorMessage = e.toString();
       debugPrint("createPost error: $e");
-    } finally {
-      notifyListeners();
+
+      rethrow;
     }
   }
 

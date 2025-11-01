@@ -90,42 +90,48 @@ class PostService {
     required String content,
     String? topicName,
   }) async {
-    final pb = await getPocketbaseInstance();
-    String? finalTopicId;
+    try {
+      final pb = await getPocketbaseInstance();
+      String? finalTopicId;
 
-    if (topicName != null && topicName.isNotEmpty) {
-      final result = await pb
-          .collection('topics')
-          .getList(perPage: 1, filter: 'name="$topicName"');
-
-      if (result.items.isNotEmpty) {
-        finalTopicId = result.items.first.id;
-      } else {
-        final newTopic = await pb
+      if (topicName != null && topicName.isNotEmpty) {
+        final result = await pb
             .collection('topics')
-            .create(body: {'name': topicName});
-        finalTopicId = newTopic.id;
+            .getList(perPage: 1, filter: 'name="$topicName"');
+
+        if (result.items.isNotEmpty) {
+          finalTopicId = result.items.first.id;
+        } else {
+          final newTopic = await pb
+              .collection('topics')
+              .create(body: {'name': topicName});
+          finalTopicId = newTopic.id;
+        }
       }
+
+      final record = await pb
+          .collection('posts')
+          .create(
+            body: {
+              'userId': userId,
+              'content': content,
+              if (finalTopicId != null) 'topicId': finalTopicId,
+            },
+            expand: 'userId,topicId',
+          );
+
+      final user = record.expand['userId']?.firstOrNull;
+      final topic = record.expand['topicId']?.firstOrNull;
+
+      return Post.fromPocketbase(
+        record: record,
+        userRecord: user,
+        topicRecord: topic,
+      );
+    } catch (e, st) {
+      print('createPostWithTopicName ERROR: $e\n$st');
+      rethrow;
     }
-
-    final record = await pb
-        .collection('posts')
-        .create(
-          body: {
-            'userId': userId,
-            'content': content,
-            if (finalTopicId != null) 'topicId': finalTopicId,
-          },
-        );
-
-    final user = record.expand['userId']?.firstOrNull;
-    final topic = record.expand['topicId']?.firstOrNull;
-
-    return Post.fromPocketbase(
-      record: record,
-      userRecord: user,
-      topicRecord: topic,
-    );
   }
 
   Future<List<Post>> fetchPostsByUser(String userId) async {
