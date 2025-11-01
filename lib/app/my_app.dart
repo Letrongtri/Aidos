@@ -1,3 +1,4 @@
+import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/ui/activity/favorite_screen.dart';
 import 'package:ct312h_project/ui/auth/auth_screen.dart';
 import 'package:ct312h_project/ui/home/home_page_screen.dart';
@@ -91,7 +92,10 @@ class MyApp extends StatelessWidget {
               routes: [
                 GoRoute(
                   path: '/home/post',
-                  builder: (context, state) => const PostScreen(),
+                  builder: (context, state) {
+                    final post = state.extra as Post?;
+                    return PostScreen(existingPost: post);
+                  },
                 ),
               ],
             ),

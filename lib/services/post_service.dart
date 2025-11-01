@@ -194,4 +194,58 @@ class PostService {
       return [];
     }
   }
+
+  Future<Post> updatePost({
+    required String postId,
+    required String content,
+    String? topicName,
+  }) async {
+    final pb = await getPocketbaseInstance();
+    String? finalTopicId;
+
+    if (topicName != null && topicName.isNotEmpty) {
+      final result = await pb
+          .collection('topics')
+          .getList(perPage: 1, filter: 'name="$topicName"');
+
+      if (result.items.isNotEmpty) {
+        finalTopicId = result.items.first.id;
+      } else {
+        final newTopic = await pb
+            .collection('topics')
+            .create(body: {'name': topicName});
+        finalTopicId = newTopic.id;
+      }
+    }
+
+    final record = await pb
+        .collection('posts')
+        .update(
+          postId,
+          body: {
+            'content': content,
+            if (finalTopicId != null) 'topicId': finalTopicId,
+          },
+          expand: 'userId,topicId',
+        );
+
+    final user = record.expand['userId']?.firstOrNull;
+    final topic = record.expand['topicId']?.firstOrNull;
+
+    return Post.fromPocketbase(
+      record: record,
+      userRecord: user,
+      topicRecord: topic,
+    );
+  }
+
+  Future<void> deletePost(String postId) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      await pb.collection('posts').delete(postId);
+    } catch (e) {
+      print('Error deleting post: $e');
+      rethrow;
+    }
+  }
 }

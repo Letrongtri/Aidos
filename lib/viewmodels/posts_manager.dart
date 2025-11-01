@@ -119,4 +119,38 @@ class PostsManager extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  Future<void> updatePost({
+    required String postId,
+    required String content,
+    String? topicName,
+  }) async {
+    try {
+      final updatedPost = await _postService.updatePost(
+        postId: postId,
+        content: content,
+        topicName: topicName,
+      );
+
+      final index = _posts.indexWhere((p) => p.id == postId);
+      if (index != -1) {
+        _posts[index] = updatedPost;
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint("updatePost error: $e");
+    }
+  }
+
+  Future<void> deletePost(String postId) async {
+    try {
+      await _postService.deletePost(postId);
+      _posts.removeWhere((p) => p.id == postId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("deletePost error: $e");
+      rethrow;
+    }
+  }
 }
