@@ -205,7 +205,7 @@ class _ProfileHeader extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                user.email ?? '',
+                user.email,
                 style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 14,

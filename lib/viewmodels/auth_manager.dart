@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 
 class AuthManager with ChangeNotifier {
   late final AuthService _authService;
-  StreamSubscription? _authSubscription;
 
   User? _loggedInUser;
   bool _isLoading = false;

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/services/pocketbase_client.dart';
-import 'package:pocketbase/pocketbase.dart';
 
 class UserService {
   Future<User?> fetchCurrentUser() async {
@@ -20,8 +19,8 @@ class UserService {
                 (record.data['avatar'] as String).isNotEmpty)
             ? "${pb.baseUrl}/api/files/${record.collectionId}/${record.id}/${record.data['avatar']}"
             : null,
-        created: DateTime.tryParse(record.created ?? '') ?? DateTime.now(),
-        updated: DateTime.tryParse(record.updated ?? '') ?? DateTime.now(),
+        created: DateTime.tryParse(record.created) ?? DateTime.now(),
+        updated: DateTime.tryParse(record.updated) ?? DateTime.now(),
         deletedAt: record.data['deletedAt'] != null
             ? DateTime.tryParse(record.data['deletedAt'])
             : null,
@@ -63,8 +62,8 @@ class UserService {
                 (record.data['avatar'] as String).isNotEmpty)
             ? "${pb.baseUrl}/api/files/${record.collectionId}/${record.id}/${record.data['avatar']}"
             : null,
-        created: DateTime.tryParse(record.created ?? '') ?? DateTime.now(),
-        updated: DateTime.tryParse(record.updated ?? '') ?? DateTime.now(),
+        created: DateTime.tryParse(record.created) ?? DateTime.now(),
+        updated: DateTime.tryParse(record.updated) ?? DateTime.now(),
       );
     } catch (e) {
       print('updateUser error: $e');
