@@ -30,6 +30,7 @@ class SinglePostItem extends StatelessWidget {
                     PostHeader(post: post),
 
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(post.content),
                         PostAction(post: post),

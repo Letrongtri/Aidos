@@ -4,7 +4,6 @@ import 'package:pocketbase/pocketbase.dart';
 import 'dart:async';
 
 class PostService {
-  final List<Post> _posts = [];
   Future<List<Post>> fetchPosts({int page = 1, int perPage = 10}) async {
     List<Post> posts = [];
     try {
