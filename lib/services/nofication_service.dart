@@ -47,8 +47,6 @@ class NotificationManager extends ChangeNotifier {
       final record = e.record!;
       final noti = app_model.Notification.fromMap(record.toJson());
 
-      if (noti.userId != userId) return;
-
       switch (e.action) {
         case 'create':
           _notifications.insert(0, noti);

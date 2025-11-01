@@ -1,4 +1,4 @@
-import 'package:ct312h_project/viewmodels/nofication_manager.dart';
+import 'package:ct312h_project/services/nofication_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ct312h_project/models/notification.dart' as app_model;
@@ -142,7 +142,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             ),
           ),
           subtitle: Text(
-            _formatTime(n.createdAt),
+            _formatTime(n.created),
             style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
           onTap: () async {

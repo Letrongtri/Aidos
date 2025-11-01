@@ -1,3 +1,4 @@
+import 'package:ct312h_project/services/nofication_service.dart';
 import 'package:ct312h_project/ui/activity/favorite_screen.dart';
 import 'package:ct312h_project/ui/auth/auth_screen.dart';
 import 'package:ct312h_project/ui/home/home_page_screen.dart';
@@ -8,7 +9,6 @@ import 'package:ct312h_project/ui/search/search_screen.dart';
 import 'package:ct312h_project/ui/splash_screen.dart';
 import 'package:ct312h_project/ui/user/profile_screen.dart';
 import 'package:ct312h_project/viewmodels/auth_manager.dart';
-import 'package:ct312h_project/viewmodels/nofication_manager.dart';
 import 'package:ct312h_project/viewmodels/pofile_manager.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:ct312h_project/viewmodels/search_manager.dart';
@@ -18,13 +18,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final authManager = AuthManager();
+  MyApp({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final authManager = AuthManager();
-
     final router = GoRouter(
       initialLocation: '/auto-login',
       refreshListenable: authManager, // listen to auth state changes
