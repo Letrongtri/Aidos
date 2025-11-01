@@ -92,7 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Align(
                     alignment: Alignment.topRight,
                     child: IconButton(
-                      icon: const Icon(Icons.dehaze, color: Colors.white),
+                      icon: const Icon(Icons.settings, color: Colors.white),
                       onPressed: vm.openEditPanel,
                     ),
                   ),

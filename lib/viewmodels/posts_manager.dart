@@ -1,4 +1,5 @@
 import 'package:ct312h_project/models/post.dart';
+import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/services/like_service.dart';
 import 'package:ct312h_project/services/post_service.dart';
 import 'package:flutter/material.dart';
@@ -129,5 +130,15 @@ class PostsManager extends ChangeNotifier {
       _isFetchingReplied = false;
       notifyListeners();
     }
+  }
+
+  void updateUserInfoInPosts(User updatedUser) {
+    for (int i = 0; i < _posts.length; i++) {
+      final post = _posts[i];
+      if (post.userId == updatedUser.id) {
+        _posts[i] = post.copyWith(user: updatedUser);
+      }
+    }
+    notifyListeners();
   }
 }

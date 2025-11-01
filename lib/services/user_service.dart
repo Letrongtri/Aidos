@@ -46,9 +46,6 @@ class UserService {
       if (username != null && username.isNotEmpty) {
         body['username'] = username;
       }
-      if (email != null && email.isNotEmpty) {
-        body['email'] = email;
-      }
       if (avatarFile != null) {
         body['avatar'] = avatarFile;
       }
@@ -68,12 +65,40 @@ class UserService {
             : null,
         created: DateTime.tryParse(record.created ?? '') ?? DateTime.now(),
         updated: DateTime.tryParse(record.updated ?? '') ?? DateTime.now(),
-        deletedAt: record.data['deletedAt'] != null
-            ? DateTime.tryParse(record.data['deletedAt'])
-            : null,
       );
     } catch (e) {
       print('updateUser error: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    final pb = await getPocketbaseInstance();
+
+    if (!pb.authStore.isValid) throw Exception('User not authenticated');
+
+    try {
+      await pb
+          .collection('users')
+          .update(
+            pb.authStore.model.id,
+            body: {
+              'oldPassword': oldPassword,
+              'password': newPassword,
+              'passwordConfirm': confirmPassword,
+            },
+          );
+
+      final email = pb.authStore.model.data['email'] as String;
+      await pb.collection('users').authWithPassword(email, newPassword);
+
+      print("Password updated successfully");
+    } catch (e) {
+      print("changePassword error: $e");
       rethrow;
     }
   }
