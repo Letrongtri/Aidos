@@ -7,91 +7,30 @@ class PostsManager extends ChangeNotifier {
   final PostService _postService = PostService();
   final LikeService _likeService = LikeService();
 
-  final List<Post> _posts = [];
+  List<Post> _posts = [];
+  List<Post> _repliedPosts = [];
+  bool _isFetchingReplied = false;
+
   String? errorMessage;
 
-  int get postCount {
-    return _posts.length;
-  }
-
-  List<Post> get posts {
-    return [..._posts];
-  }
+  List<Post> get posts => List<Post>.from(_posts);
+  List<Post> get repliedPosts => List<Post>.from(_repliedPosts);
 
   Future<void> fetchPosts() async {
     try {
-      final fetchedPosts = await _postService.fetchPosts();
+      final fetched = await _postService.fetchPosts();
+      final postIds = fetched.map((p) => p.id).toList();
+      final likedIds = await _likeService.fetchLikedPostIds(postIds);
 
-      List<Post> posts = [];
-      List<String> postIds = [];
-
-      // Chỉ thêm comment mới, tránh trùng
-      for (final post in fetchedPosts) {
-        if (!_posts.any((p) => p.id == post.id)) {
-          posts.add(post);
-          postIds.add(post.id);
-        }
-      }
-
-      final likedPostIds = await _likeService.fetchLikedPostIds(postIds);
-
-      posts = posts
-          .map((p) => p.copyWith(isLiked: likedPostIds.contains(p.id)))
+      _posts = fetched
+          .map((p) => p.copyWith(isLiked: likedIds.contains(p.id)))
           .toList();
 
-      _posts.addAll(posts);
+      errorMessage = null;
     } catch (e) {
       errorMessage = e.toString();
+      debugPrint("fetchPosts error: $e");
     } finally {
-      notifyListeners();
-    }
-  }
-
-  Post? findPostById(String id) {
-    try {
-      return _posts.firstWhere((item) => item.id == id);
-    } catch (error) {
-      return null;
-    }
-  }
-
-  Future<void> updatePostLocal(Post updatedPost) async {
-    final idx = _posts.indexWhere((p) => p.id == updatedPost.id);
-    if (idx == -1) return;
-    _posts[idx] = updatedPost;
-    notifyListeners();
-  }
-
-  Future<void> onLikePostPressed(String id) async {
-    try {
-      void toggleLike(List<Post> list) {
-        final index = list.indexWhere((p) => p.id == id);
-        if (index != -1) {
-          final post = list[index];
-          final isLiked = post.isLiked ?? false;
-          final updated = post.copyWith(
-            isLiked: !isLiked,
-            likes: isLiked ? post.likes - 1 : post.likes + 1,
-          );
-          list[index] = updated;
-        }
-      }
-
-      toggleLike(_posts);
-      toggleLike(userPosts);
-      toggleLike(repliedPosts);
-
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error toggling like: $e');
-    }
-  }
-
-  void incrementCommentCount(String postId) {
-    final postIndex = _posts.indexWhere((p) => p.id == postId);
-    if (postIndex != -1) {
-      final newCount = _posts[postIndex].comments + 1;
-      _posts[postIndex] = _posts[postIndex].copyWith(comments: newCount);
       notifyListeners();
     }
   }
@@ -108,55 +47,87 @@ class PostsManager extends ChangeNotifier {
         topicName: topicName,
       );
 
-      _posts.insert(0, newPost);
-      errorMessage = null;
-      await fetchUserPosts(userId);
-
-      notifyListeners();
-    } catch (e) {
-      errorMessage = e.toString();
-      debugPrint('Error creating post: $errorMessage');
-      notifyListeners();
-    }
-  }
-
-  List<Post> userPosts = [];
-  List<Post> repliedPosts = [];
-  List<Post> reposts = [];
-
-  Future<void> fetchUserPosts(String userId) async {
-    try {
-      userPosts = await _postService.fetchPostsByUser(userId);
+      _posts = [newPost, ..._posts];
       errorMessage = null;
     } catch (e) {
       errorMessage = e.toString();
-      debugPrint('Error fetching user posts: $errorMessage');
+      debugPrint("createPost error: $e");
     } finally {
       notifyListeners();
     }
   }
 
-  Future<void> fetchRepliedPosts(String userId) async {
+  Post? findPostById(String id) {
     try {
-      repliedPosts = await _postService.fetchRepliedPosts(userId);
-      errorMessage = null;
+      return _posts.firstWhere((p) => p.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> onLikePostPressed(String id) async {
+    try {
+      final index = _posts.indexWhere((p) => p.id == id);
+      if (index == -1) return;
+
+      final post = _posts[index];
+      final isLiked = post.isLiked ?? false;
+      final likeCount = post.likes;
+
+      final updated = post.copyWith(
+        isLiked: !isLiked,
+        likes: isLiked ? likeCount - 1 : likeCount + 1,
+      );
+
+      _posts[index] = updated;
+      notifyListeners();
+
+      if (isLiked) {
+        await _likeService.unlikePost(id, likeCount);
+      } else {
+        await _likeService.likePost(id, likeCount);
+      }
     } catch (e) {
-      errorMessage = e.toString();
-      debugPrint('Error fetching replied posts: $errorMessage');
-    } finally {
+      debugPrint('Error toggling like: $e');
+    }
+  }
+
+  void incrementCommentCount(String postId) {
+    final index = _posts.indexWhere((p) => p.id == postId);
+    if (index != -1) {
+      final post = _posts[index];
+      _posts[index] = post.copyWith(comments: post.comments + 1);
       notifyListeners();
     }
   }
 
-  // Future<void> fetchReposts(String userId) async {
-  //   try {
-  //     reposts = await _postService.fetchReposts(userId);
-  //     errorMessage = null;
-  //   } catch (e) {
-  //     errorMessage = e.toString();
-  //     debugPrint('Error fetching reposts: $errorMessage');
-  //   } finally {
-  //     notifyListeners();
-  //   }
-  // }
+  List<Post> getUserPosts(String userId) {
+    return _posts.where((p) => p.userId == userId).toList();
+  }
+
+  Future<List<Post>> getUserRepliedPosts(String userId) async {
+    if (_isFetchingReplied) return List<Post>.from(_repliedPosts);
+    _isFetchingReplied = true;
+
+    try {
+      final replied = await _postService.fetchRepliedPosts(userId);
+      _repliedPosts = List<Post>.from(replied);
+
+      for (final post in replied) {
+        if (!_posts.any((p) => p.id == post.id)) {
+          _posts.add(post);
+        }
+      }
+
+      errorMessage = null;
+      return List<Post>.from(_repliedPosts);
+    } catch (e) {
+      debugPrint("Error fetching replied posts: $e");
+      errorMessage = e.toString();
+      return [];
+    } finally {
+      _isFetchingReplied = false;
+      notifyListeners();
+    }
+  }
 }

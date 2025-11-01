@@ -4,7 +4,6 @@ import 'package:pocketbase/pocketbase.dart';
 import 'dart:async';
 
 class PostService {
-  final List<Post> _posts = [];
   Future<List<Post>> fetchPosts({int page = 1, int perPage = 10}) async {
     List<Post> posts = [];
     try {
@@ -159,19 +158,32 @@ class PostService {
   Future<List<Post>> fetchRepliedPosts(String userId) async {
     try {
       final pb = await getPocketbaseInstance();
-      final expandFields = 'userId,topicId';
 
-      // Lấy danh sách bài viết mà user đã comment vào
       final comments = await pb
           .collection('comments')
-          .getList(filter: 'userId="$userId"', expand: 'postId');
+          .getList(
+            page: 1,
+            perPage: 20,
+            filter: 'userId="$userId"',
+            expand: 'postId,postId.userId,postId.topicId',
+            sort: '-created',
+          );
 
       final posts = comments.items
-          .map((c) => c.get<RecordModel>('expand.postId'))
+          .map((c) => c.expand['postId']?.firstOrNull)
           .whereType<RecordModel>()
-          .map((r) => Post.fromPocketbase(record: r))
+          .map((r) {
+            final user = r.expand['userId']?.firstOrNull;
+            final topic = r.expand['topicId']?.firstOrNull;
+            return Post.fromPocketbase(
+              record: r,
+              userRecord: user,
+              topicRecord: topic,
+            );
+          })
           .toList();
 
+      print('fetchRepliedPosts: lấy được ${posts.length} bài');
       return posts;
     } catch (e) {
       print('Error fetching replied posts: $e');
