@@ -2,14 +2,18 @@ import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/services/like_service.dart';
 import 'package:ct312h_project/services/post_service.dart';
+import 'package:ct312h_project/services/repost_service.dart';
 import 'package:flutter/material.dart';
 
 class PostsManager extends ChangeNotifier {
   final PostService _postService = PostService();
   final LikeService _likeService = LikeService();
+  final RepostService _repostService = RepostService();
 
   List<Post> _posts = [];
   final List<Post> _repliedPosts = [];
+
+  Set<String> _repostedPostIds = {};
 
   String? errorMessage;
 
@@ -20,7 +24,9 @@ class PostsManager extends ChangeNotifier {
     try {
       final fetched = await _postService.fetchPosts();
       final postIds = fetched.map((p) => p.id).toList();
+
       final likedIds = await _likeService.fetchLikedPostIds(postIds);
+      _repostedPostIds = await _repostService.fetchRepostedPostIds(postIds);
 
       _posts = fetched
           .map((p) => p.copyWith(isLiked: likedIds.contains(p.id)))
@@ -54,7 +60,6 @@ class PostsManager extends ChangeNotifier {
     } catch (e) {
       errorMessage = e.toString();
       debugPrint("createPost error: $e");
-
       rethrow;
     }
   }
@@ -76,32 +81,60 @@ class PostsManager extends ChangeNotifier {
     final likeCount = post.likes;
 
     try {
-      // Gọi service (service sẽ đếm lại từ DB)
       if (isLiked) {
         await _likeService.unlikePost(id, likeCount);
       } else {
         await _likeService.likePost(id, likeCount);
       }
 
-      // Đợi một chút để đảm bảo DB đã commit
       await Future.delayed(Duration(milliseconds: 200));
-
-      // Refresh post từ database để có số liệu chính xác
       await _refreshPost(id);
 
-      debugPrint('✅ Like toggled successfully, UI updated from DB');
+      debugPrint('Like toggled successfully, UI updated from DB');
     } catch (e) {
-      debugPrint('❌ Error toggling like: $e');
-      // Có thể hiện snackbar báo lỗi cho user ở đây
+      debugPrint('Error toggling like: $e');
     }
+  }
+
+  Future<void> onRepostPressed(String id) async {
+    final index = _posts.indexWhere((p) => p.id == id);
+    if (index == -1) return;
+
+    final post = _posts[index];
+    final isReposted = _repostedPostIds.contains(id);
+    final repostCount = post.reposts;
+
+    try {
+      if (isReposted) {
+        await _repostService.unrepostPost(id, repostCount);
+        _repostedPostIds.remove(id);
+      } else {
+        await _repostService.repostPost(id, repostCount);
+        _repostedPostIds.add(id);
+      }
+
+      await Future.delayed(Duration(milliseconds: 200));
+      await _refreshPost(id);
+
+      debugPrint('Repost toggled successfully');
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error toggling repost: $e');
+    }
+  }
+
+  bool hasUserReposted(String postId) {
+    return _repostedPostIds.contains(postId);
   }
 
   Future<void> _refreshPost(String id) async {
     try {
-      debugPrint('🔄 Starting refresh for post: $id');
+      debugPrint('Starting refresh for post: $id');
 
       final updatedPost = await _postService.fetchPostById(id);
-      debugPrint('🔄 Fetched post from DB: likes=${updatedPost?.likes}');
+      debugPrint(
+        'Fetched post from DB: likes=${updatedPost?.likes}, reposts=${updatedPost?.reposts}',
+      );
 
       if (updatedPost != null) {
         final index = _posts.indexWhere((p) => p.id == id);
@@ -109,22 +142,30 @@ class PostsManager extends ChangeNotifier {
 
         if (index != -1) {
           final oldLikes = _posts[index].likes;
+          final oldReposts = _posts[index].reposts;
 
-          // Lấy trạng thái isLiked từ database
           final likedIds = await _likeService.fetchLikedPostIds([id]);
+
+          final isReposted = await _repostService.hasUserReposted(id);
+          if (isReposted) {
+            _repostedPostIds.add(id);
+          } else {
+            _repostedPostIds.remove(id);
+          }
+
           _posts[index] = updatedPost.copyWith(isLiked: likedIds.contains(id));
 
           debugPrint(
-            '🔄 Updated post: oldLikes=$oldLikes, newLikes=${_posts[index].likes}, isLiked=${likedIds.contains(id)}',
+            '🔄 Updated post: oldLikes=$oldLikes, newLikes=${_posts[index].likes}, isLiked=${likedIds.contains(id)}, oldReposts=$oldReposts, newReposts=${_posts[index].reposts}, isReposted=$isReposted',
           );
 
           notifyListeners();
         }
       } else {
-        debugPrint('❌ updatedPost is null!');
+        debugPrint('updatedPost is null!');
       }
     } catch (e) {
-      debugPrint("❌ Error refreshing post: $e");
+      debugPrint("Error refreshing post: $e");
     }
   }
 
@@ -143,6 +184,36 @@ class PostsManager extends ChangeNotifier {
 
   Future<List<Map<String, dynamic>>> getUserRepliedPosts(String userId) async {
     return await _postService.fetchRepliedPosts(userId);
+  }
+
+  Future<List<Post>> getUserRepostedPosts(String userId) async {
+    try {
+      final repostedPostIds = await _repostService.fetchUserRepostedPostIds(
+        userId,
+      );
+
+      final repostedPosts = <Post>[];
+      for (final postId in repostedPostIds) {
+        final cachedPost = _posts.firstWhere(
+          (p) => p.id == postId,
+          orElse: () => Post.empty(),
+        );
+
+        if (cachedPost.id.isNotEmpty) {
+          repostedPosts.add(cachedPost);
+        } else {
+          final post = await _postService.fetchPostById(postId);
+          if (post != null) {
+            repostedPosts.add(post);
+          }
+        }
+      }
+
+      return repostedPosts;
+    } catch (e) {
+      debugPrint('Error getting user reposted posts: $e');
+      return [];
+    }
   }
 
   void updateUserInfoInPosts(User updatedUser) {

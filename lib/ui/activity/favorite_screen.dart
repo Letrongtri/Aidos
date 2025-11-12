@@ -17,16 +17,12 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   @override
   void initState() {
     super.initState();
-    // Gọi init() của NotificationManager thông qua FutureBuilder
     _initFuture = _initializeNotifications();
   }
 
   Future<void> _initializeNotifications() async {
     final vm = context.read<NotificationManager>();
-    // Chờ manager hoàn tất khởi tạo và load
-    await Future.delayed(
-      const Duration(milliseconds: 300),
-    ); // đệm nhỏ tránh lag frame
+    await Future.delayed(const Duration(milliseconds: 300));
   }
 
   @override
@@ -117,7 +113,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     );
   }
 
-  /// 🧩 Widget hiển thị danh sách thông báo
   Widget _buildNotificationList(
     List<app_model.Notification> notifications,
     NotificationManager vm,

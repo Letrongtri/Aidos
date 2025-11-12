@@ -13,6 +13,9 @@ class DetailPostContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final postsManager = context.watch<PostsManager>();
+    final isReposted = postsManager.hasUserReposted(post.id);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -59,9 +62,14 @@ class DetailPostContent extends StatelessWidget {
             ),
             SizedBox(width: 4),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                context.read<PostsManager>().onRepostPressed(post.id);
+              },
               label: Text(Format.getCountNumber(post.reposts)),
-              icon: Icon(Icons.repeat_outlined),
+              icon: Icon(
+                isReposted ? Icons.repeat : Icons.repeat_outlined,
+                color: isReposted ? Colors.green : Colors.white,
+              ),
             ),
           ],
         ),

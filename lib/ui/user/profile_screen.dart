@@ -18,7 +18,9 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _hasLoaded = false;
   List<Map<String, dynamic>> _repliedPosts = [];
-  bool _isRepliedLoading = true; // 🔹 Ban đầu true để hiện loading spinner liền
+  List<Post> _repostedPosts = [];
+  bool _isRepliedLoading = true;
+  bool _isRepostedLoading = true;
 
   @override
   void initState() {
@@ -36,7 +38,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await vm.loadUser();
     if (vm.user == null) return;
 
-    // 🔹 Load song song 2 loại dữ liệu để nhanh hơn
     await Future.wait([
       if (postsManager.posts.isEmpty) postsManager.fetchPosts(),
       () async {
@@ -44,14 +45,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (mounted) {
           setState(() {
             _repliedPosts = replied;
+            _isRepliedLoading = false;
+          });
+        }
+      }(),
+      () async {
+        final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
+        if (mounted) {
+          setState(() {
+            _repostedPosts = reposted;
+            _isRepostedLoading = false;
           });
         }
       }(),
     ]);
 
-    if (mounted) {
-      setState(() => _isRepliedLoading = false);
+    postsManager.addListener(_refreshRepostedPosts);
+  }
+
+  void _refreshRepostedPosts() async {
+    final vm = context.read<ProfileManager>();
+    final postsManager = context.read<PostsManager>();
+
+    if (vm.user != null && mounted) {
+      final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
+      if (mounted) {
+        setState(() {
+          _repostedPosts = reposted;
+        });
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    final postsManager = context.read<PostsManager>();
+    postsManager.removeListener(_refreshRepostedPosts);
+    super.dispose();
   }
 
   @override
@@ -89,7 +119,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ------------------ HEADER ------------------
                 Padding(
                   padding: const EdgeInsets.only(right: 15, top: 10),
                   child: Align(
@@ -108,7 +137,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: 15),
 
-                // ------------------ TABS ------------------
                 const TabBar(
                   labelColor: Colors.white,
                   indicatorColor: Colors.white,
@@ -119,14 +147,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
 
-                // ------------------ TAB CONTENT ------------------
                 Expanded(
                   child: TabBarView(
                     children: [
-                      // TAB 1: User’s Posts
                       _buildPostList(userPosts, "No posts yet"),
 
-                      // TAB 2: Replied Posts
                       _isRepliedLoading
                           ? const Center(
                               child: CircularProgressIndicator(
@@ -135,8 +160,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             )
                           : _buildRepliedList(_repliedPosts),
 
-                      // TAB 3: Reposts
-                      _buildPostList([], "No reposts yet"),
+                      _isRepostedLoading
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            )
+                          : _buildPostList(_repostedPosts, "No reposts yet"),
                     ],
                   ),
                 ),
@@ -160,7 +190,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: Colors.black,
       onRefresh: () async {
         final postsManager = context.read<PostsManager>();
+        final vm = context.read<ProfileManager>();
+
         await postsManager.fetchPosts();
+
+        if (vm.user != null) {
+          final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
+          if (mounted) {
+            setState(() => _repostedPosts = reposted);
+          }
+        }
       },
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -171,7 +210,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // 🔹 Hiển thị danh sách bài viết đã bình luận (Replied tab)
   Widget _buildRepliedList(List<Map<String, dynamic>> repliedPosts) {
     if (repliedPosts.isEmpty) {
       return const Center(
@@ -192,10 +230,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔸 Post gốc (2 dòng tối đa)
               SinglePostItem(post: post),
 
-              // 🔹 Comment nổi bật
               Container(
                 margin: const EdgeInsets.only(left: 40, top: 6),
                 padding: const EdgeInsets.symmetric(
@@ -239,10 +275,10 @@ class _ProfileHeader extends StatelessWidget {
         CircleAvatar(
           radius: 35,
           backgroundColor: Colors.grey[900],
-          backgroundImage: hasAvatar
-              ? NetworkImage(user.avatarUrl!)
-              : const AssetImage('assets/images/default_avatar.png')
-                    as ImageProvider,
+          backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl!) : null,
+          child: !hasAvatar
+              ? const Icon(Icons.person, size: 35, color: Colors.white54)
+              : null,
         ),
         const SizedBox(width: 16),
         Expanded(

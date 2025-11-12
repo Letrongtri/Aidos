@@ -1,5 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/utils/format.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
@@ -14,6 +12,9 @@ class PostAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final postsManager = context.watch<PostsManager>();
+    final isReposted = postsManager.hasUserReposted(post.id);
+
     return Row(
       children: [
         TextButton.icon(
@@ -42,9 +43,14 @@ class PostAction extends StatelessWidget {
         ),
         SizedBox(width: 5),
         TextButton.icon(
-          onPressed: () {},
+          onPressed: () {
+            context.read<PostsManager>().onRepostPressed(post.id);
+          },
           label: Text(Format.getCountNumber(post.reposts)),
-          icon: Icon(Icons.repeat_outlined),
+          icon: Icon(
+            isReposted ? Icons.repeat : Icons.repeat_outlined,
+            color: isReposted ? Colors.green : Colors.white,
+          ),
         ),
       ],
     );
