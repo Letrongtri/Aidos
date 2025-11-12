@@ -6,6 +6,7 @@ import 'package:ct312h_project/ui/shared/dialog_utils.dart';
 import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 enum AuthMode { signup, login }
 
@@ -82,12 +83,12 @@ class _AuthScreenState extends State<AuthScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0.w),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Spacer(),
-              Center(child: Image.asset('assets/images/logo.png', width: 80)),
+              Center(child: Image.asset('assets/images/logo.png', width: 80.w)),
 
               if (_authMode == AuthMode.signup)
                 SignupForm(
@@ -103,7 +104,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     _authData[key] = value;
                   },
                 ),
-              SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               ValueListenableBuilder<bool>(
                 valueListenable: _isSubmitting,
@@ -149,7 +150,7 @@ class _AuthScreenState extends State<AuthScreen> {
   SizedBox _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
-      height: 42,
+      height: 42.h,
       child: ElevatedButton(
         onPressed: _submit,
         style: ElevatedButton.styleFrom(backgroundColor: Colors.black),

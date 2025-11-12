@@ -2,6 +2,7 @@ import 'package:ct312h_project/viewmodels/notification_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ct312h_project/models/notification.dart' as app_model;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -37,20 +38,20 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
           centerTitle: true,
           elevation: 0,
           backgroundColor: Colors.black,
-          title: const Text(
+          title: Text(
             'Activity',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
           ),
           bottom: PreferredSize(
             preferredSize: Size.fromHeight(AppBar().preferredSize.height),
             child: Container(
-              height: 44,
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+              height: 44.h,
+              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 5.h),
               child: TabBar(
                 labelColor: Colors.black,
                 unselectedLabelColor: Colors.white,
                 indicator: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                   color: Colors.white,
                 ),
                 onTap: (index) => setState(() => _currentIndexTab = index),
@@ -63,7 +64,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                             ? Colors.transparent
                             : Colors.grey,
                       ),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: const Tab(text: 'All'),
                   ),
@@ -75,7 +76,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                             ? Colors.transparent
                             : Colors.grey,
                       ),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: const Tab(text: 'Replies'),
                   ),
@@ -88,7 +89,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
           future: _initFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(
+              return Center(
                 child: CircularProgressIndicator(color: Colors.white),
               );
             }
@@ -99,7 +100,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                 .toList();
 
             return Padding(
-              padding: const EdgeInsets.only(top: 10.0),
+              padding: EdgeInsets.only(top: 10.h),
               child: TabBarView(
                 children: [
                   _buildNotificationList(notifications, vm),
@@ -129,7 +130,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     return ListView.separated(
       itemCount: notifications.length,
       separatorBuilder: (_, __) =>
-          Divider(color: Colors.grey.shade800, height: 0),
+          Divider(color: Colors.grey.shade800, height: 0.h),
       itemBuilder: (context, index) {
         final n = notifications[index];
         final isUnread = !n.isRead;
@@ -148,13 +149,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             n.message,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 15,
+              fontSize: 15..sp,
               fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           subtitle: Text(
             _formatTime(n.created),
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
+            style: TextStyle(color: Colors.grey, fontSize: 12..sp),
           ),
           onTap: () async {
             await vm.markAsRead(n.id);
