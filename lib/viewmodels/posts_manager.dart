@@ -68,29 +68,63 @@ class PostsManager extends ChangeNotifier {
   }
 
   Future<void> onLikePostPressed(String id) async {
+    final index = _posts.indexWhere((p) => p.id == id);
+    if (index == -1) return;
+
+    final post = _posts[index];
+    final isLiked = post.isLiked ?? false;
+    final likeCount = post.likes;
+
     try {
-      final index = _posts.indexWhere((p) => p.id == id);
-      if (index == -1) return;
-
-      final post = _posts[index];
-      final isLiked = post.isLiked ?? false;
-      final likeCount = post.likes;
-
-      final updated = post.copyWith(
-        isLiked: !isLiked,
-        likes: isLiked ? likeCount - 1 : likeCount + 1,
-      );
-
-      _posts[index] = updated;
-      notifyListeners();
-
+      // Gọi service (service sẽ đếm lại từ DB)
       if (isLiked) {
         await _likeService.unlikePost(id, likeCount);
       } else {
         await _likeService.likePost(id, likeCount);
       }
+
+      // Đợi một chút để đảm bảo DB đã commit
+      await Future.delayed(Duration(milliseconds: 200));
+
+      // Refresh post từ database để có số liệu chính xác
+      await _refreshPost(id);
+
+      debugPrint('✅ Like toggled successfully, UI updated from DB');
     } catch (e) {
-      debugPrint('Error toggling like: $e');
+      debugPrint('❌ Error toggling like: $e');
+      // Có thể hiện snackbar báo lỗi cho user ở đây
+    }
+  }
+
+  Future<void> _refreshPost(String id) async {
+    try {
+      debugPrint('🔄 Starting refresh for post: $id');
+
+      final updatedPost = await _postService.fetchPostById(id);
+      debugPrint('🔄 Fetched post from DB: likes=${updatedPost?.likes}');
+
+      if (updatedPost != null) {
+        final index = _posts.indexWhere((p) => p.id == id);
+        debugPrint('🔄 Post index in list: $index');
+
+        if (index != -1) {
+          final oldLikes = _posts[index].likes;
+
+          // Lấy trạng thái isLiked từ database
+          final likedIds = await _likeService.fetchLikedPostIds([id]);
+          _posts[index] = updatedPost.copyWith(isLiked: likedIds.contains(id));
+
+          debugPrint(
+            '🔄 Updated post: oldLikes=$oldLikes, newLikes=${_posts[index].likes}, isLiked=${likedIds.contains(id)}',
+          );
+
+          notifyListeners();
+        }
+      } else {
+        debugPrint('❌ updatedPost is null!');
+      }
+    } catch (e) {
+      debugPrint("❌ Error refreshing post: $e");
     }
   }
 

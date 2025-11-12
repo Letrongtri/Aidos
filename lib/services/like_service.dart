@@ -57,11 +57,26 @@ class LikeService {
           .collection('likes')
           .create(body: {'postId': postId, 'userId': userId});
 
-      await pb
+      await Future.delayed(Duration(milliseconds: 100));
+
+      final likesResult = await pb
+          .collection('likes')
+          .getList(filter: 'postId = "$postId"', perPage: 500);
+
+      final totalLikes = likesResult.items.length;
+
+      debugPrint('Counted $totalLikes likes for post $postId');
+
+      final updateResult = await pb
           .collection('posts')
-          .update(postId, body: {'likesCount': likeCount + 1});
+          .update(postId, body: {'likes': totalLikes});
+
+      debugPrint(
+        'Update successful - DB likes: ${updateResult.getIntValue("likes")}',
+      );
+      debugPrint('Post liked - Total likes: $totalLikes');
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint('likePost error: $e');
       throw Exception();
     }
   }
@@ -71,7 +86,6 @@ class LikeService {
       final pb = await getPocketbaseInstance();
       final userId = pb.authStore.record!.id;
 
-      // Tìm bản ghi like
       final likes = await pb
           .collection('likes')
           .getList(
@@ -84,14 +98,28 @@ class LikeService {
       }
 
       final likeId = likes.items.first.id;
-
       await pb.collection('likes').delete(likeId);
 
-      await pb
+      await Future.delayed(Duration(milliseconds: 100));
+
+      final likesResult = await pb
+          .collection('likes')
+          .getList(filter: 'postId = "$postId"', perPage: 500);
+
+      final totalLikes = likesResult.items.length;
+
+      debugPrint('Counted $totalLikes likes remaining for post $postId');
+
+      final updateResult = await pb
           .collection('posts')
-          .update(postId, body: {'likesCount': likeCount + 1});
+          .update(postId, body: {'likes': totalLikes});
+
+      debugPrint(
+        'Update successful - DB likes: ${updateResult.getIntValue("likes")}',
+      );
+      debugPrint('Post unliked - Total likes: $totalLikes');
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint('unlikePost error: $e');
       throw Exception();
     }
   }
@@ -104,10 +132,17 @@ class LikeService {
       await pb
           .collection('likes')
           .create(body: {'commentId': commentId, 'userId': userId});
+      final likesResult = await pb
+          .collection('likes')
+          .getList(filter: 'commentId = "$commentId"', perPage: 500);
+
+      final totalLikes = likesResult.items.length;
 
       await pb
           .collection('comments')
-          .update(commentId, body: {'likesCount': likeCount + 1});
+          .update(commentId, body: {'likes': totalLikes});
+
+      debugPrint('Comment liked - Total likes: $totalLikes');
     } catch (e) {
       debugPrint(e.toString());
       throw Exception();
@@ -119,7 +154,6 @@ class LikeService {
       final pb = await getPocketbaseInstance();
       final userId = pb.authStore.record!.id;
 
-      // Tìm bản ghi like
       final likes = await pb
           .collection('likes')
           .getList(
@@ -132,13 +166,18 @@ class LikeService {
       }
 
       final likeId = likes.items.first.id;
-
-      // Xóa like
       await pb.collection('likes').delete(likeId);
 
+      final likesResult = await pb
+          .collection('likes')
+          .getList(filter: 'commentId = "$commentId"', perPage: 500);
+
+      final totalLikes = likesResult.items.length;
       await pb
           .collection('comments')
-          .update(commentId, body: {'likesCount': likeCount + 1});
+          .update(commentId, body: {'likes': totalLikes});
+
+      debugPrint('Comment unliked - Total likes: $totalLikes');
     } catch (e) {
       debugPrint(e.toString());
       throw Exception();

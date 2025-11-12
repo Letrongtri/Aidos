@@ -254,4 +254,31 @@ class PostService {
       rethrow;
     }
   }
+
+  Future<Post?> fetchPostById(String id) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      final expandFields = 'userId,topicId';
+
+      final record = await pb
+          .collection('posts')
+          .getOne(id, expand: expandFields);
+
+      final user = record.get<RecordModel>('expand.userId');
+      final topic = record.get<RecordModel>('expand.topicId');
+
+      return Post.fromPocketbase(
+        record: record,
+        userRecord: user,
+        topicRecord: topic,
+      );
+    } on ClientException catch (e) {
+      if (e.statusCode == 404) return null;
+      print('Error fetching single post by ID: $e');
+      return null;
+    } catch (e) {
+      print('Error fetching single post by ID: $e');
+      return null;
+    }
+  }
 }
