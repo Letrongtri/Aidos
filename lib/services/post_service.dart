@@ -35,16 +35,6 @@ class PostService {
     }
   }
 
-  // Future<Post> getPostById(String id) async {
-  //   // TODO: fetch dữ liệu thật
-  //   final allPosts = await fetchPosts();
-
-  //   // chỉ giữ lại những post có id nằm trong danh sách `ids`
-  //   final filteredPost = allPosts.firstWhere((post) => id.contains(post.id));
-
-  //   return filteredPost;
-  // }
-
   Future<List<Post>> findPostByKeywords(
     List<String> queries, {
     int page = 1,
@@ -180,8 +170,8 @@ class PostService {
             final postRecord = c.expand['postId']?.firstOrNull;
             if (postRecord == null) return null;
 
-            final user = postRecord.expand['userId']?.firstOrNull;
-            final topic = postRecord.expand['topicId']?.firstOrNull;
+            final user = c.expand['postId.userId']?.firstOrNull;
+            final topic = c.expand['postId.topicId']?.firstOrNull;
 
             final post = Post.fromPocketbase(
               record: postRecord,
@@ -195,8 +185,8 @@ class PostService {
           .toList();
 
       return replied;
-    } catch (e) {
-      print('Error fetching replied posts: $e');
+    } catch (e, st) {
+      print('Error fetching replied posts: $e\n$st');
       return [];
     }
   }

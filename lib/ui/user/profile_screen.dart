@@ -18,7 +18,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _hasLoaded = false;
   List<Map<String, dynamic>> _repliedPosts = [];
-  bool _isRepliedLoading = false;
+  bool _isRepliedLoading = true; // 🔹 Ban đầu true để hiện loading spinner liền
 
   @override
   void initState() {
@@ -36,18 +36,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await vm.loadUser();
     if (vm.user == null) return;
 
-    // 🔹 Fetch posts
-    if (postsManager.posts.isEmpty) {
-      await postsManager.fetchPosts();
-    }
+    // 🔹 Load song song 2 loại dữ liệu để nhanh hơn
+    await Future.wait([
+      if (postsManager.posts.isEmpty) postsManager.fetchPosts(),
+      () async {
+        final replied = await postsManager.getUserRepliedPosts(vm.user!.id);
+        if (mounted) {
+          setState(() {
+            _repliedPosts = replied;
+          });
+        }
+      }(),
+    ]);
 
-    // 🔹 Fetch replied posts
-    setState(() => _isRepliedLoading = true);
-    final replied = await postsManager.getUserRepliedPosts(vm.user!.id);
-    setState(() {
-      _repliedPosts = replied;
-      _isRepliedLoading = false;
-    });
+    if (mounted) {
+      setState(() => _isRepliedLoading = false);
+    }
   }
 
   @override

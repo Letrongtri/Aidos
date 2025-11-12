@@ -6,31 +6,32 @@ import 'package:ct312h_project/ui/shared/show_post_actions_bottom_sheet.dart';
 import 'package:ct312h_project/viewmodels/comment_manager.dart';
 import 'package:ct312h_project/ui/posts/detail_post_content.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
+import 'package:ct312h_project/viewmodels/pofile_manager.dart'; // <-- THÊM IMPORT NÀY
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 // class DetailPostScreen extends StatelessWidget {
-//   const DetailPostScreen({
-//     super.key,
-//     required this.id,
-//     this.focusComment = false,
-//   });
-//   final String id;
-//   final bool focusComment;
+//   const DetailPostScreen({
+//     super.key,
+//     required this.id,
+//     this.focusComment = false,
+//   });
+//   final String id;
+//   final bool focusComment;
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return MultiProvider(
-//       providers: [
-//         // ChangeNotifierProvider(
-//         //   create: (_) => getIt<DetailPostManager>()..fetchPostById(id),
-//         // ),
-//         // ChangeNotifierProvider(create: (_) => getIt<CommentManager>()),
-//       ],
-//       child: _DetailPostBody(focusComment: focusComment),
-//     );
-//   }
+//   @override
+//   Widget build(BuildContext context) {
+//     return MultiProvider(
+//       providers: [
+//         // ChangeNotifierProvider(
+//         //   create: (_) => getIt<DetailPostManager>()..fetchPostById(id),
+//         // ),
+//         // ChangeNotifierProvider(create: (_) => getIt<CommentManager>()),
+//       ],
+//       child: _DetailPostBody(focusComment: focusComment),
+//     );
+//   }
 // }
 
 class DetailPostScreen extends StatefulWidget {
@@ -228,6 +229,8 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
 
             if (context.mounted) {
               context.read<PostsManager>().incrementCommentCount(post.id);
+
+              context.read<ProfileManager>().fetchMyReplies();
             }
           },
           onCancelReply: () {

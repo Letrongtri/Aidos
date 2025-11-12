@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:ct312h_project/models/post.dart'; // <-- THÊM IMPORT NÀY
 import 'package:ct312h_project/models/user.dart';
+import 'package:ct312h_project/services/post_service.dart'; // <-- THÊM IMPORT NÀY
 import 'package:ct312h_project/services/user_service.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
@@ -9,9 +11,18 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 class ProfileManager extends ChangeNotifier {
   final PanelController panelController = PanelController();
   final UserService _userService = UserService();
+  final PostService _postService = PostService(); // <-- THÊM SERVICE
 
   bool isLoading = false;
   User? user;
+
+  // === THÊM BIẾN TRẠNG THÁI CHO REPLIES ===
+  bool _isRepliesLoading = false;
+  bool get isRepliesLoading => _isRepliesLoading;
+
+  List<Map<String, dynamic>> _repliedPosts = [];
+  List<Map<String, dynamic>> get repliedPosts => _repliedPosts;
+  // ======================================
 
   final usernameController = TextEditingController();
   final emailController = TextEditingController();
@@ -29,6 +40,8 @@ class ProfileManager extends ChangeNotifier {
         user = fetchedUser;
         usernameController.text = user?.username ?? '';
         emailController.text = user?.email ?? '';
+
+        await fetchMyReplies(); // <-- GỌI TẢI REPLIES Ở ĐÂY
       }
     } catch (e) {
       debugPrint("loadUser error: $e");
@@ -37,6 +50,25 @@ class ProfileManager extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // === THÊM HÀM MỚI ĐỂ TẢI/TẢI LẠI REPLIES ===
+  Future<void> fetchMyReplies() async {
+    if (user == null) return; // Cần user ID
+
+    _isRepliesLoading = true;
+    notifyListeners();
+    try {
+      // Dùng service để lấy replies mới nhất và lưu lại
+      _repliedPosts = await _postService.fetchRepliedPosts(user!.id);
+    } catch (e) {
+      debugPrint("fetchMyReplies error: $e");
+      _repliedPosts = []; // Gán rỗng nếu có lỗi
+    } finally {
+      _isRepliesLoading = false;
+      notifyListeners(); // Báo cho UI (tab Replies) cập nhật
+    }
+  }
+  // ===========================================
 
   String? validateBeforeSave() {
     if (usernameController.text.trim().isEmpty) {
