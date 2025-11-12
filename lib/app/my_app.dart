@@ -64,6 +64,7 @@ class MyApp extends StatelessWidget {
                   builder: (context, state) => FeedScreen(),
                   routes: [
                     GoRoute(
+                      name: 'detail',
                       path: 'posts/:id',
                       builder: (context, state) {
                         final id = state.pathParameters['id']!;

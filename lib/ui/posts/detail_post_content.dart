@@ -4,6 +4,7 @@ import 'package:ct312h_project/utils/format.dart';
 import 'package:ct312h_project/utils/ui.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class DetailPostContent extends StatelessWidget {
@@ -46,7 +47,13 @@ class DetailPostContent extends StatelessWidget {
             ),
             SizedBox(width: 4),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                context.goNamed(
+                  'detail',
+                  pathParameters: {'id': post.id},
+                  extra: {'focusComment': true},
+                );
+              },
               label: Text(Format.getCountNumber(post.comments)),
               icon: Icon(Icons.mode_comment_outlined),
             ),
