@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AuthPasswordField extends StatefulWidget {
   const AuthPasswordField({super.key, this.onSaved, this.validator});
@@ -17,7 +16,7 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 20.h),
+      padding: const EdgeInsets.only(top: 20),
       child: TextFormField(
         obscureText: passwordVisible,
         validator: widget.validator,
@@ -35,18 +34,18 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
               color: Colors.black,
             ),
           ),
-          contentPadding: EdgeInsets.all(8.w),
+          contentPadding: EdgeInsets.all(8),
           hintText: "Enter your password",
           hintStyle: TextStyle(color: Colors.black87),
 
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.black54),
-            borderRadius: BorderRadius.circular(10.r),
+            borderRadius: BorderRadius.circular(10),
           ),
 
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.black),
-            borderRadius: BorderRadius.circular(10.r),
+            borderRadius: BorderRadius.circular(10),
           ),
           labelStyle: TextStyle(color: Colors.black),
         ),
