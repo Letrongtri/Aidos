@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/services/post_service.dart';
 import 'package:ct312h_project/services/user_service.dart';

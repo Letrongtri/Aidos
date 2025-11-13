@@ -1,4 +1,5 @@
 import 'package:ct312h_project/models/user.dart';
+import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:ct312h_project/viewmodels/pofile_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,13 +28,6 @@ class EditProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<ProfileManager>();
 
-    final hasAvatar =
-        vm.user?.avatarUrl != null && vm.user!.avatarUrl!.isNotEmpty;
-
-    final ImageProvider avatarProvider = hasAvatar
-        ? NetworkImage(vm.user!.avatarUrl!)
-        : const AssetImage('assets/images/default_avatar.png');
-
     return Container(
       color: Colors.black,
       child: SafeArea(
@@ -49,10 +43,7 @@ class EditProfileScreen extends StatelessWidget {
                   '@${vm.user?.username ?? ''}',
                   style: const TextStyle(color: Colors.white),
                 ),
-                trailing: CircleAvatar(
-                  backgroundImage: avatarProvider,
-                  radius: 25,
-                ),
+                trailing: Avatar(userId: vm.user!.id, size: 25),
               ),
               const Divider(color: Colors.white24),
               _form(context, vm),

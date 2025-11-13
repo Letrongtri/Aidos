@@ -1,3 +1,4 @@
+import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -175,17 +176,7 @@ class _PostScreenState extends State<PostScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            radius: 25,
-                            backgroundImage:
-                                (user.avatarUrl != null &&
-                                    user.avatarUrl.toString().isNotEmpty)
-                                ? NetworkImage(user.avatarUrl.toString())
-                                : const AssetImage(
-                                        'assets/images/default_avatar.png',
-                                      )
-                                      as ImageProvider,
-                          ),
+                          Avatar(userId: user.id, size: 25),
                           const SizedBox(width: 14),
 
                           // === Post input section ===

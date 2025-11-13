@@ -1,6 +1,7 @@
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/ui/posts/single_post_item.dart';
+import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:ct312h_project/ui/user/edit_profile_screen.dart';
 import 'package:ct312h_project/viewmodels/pofile_manager.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
@@ -60,39 +61,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }(),
     ]);
 
-    postsManager.addListener(_refreshRepostedPosts);
+    // postsManager.addListener(_refreshRepostedPosts);
   }
 
-  void _refreshRepostedPosts() async {
-    final vm = context.read<ProfileManager>();
-    final postsManager = context.read<PostsManager>();
+  // void _refreshRepostedPosts() async {
+  //   final vm = context.read<ProfileManager>();
+  //   final postsManager = context.read<PostsManager>();
 
-    if (vm.user != null && mounted) {
-      final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
-      if (mounted) {
-        setState(() {
-          _repostedPosts = reposted;
-        });
-      }
-    }
-  }
+  //   if (vm.user != null && mounted) {
+  //     final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
+  //     if (mounted) {
+  //       setState(() {
+  //         _repostedPosts = reposted;
+  //       });
+  //     }
+  //   }
+  // }
 
-  @override
-  void dispose() {
-    final postsManager = context.read<PostsManager>();
-    postsManager.removeListener(_refreshRepostedPosts);
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   final postsManager = context.read<PostsManager>();
+  //   postsManager.removeListener(_refreshRepostedPosts);
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ProfileManager>();
     final postsManager = context.watch<PostsManager>();
 
-    if (vm.isLoading || vm.user == null) {
+    if (vm.isLoading) {
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(child: CircularProgressIndicator(color: Colors.white)),
+      );
+    }
+
+    if (vm.user == null) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Text("User not found", style: TextStyle(color: Colors.white)),
+        ),
       );
     }
 
@@ -266,20 +276,11 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasAvatar =
-        user.avatarUrl != null && user.avatarUrl!.trim().isNotEmpty;
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CircleAvatar(
-          radius: 35,
-          backgroundColor: Colors.grey[900],
-          backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl!) : null,
-          child: !hasAvatar
-              ? const Icon(Icons.person, size: 35, color: Colors.white54)
-              : null,
-        ),
+        Avatar(userId: user.id, size: 70),
+
         const SizedBox(width: 16),
         Expanded(
           child: Column(
