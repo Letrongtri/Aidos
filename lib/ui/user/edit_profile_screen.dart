@@ -29,6 +29,7 @@ class EditProfileScreen extends StatelessWidget {
 
     final hasAvatar =
         vm.user?.avatarUrl != null && vm.user!.avatarUrl!.isNotEmpty;
+
     final ImageProvider avatarProvider = hasAvatar
         ? NetworkImage(vm.user!.avatarUrl!)
         : const AssetImage('assets/images/default_avatar.png');

@@ -51,6 +51,8 @@ dependencies:
   path: ^1.9.1
   flutter_screenutil: ^5.9.3
   flutter_adaptive_scaffold: ^0.3.3+1
+  flutter_native_splash: ^2.4.7
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -103,3 +105,36 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_native_splash:
+  #! FOR ALL PLATFORM, except Android 12+:
+  color: "#000000"
+  image: assets/images/logo.png
+
+  fullscreen: true                # default false
+
+  #! ANDROID 12+ configuration:
+  android_12:
+    color: "#000000"
+    image: assets/images/logo.png    
+
+    # center-logo background color
+    icon_background_color: "#eeeeee"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/images/logo.png"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"
+  windows:
+    generate: true
+    image_path: "assets/images/logo.png"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/images/logo.png"
