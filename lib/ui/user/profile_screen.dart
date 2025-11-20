@@ -1,13 +1,17 @@
+// lib/ui/user/profile_screen.dart
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/models/user.dart';
-import 'package:ct312h_project/ui/posts/single_post_item.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:ct312h_project/ui/user/edit_profile_screen.dart';
+import 'package:ct312h_project/ui/user/profile_replies.list.dart';
 import 'package:ct312h_project/viewmodels/profile_manager.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+
+import 'profile_header.dart';
+import 'profile_post_list.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -78,12 +82,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   //   }
   // }
 
-  // @override
-  // void dispose() {
-  //   final postsManager = context.read<PostsManager>();
-  //   postsManager.removeListener(_refreshRepostedPosts);
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    final postsManager = context.read<PostsManager>();
+    postsManager.removeListener(_refreshRepostedPosts);
+    super.dispose();
+  }
+
+  Future<void> _onRefreshPosts() async {
+    await context.read<PostsManager>().fetchPosts();
+  }
+
+  Future<void> _onRefreshReposts() async {
+    final postsManager = context.read<PostsManager>();
+    final vm = context.read<ProfileManager>();
+
+    await postsManager.fetchPosts();
+
+    if (vm.user != null) {
+      final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
+      if (mounted) {
+        setState(() => _repostedPosts = reposted);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,14 +161,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _ProfileHeader(user: user),
+                  child: ProfileHeader(user: user),
                 ),
-
                 const SizedBox(height: 15),
-
                 const TabBar(
                   labelColor: Colors.white,
                   indicatorColor: Colors.white,
@@ -156,27 +175,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Tab(text: 'Reposts'),
                   ],
                 ),
-
                 Expanded(
                   child: TabBarView(
                     children: [
-                      _buildPostList(userPosts, "No posts yet"),
-
-                      _isRepliedLoading
-                          ? const Center(
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                              ),
-                            )
-                          : _buildRepliedList(_repliedPosts),
-
+                      ProfilePostList(
+                        posts: userPosts,
+                        emptyText: "No posts yet",
+                        onRefresh: _onRefreshPosts,
+                      ),
+                      ProfileRepliesList(
+                        repliedPosts: _repliedPosts,
+                        isLoading: _isRepliedLoading,
+                      ),
                       _isRepostedLoading
                           ? const Center(
                               child: CircularProgressIndicator(
                                 color: Colors.white,
                               ),
                             )
-                          : _buildPostList(_repostedPosts, "No reposts yet"),
+                          : ProfilePostList(
+                              posts: _repostedPosts,
+                              emptyText: "No reposts yet",
+                              onRefresh: _onRefreshReposts,
+                            ),
                     ],
                   ),
                 ),

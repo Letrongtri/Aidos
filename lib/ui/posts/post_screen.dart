@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/models/user.dart';
-import 'package:ct312h_project/services/user_service.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 
 class PostScreen extends StatefulWidget {
@@ -18,7 +17,6 @@ class PostScreen extends StatefulWidget {
 class _PostScreenState extends State<PostScreen> {
   final _contentController = TextEditingController();
   final _topicController = TextEditingController();
-  final _userService = UserService();
   bool _isPosting = false;
 
   @override
@@ -38,9 +36,7 @@ class _PostScreenState extends State<PostScreen> {
     super.dispose();
   }
 
-  Future<User?> _fetchCurrentUser() async => _userService.fetchCurrentUser();
-
-  Future<void> _onPost(User user) async {
+  Future<void> _onPost() async {
     FocusScope.of(context).unfocus();
     final content = _contentController.text.trim();
     final topic = _topicController.text.trim();
@@ -57,14 +53,8 @@ class _PostScreenState extends State<PostScreen> {
 
     try {
       if (widget.existingPost == null) {
-        // ✅ Tạo bài mới
-        await postsManager.createPost(
-          userId: user.id,
-          content: content,
-          topicName: topic,
-        );
+        await postsManager.createPost(content: content, topicName: topic);
       } else {
-        // ✏️ Cập nhật bài cũ
         await postsManager.updatePost(
           postId: widget.existingPost!.id,
           content: content,
@@ -103,18 +93,17 @@ class _PostScreenState extends State<PostScreen> {
   Widget build(BuildContext context) {
     final isEditing = widget.existingPost != null;
 
+    final postsManager = context.watch<PostsManager>();
+    final user = postsManager.currentUser;
+    final isLoadingUser = postsManager.isLoadingUser;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: FutureBuilder<User?>(
-          future: _fetchCurrentUser(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (!snapshot.hasData) {
-              return const Center(
+        child: isLoadingUser
+            ? const Center(child: CircularProgressIndicator())
+            : (user == null)
+            ? const Center(
                 child: Text(
                   "User not found",
                   style: TextStyle(color: Colors.white),

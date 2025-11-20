@@ -9,6 +9,12 @@ class PostsManager extends ChangeNotifier {
   final PostService _postService = PostService();
   final LikeService _likeService = LikeService();
   final RepostService _repostService = RepostService();
+  final UserService _userService = UserService();
+
+  User? _currentUser;
+  bool _isLoadingUser = false;
+  User? get currentUser => _currentUser;
+  bool get isLoadingUser => _isLoadingUser;
 
   List<Post> _posts = [];
   final List<Post> _repliedPosts = [];
@@ -19,6 +25,25 @@ class PostsManager extends ChangeNotifier {
 
   List<Post> get posts => List<Post>.from(_posts);
   List<Post> get repliedPosts => List<Post>.from(_repliedPosts);
+
+  PostsManager() {
+    fetchCurrentUser();
+    fetchPosts();
+  }
+
+  Future<void> fetchCurrentUser() async {
+    _isLoadingUser = true;
+    notifyListeners();
+    try {
+      _currentUser = await _userService.fetchCurrentUser();
+    } catch (e) {
+      _currentUser = null;
+      debugPrint('Cannot fetch current user: $e');
+    } finally {
+      _isLoadingUser = false;
+      notifyListeners();
+    }
+  }
 
   Future<void> fetchPosts() async {
     try {
@@ -41,14 +66,14 @@ class PostsManager extends ChangeNotifier {
     }
   }
 
-  Future<Post?> createPost({
-    required String userId,
-    required String content,
-    String? topicName,
-  }) async {
+  Future<Post?> createPost({required String content, String? topicName}) async {
+    if (_currentUser == null) {
+      throw Exception('User is not logged in. Cannot create post.');
+    }
+
     try {
       final newPost = await _postService.createPostWithTopicName(
-        userId: userId,
+        userId: _currentUser!.id,
         content: content,
         topicName: topicName,
       );
@@ -187,7 +212,7 @@ class PostsManager extends ChangeNotifier {
 
       if (updatedPost != null) {
         final index = _posts.indexWhere((p) => p.id == id);
-        debugPrint('🔄 Post index in list: $index');
+        debugPrint('Post index in list: $index');
 
         if (index != -1) {
           final oldLikes = _posts[index].likes;
@@ -205,7 +230,7 @@ class PostsManager extends ChangeNotifier {
           _posts[index] = updatedPost.copyWith(isLiked: likedIds.contains(id));
 
           debugPrint(
-            '🔄 Updated post: oldLikes=$oldLikes, newLikes=${_posts[index].likes}, isLiked=${likedIds.contains(id)}, oldReposts=$oldReposts, newReposts=${_posts[index].reposts}, isReposted=$isReposted',
+            'Updated post: oldLikes=$oldLikes, newLikes=${_posts[index].likes}, isLiked=${likedIds.contains(id)}, oldReposts=$oldReposts, newReposts=${_posts[index].reposts}, isReposted=$isReposted',
           );
 
           notifyListeners();
@@ -266,6 +291,7 @@ class PostsManager extends ChangeNotifier {
   }
 
   void updateUserInfoInPosts(User updatedUser) {
+    _currentUser = updatedUser;
     for (int i = 0; i < _posts.length; i++) {
       final post = _posts[i];
       if (post.userId == updatedUser.id) {
