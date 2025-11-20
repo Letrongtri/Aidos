@@ -1,4 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:ct312h_project/models/notification.dart' as notification_model;
+import 'package:ct312h_project/services/pocketbase_client.dart';
+import 'package:ct312h_project/services/pocketbase_notification_service.dart';
+import 'package:ct312h_project/utils/generate.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ct312h_project/models/comment.dart';
@@ -119,6 +123,7 @@ class CommentManager extends ChangeNotifier {
 
   Future<void> addComment({
     required String text,
+    required String ownerId,
     int postCommentCount = 0,
     Comment? parentComment,
   }) async {
@@ -154,6 +159,40 @@ class CommentManager extends ChangeNotifier {
       }
 
       _comments.insert(0, comment);
+      notifyListeners();
+
+      final currentUserId = await getCurrentUserId();
+      if (currentUserId != null) {
+        final notiId = Generate.generatePocketBaseId();
+        notification_model.Notification? newNoti;
+
+        if (parentComment != null && parentComment.userId != currentUserId) {
+          newNoti = notification_model.Notification(
+            id: notiId,
+            userId: parentComment.userId,
+            title: 'Trả lời bình luận',
+            body: 'Ai đó đã trả lời bình luận của bạn',
+            type: notification_model.NotificationType.reply.name,
+            targetId: parentComment.postId,
+            created: DateTime.now(),
+            updated: DateTime.now(),
+          );
+        } else if (parentComment == null && ownerId != currentUserId) {
+          newNoti = notification_model.Notification(
+            id: notiId,
+            userId: ownerId,
+            title: 'Bình luận mới',
+            body: 'Ai đó đã bình luận bài viết của bạn',
+            type: notification_model.NotificationType.like.name,
+            targetId: postId,
+            created: DateTime.now(),
+            updated: DateTime.now(),
+          );
+        }
+        if (newNoti != null) {
+          await PocketBaseNotificationService.createNotification(newNoti);
+        }
+      }
     } catch (e) {
       errorMessage = e.toString();
     } finally {
@@ -184,6 +223,23 @@ class CommentManager extends ChangeNotifier {
         await _likeService.unlikeComment(commentId, currentLikeCount);
       } else {
         await _likeService.likeComment(commentId, currentLikeCount);
+
+        final currentUserId = await getCurrentUserId();
+        if (currentUserId != null && currentUserId != comment.userId) {
+          final notiId = Generate.generatePocketBaseId();
+
+          final newNoti = notification_model.Notification(
+            id: notiId,
+            userId: comment.userId,
+            title: 'Yêu thích bình luận',
+            body: 'Ai đó đã yêu thích bình luận của bạn',
+            type: notification_model.NotificationType.like.name,
+            targetId: comment.postId,
+            created: DateTime.now(),
+            updated: DateTime.now(),
+          );
+          await PocketBaseNotificationService.createNotification(newNoti);
+        }
       }
     } catch (e) {
       errorMessage = e.toString();

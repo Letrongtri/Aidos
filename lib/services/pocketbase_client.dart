@@ -18,3 +18,8 @@ Future<PocketBase> getPocketbaseInstance() async {
   _pocketBase = PocketBase(baseUrl, authStore: store);
   return _pocketBase!;
 }
+
+Future<String?> getCurrentUserId() async {
+  final pb = await getPocketbaseInstance();
+  return pb.authStore.record?.id;
+}

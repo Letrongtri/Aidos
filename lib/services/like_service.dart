@@ -65,16 +65,7 @@ class LikeService {
 
       final totalLikes = likesResult.items.length;
 
-      debugPrint('Counted $totalLikes likes for post $postId');
-
-      final updateResult = await pb
-          .collection('posts')
-          .update(postId, body: {'likes': totalLikes});
-
-      debugPrint(
-        'Update successful - DB likes: ${updateResult.getIntValue("likes")}',
-      );
-      debugPrint('Post liked - Total likes: $totalLikes');
+      await pb.collection('posts').update(postId, body: {'likes': totalLikes});
     } catch (e) {
       debugPrint('likePost error: $e');
       throw Exception();
@@ -108,16 +99,7 @@ class LikeService {
 
       final totalLikes = likesResult.items.length;
 
-      debugPrint('Counted $totalLikes likes remaining for post $postId');
-
-      final updateResult = await pb
-          .collection('posts')
-          .update(postId, body: {'likes': totalLikes});
-
-      debugPrint(
-        'Update successful - DB likes: ${updateResult.getIntValue("likes")}',
-      );
-      debugPrint('Post unliked - Total likes: $totalLikes');
+      await pb.collection('posts').update(postId, body: {'likes': totalLikes});
     } catch (e) {
       debugPrint('unlikePost error: $e');
       throw Exception();
@@ -141,8 +123,6 @@ class LikeService {
       await pb
           .collection('comments')
           .update(commentId, body: {'likes': totalLikes});
-
-      debugPrint('Comment liked - Total likes: $totalLikes');
     } catch (e) {
       debugPrint(e.toString());
       throw Exception();
@@ -176,8 +156,6 @@ class LikeService {
       await pb
           .collection('comments')
           .update(commentId, body: {'likes': totalLikes});
-
-      debugPrint('Comment unliked - Total likes: $totalLikes');
     } catch (e) {
       debugPrint(e.toString());
       throw Exception();

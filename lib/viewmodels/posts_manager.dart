@@ -1,8 +1,12 @@
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/models/user.dart';
+import 'package:ct312h_project/models/notification.dart' as notification_model;
 import 'package:ct312h_project/services/like_service.dart';
+import 'package:ct312h_project/services/pocketbase_client.dart';
+import 'package:ct312h_project/services/pocketbase_notification_service.dart';
 import 'package:ct312h_project/services/post_service.dart';
 import 'package:ct312h_project/services/repost_service.dart';
+import 'package:ct312h_project/utils/generate.dart';
 import 'package:flutter/material.dart';
 
 class PostsManager extends ChangeNotifier {
@@ -56,6 +60,20 @@ class PostsManager extends ChangeNotifier {
       errorMessage = null;
       notifyListeners();
 
+      final notiId = Generate.generatePocketBaseId();
+
+      final newNoti = notification_model.Notification(
+        id: notiId,
+        userId: userId,
+        title: 'Đăng bài viết',
+        body: 'Bạn đã đăng thành công 1 bài viết',
+        type: notification_model.NotificationType.post.name,
+        targetId: newPost.id,
+        created: DateTime.now(),
+        updated: DateTime.now(),
+      );
+      await PocketBaseNotificationService.createNotification(newNoti);
+
       return newPost;
     } catch (e) {
       errorMessage = e.toString();
@@ -80,17 +98,35 @@ class PostsManager extends ChangeNotifier {
     final isLiked = post.isLiked ?? false;
     final likeCount = post.likes;
 
+    _posts[index] = post.copyWith(
+      isLiked: !isLiked,
+      likes: isLiked ? likeCount - 1 : likeCount + 1,
+    );
+    notifyListeners();
+
     try {
       if (isLiked) {
         await _likeService.unlikePost(id, likeCount);
       } else {
         await _likeService.likePost(id, likeCount);
+
+        final currentUserId = await getCurrentUserId();
+        if (currentUserId != null && currentUserId != post.userId) {
+          final notiId = Generate.generatePocketBaseId();
+
+          final newNoti = notification_model.Notification(
+            id: notiId,
+            userId: post.userId,
+            title: 'Yêu thích bài viết',
+            body: 'Ai đó đã yêu thích bài viết của bạn',
+            type: notification_model.NotificationType.like.name,
+            targetId: post.id,
+            created: DateTime.now(),
+            updated: DateTime.now(),
+          );
+          await PocketBaseNotificationService.createNotification(newNoti);
+        }
       }
-
-      await Future.delayed(Duration(milliseconds: 200));
-      await _refreshPost(id);
-
-      debugPrint('Like toggled successfully, UI updated from DB');
     } catch (e) {
       debugPrint('Error toggling like: $e');
     }
@@ -104,6 +140,11 @@ class PostsManager extends ChangeNotifier {
     final isReposted = _repostedPostIds.contains(id);
     final repostCount = post.reposts;
 
+    _posts[index] = post.copyWith(
+      reposts: isReposted ? repostCount - 1 : repostCount + 1,
+    );
+    notifyListeners();
+
     try {
       if (isReposted) {
         await _repostService.unrepostPost(id, repostCount);
@@ -111,12 +152,24 @@ class PostsManager extends ChangeNotifier {
       } else {
         await _repostService.repostPost(id, repostCount);
         _repostedPostIds.add(id);
+
+        final currentUserId = await getCurrentUserId();
+        if (currentUserId != null && currentUserId != post.userId) {
+          final notiId = Generate.generatePocketBaseId();
+
+          final newNoti = notification_model.Notification(
+            id: notiId,
+            userId: post.userId,
+            title: 'Đăng lại bài viết',
+            body: 'Ai đó đã đăng lại 1 bài viết của bạn',
+            type: notification_model.NotificationType.post.name,
+            targetId: post.id,
+            created: DateTime.now(),
+            updated: DateTime.now(),
+          );
+          await PocketBaseNotificationService.createNotification(newNoti);
+        }
       }
-
-      await Future.delayed(Duration(milliseconds: 200));
-      await _refreshPost(id);
-
-      debugPrint('Repost toggled successfully');
       notifyListeners();
     } catch (e) {
       debugPrint('Error toggling repost: $e');

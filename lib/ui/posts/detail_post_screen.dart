@@ -223,6 +223,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
           onSend: (text) async {
             await context.read<CommentManager>().addComment(
               text: text,
+              ownerId: post.userId,
               postCommentCount: post.comments,
               parentComment: replyingTo,
             );

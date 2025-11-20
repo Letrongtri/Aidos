@@ -1,5 +1,4 @@
 import 'package:ct312h_project/services/pocketbase_client.dart';
-import 'package:pocketbase/pocketbase.dart';
 
 class RepostService {
   Future<void> repostPost(String postId, int currentRepostCount) async {

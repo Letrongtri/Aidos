@@ -1,66 +1,80 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+enum NotificationType { post, comment, reply, like, user, system }
+
 class Notification {
   final String id;
-  final String? postId;
-  final String? commentId;
+  final String userId;
+  final String title;
+  final String body;
   final String type;
-  final String message;
+  final String? targetId;
   final bool isRead;
   final DateTime created;
+  final DateTime updated;
 
   Notification({
     required this.id,
-    this.postId,
-    this.commentId,
+    required this.userId,
+    required this.title,
+    required this.body,
     required this.type,
-    required this.message,
-    required this.isRead,
+    this.targetId,
+    this.isRead = false,
     required this.created,
+    required this.updated,
   });
 
   Notification copyWith({
     String? id,
-    String? postId,
-    String? commentId,
+    String? userId,
+    String? title,
+    String? body,
     String? type,
-    String? message,
+    String? targetId,
     bool? isRead,
-    DateTime? createdAt,
+    DateTime? created,
+    DateTime? updated,
   }) {
     return Notification(
       id: id ?? this.id,
-      postId: postId ?? this.postId,
-      commentId: commentId ?? this.commentId,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      body: body ?? this.body,
       type: type ?? this.type,
-      message: message ?? this.message,
+      targetId: targetId ?? this.targetId,
       isRead: isRead ?? this.isRead,
-      created: createdAt ?? created,
+      created: created ?? this.created,
+      updated: updated ?? this.updated,
     );
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
-      'postId': postId,
-      'commentId': commentId,
+      'userId': userId,
+      'title': title,
+      'body': body,
       'type': type,
-      'message': message,
+      'targetId': targetId,
       'isRead': isRead,
       'created': created.toIso8601String(),
+      'updated': updated.toIso8601String(),
     };
   }
 
   factory Notification.fromMap(Map<String, dynamic> map) {
     return Notification(
       id: map['id'] as String,
-      postId: map['postId'] != null ? map['postId'] as String : null,
-      commentId: map['commentId'] != null ? map['commentId'] as String : null,
+      userId: map['userId'] as String,
+      title: map['title'] as String,
+      body: map['body'] as String,
       type: map['type'] as String,
-      message: map['message'] as String,
+      targetId: map['targetId'] as String,
       isRead: map['isRead'] as bool,
       created: DateTime.parse(map['created'] as String),
+      updated: DateTime.parse(map['updated'] as String),
     );
   }
 
@@ -71,7 +85,7 @@ class Notification {
 
   @override
   String toString() {
-    return 'Notification(id: $id, postId: $postId, commentId: $commentId, type: $type, message: $message, isRead: $isRead, created: $created)';
+    return 'Notification(id: $id, userId: $userId, title: $title, body: $body, type: $type, targetId: $targetId, isRead: $isRead, created: $created, updated: $updated)';
   }
 
   @override
@@ -79,22 +93,40 @@ class Notification {
     if (identical(this, other)) return true;
 
     return other.id == id &&
-        other.postId == postId &&
-        other.commentId == commentId &&
+        other.userId == userId &&
+        other.title == title &&
+        other.body == body &&
         other.type == type &&
-        other.message == message &&
+        other.targetId == targetId &&
         other.isRead == isRead &&
-        other.created == created;
+        other.created == created &&
+        other.updated == updated;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-        postId.hashCode ^
-        commentId.hashCode ^
+        userId.hashCode ^
+        title.hashCode ^
+        body.hashCode ^
         type.hashCode ^
-        message.hashCode ^
+        targetId.hashCode ^
         isRead.hashCode ^
-        created.hashCode;
+        created.hashCode ^
+        updated.hashCode;
+  }
+
+  factory Notification.fromSqlite(Map<String, dynamic> map) {
+    return Notification(
+      id: map['id'] as String,
+      userId: map['userId'] as String,
+      title: map['title'] as String,
+      body: map['body'] as String,
+      type: map['type'] as String,
+      targetId: map['targetId'] as String,
+      isRead: map['isRead'] as int == 1,
+      created: DateTime.parse(map['created'] as String),
+      updated: DateTime.parse(map['updated'] as String),
+    );
   }
 }
