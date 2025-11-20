@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:ct312h_project/models/user.dart';
-import 'package:ct312h_project/services/post_service.dart';
-import 'package:ct312h_project/services/user_service.dart';
+import 'package:ct312h_project/services/services.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

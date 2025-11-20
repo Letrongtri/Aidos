@@ -1,10 +1,7 @@
 import 'package:ct312h_project/app/app_route.dart';
+import 'package:ct312h_project/app/theme.dart';
 import 'package:ct312h_project/services/local_notification_service.dart';
-import 'package:ct312h_project/viewmodels/auth_manager.dart';
-import 'package:ct312h_project/viewmodels/notification_manager.dart';
-import 'package:ct312h_project/viewmodels/pofile_manager.dart';
-import 'package:ct312h_project/viewmodels/posts_manager.dart';
-import 'package:ct312h_project/viewmodels/search_manager.dart';
+import 'package:ct312h_project/viewmodels/viewmodels.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -53,19 +50,15 @@ class _MyAppState extends State<MyApp> {
   }
 
   MaterialApp _buildMaterialApp(BuildContext context) {
+    ThemeData mainTheme = buildTheme();
+
     return MaterialApp.router(
-      title: 'Aido',
+      title: 'Aidos',
       debugShowMaterialGrid: false,
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: const ColorScheme.dark(
-          primary: Colors.white,
-          onPrimary: Colors.black,
-        ),
-        useMaterial3: true,
-      ),
+      theme: mainTheme,
       routerConfig: router,
     );
   }

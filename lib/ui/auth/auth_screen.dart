@@ -66,7 +66,7 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     } catch (error) {
       log('$error');
-      print(error);
+      debugPrint(error.toString());
       if (mounted) {
         showErrorDialog(context, error.toString());
       }

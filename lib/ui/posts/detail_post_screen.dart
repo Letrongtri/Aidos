@@ -1,38 +1,14 @@
+import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/comment.dart';
 import 'package:ct312h_project/models/post.dart';
+import 'package:ct312h_project/viewmodels/viewmodels.dart';
 import 'package:ct312h_project/ui/comments/add_comment.dart';
 import 'package:ct312h_project/ui/comments/comment_list.dart';
 import 'package:ct312h_project/ui/shared/show_post_actions_bottom_sheet.dart';
-import 'package:ct312h_project/viewmodels/comment_manager.dart';
 import 'package:ct312h_project/ui/posts/detail_post_content.dart';
-import 'package:ct312h_project/viewmodels/posts_manager.dart';
-import 'package:ct312h_project/viewmodels/pofile_manager.dart'; // <-- THÊM IMPORT NÀY
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
-// class DetailPostScreen extends StatelessWidget {
-//   const DetailPostScreen({
-//     super.key,
-//     required this.id,
-//     this.focusComment = false,
-//   });
-//   final String id;
-//   final bool focusComment;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MultiProvider(
-//       providers: [
-//         // ChangeNotifierProvider(
-//         //   create: (_) => getIt<DetailPostManager>()..fetchPostById(id),
-//         // ),
-//         // ChangeNotifierProvider(create: (_) => getIt<CommentManager>()),
-//       ],
-//       child: _DetailPostBody(focusComment: focusComment),
-//     );
-//   }
-// }
 
 class DetailPostScreen extends StatefulWidget {
   const DetailPostScreen({
@@ -56,7 +32,6 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (widget.focusComment) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -78,7 +53,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
 
     if (post == null) {
       return Scaffold(
-        appBar: AppBar(elevation: 0, title: Text("Aido")),
+        appBar: AppBar(elevation: 0, title: Text("Aidos")),
         body: Center(child: Text("Không tìm thấy bài viết.")),
       );
     }
@@ -98,7 +73,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         elevation: 0,
-        title: Text("Aido"),
+        title: Text("Aidos"),
         actions: [
           IconButton(
             onPressed: () {
@@ -106,10 +81,12 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
                 context,
                 onUpdate: () {
                   Navigator.pop(context);
-                  context.push('/home/post', extra: post);
+                  context.goNamed(AppRouteName.post.name, extra: post);
                 },
                 onDelete: () async {
                   Navigator.pop(context);
+
+                  final postsManager = context.read<PostsManager>();
 
                   final confirmed = await showDialog<bool>(
                     context: context,
@@ -144,7 +121,6 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
 
                   if (confirmed == true) {
                     try {
-                      final postsManager = context.read<PostsManager>();
                       await postsManager.deletePost(post.id);
 
                       if (context.mounted) {
@@ -154,7 +130,9 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
                           ),
                         );
 
-                        context.go('/home/feed');
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
                       }
                     } catch (e) {
                       if (context.mounted) {

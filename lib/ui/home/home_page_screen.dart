@@ -15,6 +15,7 @@ class HomePageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     int unreadCount = context.watch<NotificationManager>().unreadCount;
 
     // Ẩn bottom nav khi ở trang detail post
@@ -30,8 +31,9 @@ class HomePageScreen extends StatelessWidget {
             ? null
             : BottomNavigationBar(
                 currentIndex: navigationShell.currentIndex,
-                selectedItemColor: Colors.white,
-                unselectedItemColor: const Color.fromARGB(255, 120, 120, 120),
+                backgroundColor: theme.colorScheme.surface,
+                selectedItemColor: theme.colorScheme.primary,
+                unselectedItemColor: Colors.white38,
                 showSelectedLabels: false,
                 showUnselectedLabels: false,
                 onTap: _onItemTapped,
@@ -50,7 +52,7 @@ class HomePageScreen extends StatelessWidget {
                     icon: Badge(
                       isLabelVisible: unreadCount > 0,
                       label: Text(unreadCount.toString()),
-                      backgroundColor: Colors.red,
+                      backgroundColor: theme.colorScheme.error,
                       child: Icon(Icons.notifications),
                     ),
                     label: "Notification",

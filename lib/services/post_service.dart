@@ -1,5 +1,6 @@
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/services/pocketbase_client.dart';
+import 'package:flutter/material.dart';
 import 'package:pocketbase/pocketbase.dart';
 import 'dart:async';
 
@@ -119,7 +120,7 @@ class PostService {
         topicRecord: topic,
       );
     } catch (e, st) {
-      print('createPostWithTopicName ERROR: $e\n$st');
+      debugPrint('createPostWithTopicName ERROR: $e\n$st');
       rethrow;
     }
   }
@@ -146,7 +147,7 @@ class PostService {
         );
       }).toList();
     } catch (e) {
-      print('Error fetching user posts: $e');
+      debugPrint('Error fetching user posts: $e');
       return [];
     }
   }
@@ -186,7 +187,7 @@ class PostService {
 
       return replied;
     } catch (e, st) {
-      print('Error fetching replied posts: $e\n$st');
+      debugPrint('Error fetching replied posts: $e\n$st');
       return [];
     }
   }
@@ -240,7 +241,7 @@ class PostService {
       final pb = await getPocketbaseInstance();
       await pb.collection('posts').delete(postId);
     } catch (e) {
-      print('Error deleting post: $e');
+      debugPrint('Error deleting post: $e');
       rethrow;
     }
   }
@@ -264,10 +265,10 @@ class PostService {
       );
     } on ClientException catch (e) {
       if (e.statusCode == 404) return null;
-      print('Error fetching single post by ID: $e');
+      debugPrint('Error fetching single post by ID: $e');
       return null;
     } catch (e) {
-      print('Error fetching single post by ID: $e');
+      debugPrint('Error fetching single post by ID: $e');
       return null;
     }
   }

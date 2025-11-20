@@ -3,7 +3,7 @@ import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/ui/posts/single_post_item.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:ct312h_project/ui/user/edit_profile_screen.dart';
-import 'package:ct312h_project/viewmodels/pofile_manager.dart';
+import 'package:ct312h_project/viewmodels/profile_manager.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

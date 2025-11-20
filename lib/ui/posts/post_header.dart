@@ -1,9 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
+import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/ui/shared/show_post_actions_bottom_sheet.dart';
 import 'package:ct312h_project/utils/format.dart';
-import 'package:ct312h_project/utils/ui.dart';
+import 'package:ct312h_project/utils/generate.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -25,7 +26,7 @@ class PostHeader extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  post.user?.username ?? generateUsername(post.userId),
+                  post.user?.username ?? Generate.generateUsername(post.userId),
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 if (post.topic != null)
@@ -35,7 +36,7 @@ class PostHeader extends StatelessWidget {
                       TextButton(
                         onPressed: () {
                           context.goNamed(
-                            'search',
+                            AppRouteName.search.name,
                             queryParameters: {'q': post.topic!.name},
                           );
                         },
@@ -58,10 +59,12 @@ class PostHeader extends StatelessWidget {
               context,
               onUpdate: () {
                 Navigator.pop(context);
-                context.push('/home/post', extra: post);
+                context.pushNamed(AppRouteName.post.name, extra: post);
               },
               onDelete: () async {
                 Navigator.pop(context);
+
+                final postsManager = context.read<PostsManager>();
 
                 final confirmed = await showDialog<bool>(
                   context: context,
@@ -96,7 +99,6 @@ class PostHeader extends StatelessWidget {
 
                 if (confirmed == true) {
                   try {
-                    final postsManager = context.read<PostsManager>();
                     await postsManager.deletePost(post.id);
 
                     if (context.mounted) {
@@ -106,7 +108,9 @@ class PostHeader extends StatelessWidget {
                         ),
                       );
 
-                      context.go('/home/feed');
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
                     }
                   } catch (e) {
                     if (context.mounted) {

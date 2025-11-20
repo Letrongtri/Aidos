@@ -1,7 +1,8 @@
+import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:ct312h_project/utils/format.dart';
-import 'package:ct312h_project/utils/ui.dart';
+import 'package:ct312h_project/utils/generate.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -24,7 +25,7 @@ class DetailPostContent extends StatelessWidget {
             Avatar(userId: post.userId, size: 25),
             SizedBox(width: 8),
             Text(
-              post.user?.username ?? generateUsername(post.userId),
+              post.user?.username ?? Generate.generateUsername(post.userId),
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             Spacer(),
@@ -52,7 +53,7 @@ class DetailPostContent extends StatelessWidget {
             TextButton.icon(
               onPressed: () {
                 context.goNamed(
-                  'detail',
+                  AppRouteName.detailPost.name,
                   pathParameters: {'id': post.id},
                   extra: {'focusComment': true},
                 );

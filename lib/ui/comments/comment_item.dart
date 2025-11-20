@@ -1,7 +1,7 @@
 import 'package:ct312h_project/models/comment.dart';
 import 'package:ct312h_project/ui/shared/show_post_actions_bottom_sheet.dart';
 import 'package:ct312h_project/utils/format.dart';
-import 'package:ct312h_project/utils/ui.dart';
+import 'package:ct312h_project/utils/generate.dart';
 import 'package:ct312h_project/viewmodels/comment_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +35,8 @@ class CommentItem extends StatelessWidget {
           Row(
             children: [
               Text(
-                comment.user?.username ?? generateUsername(comment.userId),
+                comment.user?.username ??
+                    Generate.generateUsername(comment.userId),
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Spacer(),

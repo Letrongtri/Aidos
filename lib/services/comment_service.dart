@@ -5,47 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 class CommentService {
-  // Future<List<Comment>> fetchCommentsByPostId(String postId) async {
-  //   // TODO: fetch dữ liệu thật
-  //   await Future.delayed(Duration(milliseconds: 300));
-
-  //   return [
-  //     // Comment(
-  //     //   id: 'c001', // Uuid().v4()
-  //     //   postId: "p001",
-  //     //   userId: "u003",
-  //     //   content: "Bài này hay quá",
-  //     //   // parentId: "1",
-  //     //   likeCount: 12,
-  //     //   replyCount: 2,
-  //     //   createdAt: DateTime.now().subtract(const Duration(days: 3)),
-  //     //   updatedAt: DateTime.now().subtract(const Duration(hours: 3)),
-  //     // ),
-  //     // Comment(
-  //     //   id: 'c002',
-  //     //   postId: "p001",
-  //     //   userId: "u002",
-  //     //   content: "Ok luôn <33",
-  //     //   parentId: "c001",
-  //     //   likeCount: 1,
-  //     //   replyCount: 0,
-  //     //   createdAt: DateTime.now().subtract(const Duration(days: 2)),
-  //     //   updatedAt: DateTime.now().subtract(const Duration(days: 2)),
-  //     // ),
-  //     // Comment(
-  //     //   id: 'c003',
-  //     //   postId: "p001",
-  //     //   userId: "u004",
-  //     //   content: "Tuyệt vời quá",
-  //     //   parentId: "c002",
-  //     //   likeCount: 0,
-  //     //   replyCount: 0,
-  //     //   createdAt: DateTime.now().subtract(const Duration(days: 1)),
-  //     //   updatedAt: DateTime.now().subtract(const Duration(hours: 12)),
-  //     // ),
-  //   ];
-  // }
-
   Future<Comment?> addComment(
     Comment comment,
     int postCommentCount,
@@ -142,7 +101,7 @@ class CommentService {
 
       return replies;
     } catch (e, st) {
-      print('Error fetching replies for comment $rootId: $e\n$st');
+      debugPrint('Error fetching replies for comment $rootId: $e\n$st');
       return replies;
     }
   }
@@ -165,30 +124,4 @@ class CommentService {
 
     return allReplies;
   }
-
-  // List<CommentItemViewModel> getRepliesForRoot(String rootId) {
-  //   final allReplies = _comments
-  //       .where((c) => c.parentId != null)
-  //       .toList(); // Lấy toàn bộ comment reply
-
-  //   // Lọc ra những reply mà "tổ tiên gốc" của nó có id == rootId
-  //   return allReplies.where((r) {
-  //     // lấy cha của reply r
-  //     var parent = _comments.firstWhere(
-  //       (c) => c.id == r.parentId,
-  //       orElse: () => CommentItemViewModel.empty(),
-  //     );
-
-  //     // Leo lên cha của cha... cho đến khi không còn parentId (tức là root)
-  //     while (parent.parentId != null) {
-  //       parent = _comments.firstWhere(
-  //         (c) => c.id == parent.parentId,
-  //         orElse: () => CommentItemViewModel.empty(),
-  //       );
-  //     }
-
-  //     // Nếu tổ tiên gốc có id == rootId, thì r thuộc nhánh này
-  //     return parent.id == rootId;
-  //   }).toList();
-  // }
 }

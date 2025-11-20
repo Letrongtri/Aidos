@@ -1,7 +1,10 @@
+import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
-import 'package:ct312h_project/viewmodels/pofile_manager.dart';
+import 'package:ct312h_project/ui/shared/dialog_utils.dart';
+import 'package:ct312h_project/viewmodels/profile_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -14,15 +17,6 @@ class EditProfileScreen extends StatelessWidget {
     required this.panelController,
     required this.user,
   });
-
-  void _showSnack(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.grey[900],
-        content: Text(msg, style: const TextStyle(color: Colors.white)),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +48,9 @@ class EditProfileScreen extends StatelessWidget {
                     TextButton(
                       onPressed: () async {
                         await vm.logout();
-                        Navigator.of(
-                          context,
-                        ).pushReplacementNamed('/login'); // chuyển về login
+                        if (context.mounted) {
+                          context.pushReplacementNamed(AppRouteName.auth.name);
+                        }
                       },
                       child: const Text(
                         'Logout',
@@ -118,7 +112,9 @@ class EditProfileScreen extends StatelessWidget {
               : () async {
                   final err = vm.validateBeforeSave();
                   if (err != null) {
-                    _showSnack(context, err);
+                    if (context.mounted) {
+                      showErrorDialog(context, err);
+                    }
                     return;
                   }
 
@@ -128,10 +124,11 @@ class EditProfileScreen extends StatelessWidget {
                     confirmPassword: vm.confirmPasswordController.text.trim(),
                   );
 
-                  _showSnack(
-                    context,
-                    ok ? 'Profile updated!' : 'Failed to update profile',
-                  );
+                  if (ok && context.mounted) {
+                    showAppSnackBar(context, message: 'Profile updated!');
+                  } else if (!ok && context.mounted) {
+                    showErrorDialog(context, 'Failed to update profile');
+                  }
 
                   if (ok) panelController.close();
                 },

@@ -1,4 +1,5 @@
 import 'package:ct312h_project/services/pocketbase_client.dart';
+import 'package:flutter/material.dart';
 
 class RepostService {
   Future<void> repostPost(String postId, int currentRepostCount) async {
@@ -20,7 +21,7 @@ class RepostService {
           .collection('posts')
           .update(postId, body: {'reposts': currentRepostCount + 1});
     } catch (e) {
-      print('Error reposting: $e');
+      debugPrint('Error reposting: $e');
       rethrow;
     }
   }
@@ -51,7 +52,7 @@ class RepostService {
             .update(postId, body: {'reposts': newCount});
       }
     } catch (e) {
-      print('Error unreposting: $e');
+      debugPrint('Error unreposting: $e');
       rethrow;
     }
   }
@@ -71,7 +72,7 @@ class RepostService {
 
       return result.items.isNotEmpty;
     } catch (e) {
-      print('Error checking repost status: $e');
+      debugPrint('Error checking repost status: $e');
       return false;
     }
   }
@@ -95,7 +96,7 @@ class RepostService {
 
       return result.items.map((r) => r.getStringValue('postId')).toSet();
     } catch (e) {
-      print('Error fetching reposted posts: $e');
+      debugPrint('Error fetching reposted posts: $e');
       return {};
     }
   }
@@ -110,7 +111,7 @@ class RepostService {
 
       return result.items.map((r) => r.getStringValue('postId')).toList();
     } catch (e) {
-      print('Error fetching user reposts: $e');
+      debugPrint('Error fetching user reposts: $e');
       return [];
     }
   }

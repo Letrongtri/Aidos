@@ -1,13 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:ct312h_project/models/notification.dart' as notification_model;
-import 'package:ct312h_project/services/pocketbase_client.dart';
-import 'package:ct312h_project/services/pocketbase_notification_service.dart';
+import 'package:ct312h_project/services/services.dart';
 import 'package:ct312h_project/utils/generate.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ct312h_project/models/comment.dart';
-import 'package:ct312h_project/services/comment_service.dart';
-import 'package:ct312h_project/services/like_service.dart';
 
 class CommentManager extends ChangeNotifier {
   CommentManager({required this.postId});

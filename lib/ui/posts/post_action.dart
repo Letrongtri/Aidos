@@ -1,3 +1,4 @@
+import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/utils/format.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
@@ -33,7 +34,7 @@ class PostAction extends StatelessWidget {
         TextButton.icon(
           onPressed: () {
             context.goNamed(
-              'detail',
+              AppRouteName.detailPost.name,
               pathParameters: {'id': post.id},
               extra: {'focusComment': true},
             );

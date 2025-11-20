@@ -18,6 +18,24 @@ Future<void> showErrorDialog(BuildContext context, String message) {
   );
 }
 
+void showAppSnackBar(BuildContext context, {required String message}) {
+  if (!context.mounted) return;
+
+  final backgroundColor = Theme.of(context).colorScheme.secondary;
+
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+}
+
 class ActionButton extends StatelessWidget {
   const ActionButton({super.key, this.actionText, this.onPressed});
 

@@ -1,7 +1,6 @@
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/models/topic.dart';
-import 'package:ct312h_project/services/post_service.dart';
-import 'package:ct312h_project/services/topic_service.dart';
+import 'package:ct312h_project/services/services.dart';
 import 'package:flutter/material.dart';
 
 class SearchManager extends ChangeNotifier {

@@ -1,11 +1,7 @@
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/models/notification.dart' as notification_model;
-import 'package:ct312h_project/services/like_service.dart';
-import 'package:ct312h_project/services/pocketbase_client.dart';
-import 'package:ct312h_project/services/pocketbase_notification_service.dart';
-import 'package:ct312h_project/services/post_service.dart';
-import 'package:ct312h_project/services/repost_service.dart';
+import 'package:ct312h_project/services/services.dart';
 import 'package:ct312h_project/utils/generate.dart';
 import 'package:flutter/material.dart';
 

@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/ui/posts/post_action.dart';
 import 'package:ct312h_project/ui/posts/post_header.dart';
@@ -15,7 +16,10 @@ class SinglePostItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.goNamed('detail', pathParameters: {'id': post.id});
+        context.goNamed(
+          AppRouteName.detailPost.name,
+          pathParameters: {'id': post.id},
+        );
       },
       child: Column(
         children: [

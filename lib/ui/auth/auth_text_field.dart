@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AuthTextField extends StatelessWidget {
-  AuthTextField({
+  const AuthTextField({
     super.key,
     this.hint = '',
     this.onSaved,

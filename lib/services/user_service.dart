@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/services/pocketbase_client.dart';
+import 'package:flutter/material.dart';
 
 class UserService {
   Future<User?> fetchCurrentUser() async {
@@ -26,7 +27,7 @@ class UserService {
             : null,
       );
     } catch (e) {
-      print('fetchCurrentUser error: $e');
+      debugPrint('fetchCurrentUser error: $e');
       return null;
     }
   }
@@ -66,7 +67,7 @@ class UserService {
         updated: DateTime.tryParse(record.updated) ?? DateTime.now(),
       );
     } catch (e) {
-      print('updateUser error: $e');
+      debugPrint('updateUser error: $e');
       rethrow;
     }
   }
@@ -95,9 +96,9 @@ class UserService {
       final email = pb.authStore.model.data['email'] as String;
       await pb.collection('users').authWithPassword(email, newPassword);
 
-      print("Password updated successfully");
+      debugPrint("Password updated successfully");
     } catch (e) {
-      print("changePassword error: $e");
+      debugPrint("changePassword error: $e");
       rethrow;
     }
   }
@@ -110,7 +111,7 @@ class UserService {
       await pb.collection('users').delete(pb.authStore.model.id);
       pb.authStore.clear();
     } catch (e) {
-      print('deleteUser error: $e');
+      debugPrint('deleteUser error: $e');
       rethrow;
     }
   }

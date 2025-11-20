@@ -1,7 +1,6 @@
 import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/models/user.dart';
@@ -88,7 +87,9 @@ class _PostScreenState extends State<PostScreen> {
         ),
       );
 
-      context.go('/home/feed');
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -134,7 +135,11 @@ class _PostScreenState extends State<PostScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         TextButton(
-                          onPressed: () => context.go('/home/feed'),
+                          onPressed: () {
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                          },
                           child: const Text(
                             "Cancel",
                             style: TextStyle(
