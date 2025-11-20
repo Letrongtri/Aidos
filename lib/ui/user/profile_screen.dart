@@ -1,9 +1,7 @@
 // lib/ui/user/profile_screen.dart
 import 'package:ct312h_project/models/post.dart';
-import 'package:ct312h_project/models/user.dart';
-import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:ct312h_project/ui/user/edit_profile_screen.dart';
-import 'package:ct312h_project/ui/user/profile_replies.list.dart';
+import 'package:ct312h_project/ui/user/profile_replies_list.dart';
 import 'package:ct312h_project/viewmodels/profile_manager.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
@@ -65,22 +63,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }(),
     ]);
 
-    // postsManager.addListener(_refreshRepostedPosts);
+    postsManager.addListener(_refreshRepostedPosts);
   }
 
-  // void _refreshRepostedPosts() async {
-  //   final vm = context.read<ProfileManager>();
-  //   final postsManager = context.read<PostsManager>();
+  void _refreshRepostedPosts() async {
+    final vm = context.read<ProfileManager>();
+    final postsManager = context.read<PostsManager>();
 
-  //   if (vm.user != null && mounted) {
-  //     final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
-  //     if (mounted) {
-  //       setState(() {
-  //         _repostedPosts = reposted;
-  //       });
-  //     }
-  //   }
-  // }
+    if (vm.user != null && mounted) {
+      final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
+      if (mounted) {
+        setState(() {
+          _repostedPosts = reposted;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -206,129 +204,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildPostList(List<Post> posts, String emptyText) {
-    if (posts.isEmpty) {
-      return Center(
-        child: Text(emptyText, style: const TextStyle(color: Colors.grey)),
-      );
-    }
-
-    return RefreshIndicator(
-      color: Colors.white,
-      backgroundColor: Colors.black,
-      onRefresh: () async {
-        final postsManager = context.read<PostsManager>();
-        final vm = context.read<ProfileManager>();
-
-        await postsManager.fetchPosts();
-
-        if (vm.user != null) {
-          final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
-          if (mounted) {
-            setState(() => _repostedPosts = reposted);
-          }
-        }
-      },
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        physics: const BouncingScrollPhysics(),
-        itemCount: posts.length,
-        itemBuilder: (context, index) => SinglePostItem(post: posts[index]),
-      ),
-    );
-  }
-
-  Widget _buildRepliedList(List<Map<String, dynamic>> repliedPosts) {
-    if (repliedPosts.isEmpty) {
-      return const Center(
-        child: Text('No replies yet', style: TextStyle(color: Colors.grey)),
-      );
-    }
-
-    return ListView.separated(
-      physics: const BouncingScrollPhysics(),
-      separatorBuilder: (_, __) => const Divider(color: Colors.grey),
-      itemCount: repliedPosts.length,
-      itemBuilder: (context, index) {
-        final post = repliedPosts[index]['post'] as Post;
-        final comment = repliedPosts[index]['comment'] as String;
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SinglePostItem(post: post),
-
-              Container(
-                margin: const EdgeInsets.only(left: 40, top: 6),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A1A),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white12, width: 1),
-                ),
-                child: Text(
-                  comment,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _ProfileHeader extends StatelessWidget {
-  final User user;
-  const _ProfileHeader({required this.user});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Avatar(userId: user.id, size: 70),
-
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                user.username,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                user.email,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

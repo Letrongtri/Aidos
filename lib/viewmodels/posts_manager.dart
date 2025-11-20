@@ -85,7 +85,7 @@ class PostsManager extends ChangeNotifier {
 
       final newNoti = notification_model.Notification(
         id: notiId,
-        userId: userId,
+        userId: _currentUser!.id,
         title: 'Đăng bài viết',
         body: 'Bạn đã đăng thành công 1 bài viết',
         type: notification_model.NotificationType.post.name,

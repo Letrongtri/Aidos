@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:ct312h_project/models/post.dart';
-import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 
 class PostScreen extends StatefulWidget {
@@ -108,154 +107,149 @@ class _PostScreenState extends State<PostScreen> {
                   "User not found",
                   style: TextStyle(color: Colors.white),
                 ),
-              );
-            }
-
-            final user = snapshot.data!;
-
-            return GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    // === Header (Cancel | Title | Post) ===
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                            }
-                          },
-                          child: const Text(
-                            "Cancel",
-                            style: TextStyle(
+              )
+            : GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      // === Header (Cancel | Title | Post) ===
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                              }
+                            },
+                            child: const Text(
+                              "Cancel",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            isEditing ? 'Edit Post' : 'New Post',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
+                              fontSize: 20,
                             ),
                           ),
-                        ),
-                        Text(
-                          isEditing ? 'Edit Post' : 'New Post',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: _isPosting ? null : () => _onPost(user),
-                          child: Text(
-                            _isPosting
-                                ? 'Posting...'
-                                : (isEditing ? 'Update' : 'Post'),
-                            style: TextStyle(
-                              color: _isPosting
-                                  ? Colors.grey
-                                  : const Color.fromARGB(255, 20, 132, 237),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const Divider(thickness: 1, color: Colors.grey),
-                    const SizedBox(height: 12),
-
-                    // === Body ===
-                    Expanded(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Avatar(userId: user.id, size: 25),
-                          const SizedBox(width: 14),
-
-                          // === Post input section ===
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Username + Topic inline
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        user.username,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Icon(
-                                      Icons.chevron_right,
-                                      size: 18,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: TextField(
-                                        controller: _topicController,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                        ),
-                                        decoration: const InputDecoration(
-                                          hintText: 'Enter topic...',
-                                          hintStyle: TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: 14,
-                                          ),
-                                          border: InputBorder.none,
-                                          isDense: true,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 8),
-
-                                // Main content input
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _contentController,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                    ),
-                                    decoration: const InputDecoration(
-                                      hintText: "What's new?",
-                                      hintStyle: TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.grey,
-                                      ),
-                                      border: InputBorder.none,
-                                    ),
-                                    maxLines: null,
-                                    expands: true,
-                                    autofocus: isEditing ? false : true,
-                                  ),
-                                ),
-                              ],
+                          TextButton(
+                            onPressed: _isPosting ? null : () => _onPost(),
+                            child: Text(
+                              _isPosting
+                                  ? 'Posting...'
+                                  : (isEditing ? 'Update' : 'Post'),
+                              style: TextStyle(
+                                color: _isPosting
+                                    ? Colors.grey
+                                    : const Color.fromARGB(255, 20, 132, 237),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+
+                      const Divider(thickness: 1, color: Colors.grey),
+                      const SizedBox(height: 12),
+
+                      // === Body ===
+                      Expanded(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Avatar(userId: user.id, size: 25),
+                            const SizedBox(width: 14),
+
+                            // === Post input section ===
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Username + Topic inline
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          user.username,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Icon(
+                                        Icons.chevron_right,
+                                        size: 18,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _topicController,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                          ),
+                                          decoration: const InputDecoration(
+                                            hintText: 'Enter topic...',
+                                            hintStyle: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 14,
+                                            ),
+                                            border: InputBorder.none,
+                                            isDense: true,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 8),
+
+                                  // Main content input
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _contentController,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                      ),
+                                      decoration: const InputDecoration(
+                                        hintText: "What's new?",
+                                        hintStyle: TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.grey,
+                                        ),
+                                        border: InputBorder.none,
+                                      ),
+                                      maxLines: null,
+                                      expands: true,
+                                      autofocus: isEditing ? false : true,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            );
-          },
-        ),
       ),
     );
   }
