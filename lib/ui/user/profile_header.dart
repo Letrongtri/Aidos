@@ -8,6 +8,11 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Lấy Theme từ context
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     final hasAvatar =
         user.avatarUrl != null && user.avatarUrl!.trim().isNotEmpty;
 
@@ -16,10 +21,16 @@ class ProfileHeader extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 35,
-          backgroundColor: Colors.grey[900],
+
+          backgroundColor: colorScheme.surfaceContainerHighest,
           backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl!) : null,
           child: !hasAvatar
-              ? const Icon(Icons.person, size: 35, color: Colors.white54)
+              ? Icon(
+                  Icons.person,
+                  size: 35,
+
+                  color: colorScheme.onSurface.withOpacity(0.5),
+                )
               : null,
         ),
         const SizedBox(width: 16),
@@ -29,21 +40,16 @@ class ProfileHeader extends StatelessWidget {
             children: [
               Text(
                 user.username,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  overflow: TextOverflow.ellipsis,
-                ),
+
+                style: textTheme.titleLarge,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
                 user.email,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
-                  overflow: TextOverflow.ellipsis,
-                ),
+
+                style: textTheme.bodyMedium,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

@@ -51,10 +51,19 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   Widget build(BuildContext context) {
     final post = context.watch<PostsManager>().findPostById(widget.id);
 
+    // Lấy Theme
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
     if (post == null) {
       return Scaffold(
-        appBar: AppBar(elevation: 0, title: Text("Aidos")),
-        body: Center(child: Text("Không tìm thấy bài viết.")),
+        appBar: AppBar(
+          elevation: 0,
+          title: Text("Aidos", style: textTheme.titleLarge),
+        ),
+        body: Center(
+          child: Text("Không tìm thấy bài viết.", style: textTheme.bodyMedium),
+        ),
       );
     }
 
@@ -62,18 +71,25 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
       create: (_) => CommentManager(postId: post.id),
       child: Builder(
         builder: (context) {
-          return _buildDetailPostScreen(context, post);
+          return _buildDetailPostScreen(context, post, theme);
         },
       ),
     );
   }
 
-  Widget _buildDetailPostScreen(BuildContext context, Post post) {
+  Widget _buildDetailPostScreen(
+    BuildContext context,
+    Post post,
+    ThemeData theme,
+  ) {
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         elevation: 0,
-        title: Text("Aidos"),
+        title: Text("Aidos", style: textTheme.titleLarge),
         actions: [
           IconButton(
             onPressed: () {
@@ -91,28 +107,30 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
                   final confirmed = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
-                      backgroundColor: Colors.black,
-                      title: const Text(
-                        'Delete Post',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      content: const Text(
+                      backgroundColor: colorScheme.surfaceContainerHighest,
+                      title: Text('Delete Post', style: textTheme.titleLarge),
+                      content: Text(
                         'Are you sure you want to delete this post?',
-                        style: TextStyle(color: Colors.white70),
+                        style: textTheme.bodyMedium,
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context, false),
-                          child: const Text(
+                          child: Text(
                             'Cancel',
-                            style: TextStyle(color: Colors.grey),
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurface.withOpacity(0.6),
+                            ),
                           ),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(context, true),
-                          child: const Text(
+                          child: Text(
                             'Delete',
-                            style: TextStyle(color: Colors.redAccent),
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.error,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -125,8 +143,14 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
 
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Post deleted successfully'),
+                          SnackBar(
+                            content: Text(
+                              'Post deleted successfully',
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: Colors.black,
+                              ),
+                            ),
+                            backgroundColor: colorScheme.secondary,
                           ),
                         );
 
@@ -145,7 +169,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
                 },
               );
             },
-            icon: Icon(Icons.more_horiz),
+            icon: Icon(Icons.more_horiz, color: colorScheme.onSurface),
           ),
         ],
       ),
@@ -154,16 +178,25 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           children: [
             DetailPostContent(post: post),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 DropdownButton<String>(
                   value: selectedValue,
-                  underline: SizedBox(),
+                  underline: const SizedBox(),
+
+                  dropdownColor: colorScheme.surfaceContainerHighest,
+
+                  icon: Icon(
+                    Icons.arrow_drop_down,
+                    color: colorScheme.secondary,
+                  ),
+                  style: textTheme.bodyMedium,
                   items: <String>['Hotest', 'Newest'].map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
-                      child: Text(value),
+                      child: Text(value, style: textTheme.bodyMedium),
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
@@ -174,7 +207,9 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
                 ),
               ],
             ),
-            Divider(),
+
+            Divider(color: colorScheme.onSurface.withOpacity(0.12)),
+
             CommentList(
               postId: post.id,
               onReply: (comment) {
@@ -184,13 +219,14 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
                 FocusScope.of(context).requestFocus(_commentFocusNode);
               },
             ),
+
+            const SizedBox(height: 80),
           ],
         ),
       ),
 
-      // bottom navigation
       bottomNavigationBar: AnimatedPadding(
-        duration: Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 200),
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),

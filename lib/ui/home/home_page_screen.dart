@@ -8,17 +8,17 @@ class HomePageScreen extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
   void _onItemTapped(int index) {
-    // Chuyển đến branch tương ứng
-    // index: 0=Feed, 1=Search, 2=Post, 3=Notification, 4=Profile
     navigationShell.goBranch(index);
   }
 
   @override
   Widget build(BuildContext context) {
+    // Lấy Theme
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     int unreadCount = context.watch<NotificationManager>().unreadCount;
 
-    // Ẩn bottom nav khi ở trang detail post
     final isDetail = GoRouterState.of(
       context,
     ).uri.toString().contains('/posts/');
@@ -31,33 +31,44 @@ class HomePageScreen extends StatelessWidget {
             ? null
             : BottomNavigationBar(
                 currentIndex: navigationShell.currentIndex,
-                backgroundColor: theme.colorScheme.surface,
-                selectedItemColor: theme.colorScheme.primary,
-                unselectedItemColor: Colors.white38,
+
+                backgroundColor: colorScheme.surface,
+
+                selectedItemColor: colorScheme.secondary,
+
+                unselectedItemColor: colorScheme.onSurface.withOpacity(0.5),
                 showSelectedLabels: false,
                 showUnselectedLabels: false,
                 onTap: _onItemTapped,
                 type: BottomNavigationBarType.fixed,
+
+                elevation: 0,
                 items: [
-                  BottomNavigationBarItem(
+                  const BottomNavigationBarItem(
                     icon: Icon(Icons.home),
                     label: "Feed",
                   ),
-                  BottomNavigationBarItem(
+                  const BottomNavigationBarItem(
                     icon: Icon(Icons.search),
                     label: "Search",
                   ),
-                  BottomNavigationBarItem(icon: Icon(Icons.add), label: "Post"),
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.add_box_outlined),
+                    activeIcon: Icon(Icons.add_box),
+                    label: "Post",
+                  ),
                   BottomNavigationBarItem(
                     icon: Badge(
                       isLabelVisible: unreadCount > 0,
                       label: Text(unreadCount.toString()),
-                      backgroundColor: theme.colorScheme.error,
-                      child: Icon(Icons.notifications),
+
+                      backgroundColor: colorScheme.error,
+                      textColor: colorScheme.onError,
+                      child: const Icon(Icons.notifications),
                     ),
                     label: "Notification",
                   ),
-                  BottomNavigationBarItem(
+                  const BottomNavigationBarItem(
                     icon: Icon(Icons.person),
                     label: "Profile",
                   ),

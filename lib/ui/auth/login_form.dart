@@ -14,6 +14,10 @@ class LoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Form(
       key: formKey,
       child: Column(
@@ -32,6 +36,9 @@ class LoginForm extends StatelessWidget {
               return null;
             },
           ),
+
+          const SizedBox(height: 16),
+
           AuthPasswordField(
             onSaved: (value) {
               onSavedField('password', value!);
@@ -43,6 +50,7 @@ class LoginForm extends StatelessWidget {
               return null;
             },
           ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -50,7 +58,11 @@ class LoginForm extends StatelessWidget {
                 onPressed: () {},
                 child: Text(
                   "Forgot password",
-                  style: TextStyle(color: Colors.black),
+
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.7),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

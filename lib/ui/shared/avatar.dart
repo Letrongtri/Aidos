@@ -8,8 +8,12 @@ class Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return CircleAvatar(
       radius: size / 2,
+
+      backgroundColor: colorScheme.surfaceContainerHighest,
       backgroundImage: NetworkImage(
         "https://robohash.org/${Uri.encodeComponent(userId)}.png?set=set2&size=200x200",
       ),

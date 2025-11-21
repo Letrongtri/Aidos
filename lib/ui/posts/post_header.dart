@@ -17,22 +17,35 @@ class PostHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Row(
       children: [
         Expanded(
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            physics: BouncingScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             child: Row(
               children: [
                 Text(
                   post.user?.username ?? Generate.generateUsername(post.userId),
-                  style: TextStyle(fontWeight: FontWeight.bold),
+
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[300],
+                  ),
                 ),
+
                 if (post.topic != null)
                   Row(
                     children: [
-                      Icon(Icons.chevron_right),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: colorScheme.onSurface.withOpacity(0.5),
+                      ),
                       TextButton(
                         onPressed: () {
                           context.goNamed(
@@ -40,9 +53,18 @@ class PostHeader extends StatelessWidget {
                             queryParameters: {'q': post.topic!.name},
                           );
                         },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
                         child: Text(
                           post.topic!.name,
-                          style: TextStyle(fontWeight: FontWeight.bold),
+
+                          style: textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.secondary,
+                          ),
                         ),
                       ),
                     ],
@@ -51,8 +73,16 @@ class PostHeader extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(width: 4),
-        Text(Format.getTimeDifference(post.created)),
+        const SizedBox(width: 8),
+
+        Text(
+          Format.getTimeDifference(post.created),
+
+          style: textTheme.labelSmall?.copyWith(
+            color: colorScheme.onSurface.withOpacity(0.6),
+          ),
+        ),
+
         IconButton(
           onPressed: () {
             showPostActionsBottomSheet(
@@ -69,28 +99,30 @@ class PostHeader extends StatelessWidget {
                 final confirmed = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    backgroundColor: Colors.black,
-                    title: const Text(
-                      'Delete Post',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    content: const Text(
+                    backgroundColor: colorScheme.surfaceContainerHighest,
+                    title: Text('Delete Post', style: textTheme.titleLarge),
+                    content: Text(
                       'Are you sure you want to delete this post?',
-                      style: TextStyle(color: Colors.white70),
+                      style: textTheme.bodyMedium,
                     ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: const Text(
+                        child: Text(
                           'Cancel',
-                          style: TextStyle(color: Colors.grey),
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurface.withOpacity(0.6),
+                          ),
                         ),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text(
+                        child: Text(
                           'Delete',
-                          style: TextStyle(color: Colors.redAccent),
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.error,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -103,14 +135,16 @@ class PostHeader extends StatelessWidget {
 
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Post deleted successfully'),
+                        SnackBar(
+                          content: Text(
+                            'Post deleted successfully',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: Colors.black,
+                            ),
+                          ),
+                          backgroundColor: colorScheme.secondary,
                         ),
                       );
-
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                      }
                     }
                   } catch (e) {
                     if (context.mounted) {
@@ -123,7 +157,7 @@ class PostHeader extends StatelessWidget {
               },
             );
           },
-          icon: Icon(Icons.more_horiz),
+          icon: Icon(Icons.more_horiz, color: colorScheme.onSurface),
         ),
       ],
     );

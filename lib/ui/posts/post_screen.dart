@@ -96,25 +96,24 @@ class _PostScreenState extends State<PostScreen> {
     final user = postsManager.currentUser;
     final isLoadingUser = postsManager.isLoadingUser;
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.black,
       body: SafeArea(
         child: isLoadingUser
-            ? const Center(child: CircularProgressIndicator())
-            : (user == null)
-            ? const Center(
-                child: Text(
-                  "User not found",
-                  style: TextStyle(color: Colors.white),
-                ),
+            ? Center(
+                child: CircularProgressIndicator(color: colorScheme.secondary),
               )
+            : (user == null)
+            ? Center(child: Text("User not found", style: textTheme.bodyLarge))
             : GestureDetector(
                 onTap: () => FocusScope.of(context).unfocus(),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      // === Header (Cancel | Title | Post) ===
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -124,21 +123,18 @@ class _PostScreenState extends State<PostScreen> {
                                 Navigator.pop(context);
                               }
                             },
-                            child: const Text(
+                            child: Text(
                               "Cancel",
-                              style: TextStyle(
-                                color: Colors.white,
+                              style: textTheme.bodyLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: colorScheme.onSurface,
                               ),
                             ),
                           ),
                           Text(
                             isEditing ? 'Edit Post' : 'New Post',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
+
+                            style: textTheme.titleLarge,
                           ),
                           TextButton(
                             onPressed: _isPosting ? null : () => _onPost(),
@@ -146,10 +142,10 @@ class _PostScreenState extends State<PostScreen> {
                               _isPosting
                                   ? 'Posting...'
                                   : (isEditing ? 'Update' : 'Post'),
-                              style: TextStyle(
+                              style: textTheme.bodyLarge?.copyWith(
                                 color: _isPosting
-                                    ? Colors.grey
-                                    : const Color.fromARGB(255, 20, 132, 237),
+                                    ? colorScheme.onSurface.withOpacity(0.3)
+                                    : colorScheme.secondary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -157,10 +153,12 @@ class _PostScreenState extends State<PostScreen> {
                         ],
                       ),
 
-                      const Divider(thickness: 1, color: Colors.grey),
+                      Divider(
+                        thickness: 1,
+                        color: colorScheme.onSurface.withOpacity(0.12),
+                      ),
                       const SizedBox(height: 12),
 
-                      // === Body ===
                       Expanded(
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,12 +166,10 @@ class _PostScreenState extends State<PostScreen> {
                             Avatar(userId: user.id, size: 25),
                             const SizedBox(width: 14),
 
-                            // === Post input section ===
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Username + Topic inline
                                   Row(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
@@ -181,34 +177,35 @@ class _PostScreenState extends State<PostScreen> {
                                       Flexible(
                                         child: Text(
                                           user.username,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                          ),
+
+                                          style: textTheme.titleMedium
+                                              ?.copyWith(
+                                                color: Colors.grey[300],
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      const Icon(
+                                      Icon(
                                         Icons.chevron_right,
                                         size: 18,
-                                        color: Colors.grey,
+                                        color: colorScheme.onSurface
+                                            .withOpacity(0.5),
                                       ),
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: TextField(
                                           controller: _topicController,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                          ),
-                                          decoration: const InputDecoration(
+
+                                          style: textTheme.bodyMedium,
+                                          decoration: InputDecoration(
                                             hintText: 'Enter topic...',
-                                            hintStyle: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 14,
-                                            ),
+                                            hintStyle: textTheme.bodyMedium
+                                                ?.copyWith(
+                                                  color: colorScheme.onSurface
+                                                      .withOpacity(0.5),
+                                                ),
                                             border: InputBorder.none,
                                             isDense: true,
                                           ),
@@ -219,20 +216,18 @@ class _PostScreenState extends State<PostScreen> {
 
                                   const SizedBox(height: 8),
 
-                                  // Main content input
                                   Expanded(
                                     child: TextFormField(
                                       controller: _contentController,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                      ),
-                                      decoration: const InputDecoration(
+
+                                      style: textTheme.bodyLarge,
+                                      decoration: InputDecoration(
                                         hintText: "What's new?",
-                                        hintStyle: TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.grey,
-                                        ),
+                                        hintStyle: textTheme.bodyLarge
+                                            ?.copyWith(
+                                              color: colorScheme.onSurface
+                                                  .withOpacity(0.5),
+                                            ),
                                         border: InputBorder.none,
                                       ),
                                       maxLines: null,

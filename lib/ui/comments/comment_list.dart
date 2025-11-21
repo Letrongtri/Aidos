@@ -25,42 +25,59 @@ class _CommentListState extends State<CommentList> {
   @override
   void initState() {
     super.initState();
-    // Load root comments khi widget khởi tạo
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
     _fetchComments = context.read<CommentManager>().getRootCommentsByPostId();
-    // widget.comments.getRootCommentsByPostId(widget.postId);
-    // });
   }
 
   @override
   Widget build(BuildContext context) {
     final commentManager = context.watch<CommentManager>();
 
+    // Lấy Theme
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return FutureBuilder(
       future: _fetchComments,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+            child: CircularProgressIndicator(color: colorScheme.secondary),
+          );
         }
 
         if (snapshot.hasError) {
-          return Center(child: Text("Lỗi tải bình luận"));
+          return Center(
+            child: Text(
+              "Lỗi tải bình luận",
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
+            ),
+          );
         }
 
         final rootComments = commentManager.getRootCommentsByPostIdLocal();
 
         if (rootComments.isEmpty) {
-          return const Center(child: Text("Chưa có bình luận nào."));
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Text(
+                "Chưa có bình luận nào.",
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+            ),
+          );
         }
 
         return Column(
           children: rootComments.map((root) {
             final replies = commentManager.getRepliesForRootLocal(root.id!);
-
             final state = _branchState[root.id] ?? CommentBranchState.collapsed;
 
             return Padding(
-              padding: EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -68,16 +85,16 @@ class _CommentListState extends State<CommentList> {
                     root,
                     state == CommentBranchState.collapsed ? [] : replies,
                     treeThemeData: TreeThemeData(
-                      lineColor: Colors.grey.shade400,
+                      lineColor: colorScheme.onSurface.withOpacity(0.12),
                       lineWidth: 1,
                     ),
 
                     avatarRoot: (context, data) => PreferredSize(
-                      preferredSize: Size.fromRadius(25),
+                      preferredSize: const Size.fromRadius(25),
                       child: Avatar(userId: data.userId),
                     ),
                     avatarChild: (context, data) => PreferredSize(
-                      preferredSize: Size.fromRadius(20),
+                      preferredSize: const Size.fromRadius(20),
                       child: Avatar(userId: data.userId, size: 40),
                     ),
 
@@ -95,53 +112,71 @@ class _CommentListState extends State<CommentList> {
                       return CommentItem(
                         comment: data,
                         onReply: () => widget.onReply(data),
-                        replyingToUser: parent!.userId,
+                        replyingToUser: parent?.userId,
                         isRoot: false,
                       );
                     },
                   ),
 
                   if (root.replyCount > 0)
-                    if (state == CommentBranchState.loading)
-                      Center(child: CircularProgressIndicator())
-                    else
-                      TextButton.icon(
-                        onPressed: () async {
-                          // nếu replies đang mở
-                          if (state == CommentBranchState.expanded) {
-                            setState(
-                              () => _branchState[root.id!] =
-                                  CommentBranchState.collapsed,
-                            );
-                          } else if (state == CommentBranchState.collapsed) {
-                            // nếu replies đang đóng
-                            setState(
-                              () => _branchState[root.id!] =
-                                  CommentBranchState.loading,
-                            );
+                    Padding(
+                      padding: const EdgeInsets.only(left: 50),
+                      child: state == CommentBranchState.loading
+                          ? SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colorScheme.secondary,
+                              ),
+                            )
+                          : TextButton.icon(
+                              onPressed: () async {
+                                if (state == CommentBranchState.expanded) {
+                                  setState(
+                                    () => _branchState[root.id!] =
+                                        CommentBranchState.collapsed,
+                                  );
+                                } else if (state ==
+                                    CommentBranchState.collapsed) {
+                                  setState(
+                                    () => _branchState[root.id!] =
+                                        CommentBranchState.loading,
+                                  );
 
-                            await context
-                                .read<CommentManager>()
-                                .getRepliesForRoot(root.id!);
+                                  await context
+                                      .read<CommentManager>()
+                                      .getRepliesForRoot(root.id!);
 
-                            setState(
-                              () => _branchState[root.id!] =
-                                  CommentBranchState.expanded,
-                            );
-                          }
-                        },
-
-                        icon: Icon(
-                          state == CommentBranchState.collapsed
-                              ? Icons.arrow_drop_down
-                              : Icons.arrow_drop_up,
-                        ),
-                        label: Text(
-                          state == CommentBranchState.collapsed
-                              ? "Show ${root.replyCount}"
-                              : "Hide",
-                        ),
-                      ),
+                                  setState(
+                                    () => _branchState[root.id!] =
+                                        CommentBranchState.expanded,
+                                  );
+                                }
+                              },
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(0, 0),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                foregroundColor: colorScheme.onSurface
+                                    .withOpacity(0.6),
+                              ),
+                              icon: Icon(
+                                state == CommentBranchState.collapsed
+                                    ? Icons.arrow_drop_down
+                                    : Icons.arrow_drop_up,
+                                size: 20,
+                              ),
+                              label: Text(
+                                state == CommentBranchState.collapsed
+                                    ? "View ${root.replyCount} replies"
+                                    : "Hide replies",
+                                style: textTheme.labelSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                    ),
                 ],
               ),
             );

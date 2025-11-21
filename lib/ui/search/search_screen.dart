@@ -63,24 +63,30 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final searchManager = context.watch<SearchManager>();
 
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(10),
+          padding: const EdgeInsets.all(10),
           child: Column(
             children: [
-              Text(
-                'Search',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 12),
+              Text('Search', style: textTheme.headlineMedium),
+              const SizedBox(height: 12),
 
-              _buildSearchBar(searchManager),
+              _buildSearchBar(searchManager, theme),
 
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Expanded(
                 child: searchManager.postCount == 0
-                    ? Center(child: Text('Không tìm thấy bài viết'))
+                    ? Center(
+                        child: Text(
+                          'Không tìm thấy bài viết',
+
+                          style: textTheme.bodyMedium,
+                        ),
+                      )
                     : ListView.builder(
                         itemCount: searchManager.postCount,
                         itemBuilder: (context, index) {
@@ -97,9 +103,16 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  SearchAnchor _buildSearchBar(SearchManager searchManager) {
+  SearchAnchor _buildSearchBar(SearchManager searchManager, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return SearchAnchor(
       searchController: searchController,
+
+      viewBackgroundColor: colorScheme.surface,
+
+      viewElevation: 0,
 
       builder: (context, controller) {
         return Focus(
@@ -117,6 +130,17 @@ class _SearchScreenState extends State<SearchScreen> {
           child: SearchBar(
             controller: controller,
             hintText: 'Search',
+
+            hintStyle: WidgetStatePropertyAll(textTheme.bodyMedium),
+
+            textStyle: WidgetStatePropertyAll(textTheme.bodyLarge),
+
+            backgroundColor: WidgetStatePropertyAll(
+              colorScheme.surfaceContainerHighest,
+            ),
+
+            elevation: const WidgetStatePropertyAll(0),
+
             onSubmitted: (query) {
               controller.text = query;
               controller.closeView(query);
@@ -126,7 +150,7 @@ class _SearchScreenState extends State<SearchScreen> {
             textInputAction: TextInputAction.search,
             trailing: [
               IconButton(
-                icon: const Icon(Icons.search),
+                icon: Icon(Icons.search, color: colorScheme.secondary),
                 onPressed: () {
                   controller.text = searchController.text;
                   controller.closeView(searchController.text);
@@ -146,8 +170,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
         return results.map((item) {
           return ListTile(
-            trailing: Icon(Icons.trending_up),
-            title: Text(item.name),
+            trailing: Icon(Icons.trending_up, color: colorScheme.secondary),
+            title: Text(item.name, style: textTheme.bodyLarge),
             onTap: () {
               Future.microtask(() {
                 controller.text = item.name;

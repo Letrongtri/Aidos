@@ -26,6 +26,10 @@ class _FeedScreenState extends State<FeedScreen> {
       (postsManager) => postsManager.posts,
     );
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 40,
@@ -40,13 +44,23 @@ class _FeedScreenState extends State<FeedScreen> {
             future: _fetchPosts,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
+                if (posts.isEmpty) {
+                  return Center(
+                    child: Text("No posts yet", style: textTheme.bodyMedium),
+                  );
+                }
+
                 return ListView.builder(
+                  physics: const BouncingScrollPhysics(),
                   itemCount: posts.length,
                   itemBuilder: (context, idx) =>
                       SinglePostItem(post: posts[idx]),
                 );
               }
-              return Center(child: CircularProgressIndicator());
+
+              return Center(
+                child: CircularProgressIndicator(color: colorScheme.secondary),
+              );
             },
           ),
         ),

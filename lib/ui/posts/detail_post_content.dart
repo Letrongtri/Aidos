@@ -16,6 +16,11 @@ class DetailPostContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final postsManager = context.watch<PostsManager>();
     final isReposted = postsManager.hasUserReposted(post.id);
+    final isLiked = post.isLiked ?? false;
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -23,33 +28,54 @@ class DetailPostContent extends StatelessWidget {
         Row(
           children: [
             Avatar(userId: post.userId, size: 25),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
               post.user?.username ?? Generate.generateUsername(post.userId),
-              style: TextStyle(fontWeight: FontWeight.bold),
+
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[300],
+              ),
             ),
-            Spacer(),
+            const Spacer(),
             Text(
               Format.getTimeDifference(post.created),
-              style: TextStyle(color: Colors.grey[500], fontSize: 13),
+
+              style: textTheme.labelSmall?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+                fontSize: 13,
+              ),
             ),
           ],
         ),
-        SizedBox(height: 10),
-        Text(post.content),
+        const SizedBox(height: 10),
+
+        Text(post.content, style: textTheme.bodyLarge),
+
+        const SizedBox(height: 4),
+
         Row(
           children: [
             TextButton.icon(
               onPressed: () {
                 context.read<PostsManager>().onLikePostPressed(post.id);
               },
-              label: Text(Format.getCountNumber(post.likes)),
-              icon: Icon(
-                post.isLiked ?? false ? Icons.favorite : Icons.favorite_outline,
-                color: post.isLiked ?? false ? Colors.red : Colors.white,
+              style: TextButton.styleFrom(
+                foregroundColor: isLiked
+                    ? colorScheme.error
+                    : colorScheme.onSurface,
               ),
+              label: Text(
+                Format.getCountNumber(post.likes),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: isLiked ? colorScheme.error : colorScheme.onSurface,
+                ),
+              ),
+              icon: Icon(isLiked ? Icons.favorite : Icons.favorite_outline),
             ),
-            SizedBox(width: 4),
+
+            const SizedBox(width: 4),
+
             TextButton.icon(
               onPressed: () {
                 context.goNamed(
@@ -58,23 +84,39 @@ class DetailPostContent extends StatelessWidget {
                   extra: {'focusComment': true},
                 );
               },
-              label: Text(Format.getCountNumber(post.comments)),
-              icon: Icon(Icons.mode_comment_outlined),
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.onSurface,
+              ),
+              label: Text(
+                Format.getCountNumber(post.comments),
+                style: textTheme.bodyMedium,
+              ),
+              icon: const Icon(Icons.mode_comment_outlined),
             ),
-            SizedBox(width: 4),
+
+            const SizedBox(width: 4),
+
             TextButton.icon(
               onPressed: () {
                 context.read<PostsManager>().onRepostPressed(post.id);
               },
-              label: Text(Format.getCountNumber(post.reposts)),
-              icon: Icon(
-                isReposted ? Icons.repeat : Icons.repeat_outlined,
-                color: isReposted ? Colors.green : Colors.white,
+              style: TextButton.styleFrom(
+                foregroundColor: isReposted
+                    ? Colors.green
+                    : colorScheme.onSurface,
               ),
+              label: Text(
+                Format.getCountNumber(post.reposts),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: isReposted ? Colors.green : colorScheme.onSurface,
+                ),
+              ),
+              icon: Icon(isReposted ? Icons.repeat : Icons.repeat_outlined),
             ),
           ],
         ),
-        Divider(height: 20, color: Colors.grey),
+
+        Divider(height: 20, color: colorScheme.onSurface.withOpacity(0.12)),
       ],
     );
   }

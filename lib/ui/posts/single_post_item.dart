@@ -14,6 +14,10 @@ class SinglePostItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return GestureDetector(
       onTap: () {
         context.goNamed(
@@ -21,32 +25,40 @@ class SinglePostItem extends StatelessWidget {
           pathParameters: {'id': post.id},
         );
       },
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Avatar(userId: post.userId, size: 45),
-              SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  children: [
-                    PostHeader(post: post),
 
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(post.content),
-                        PostAction(post: post),
-                      ],
-                    ),
-                  ],
+      child: Container(
+        color: Colors.transparent,
+        padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Avatar(userId: post.userId, size: 45),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      PostHeader(post: post),
+
+                      const SizedBox(height: 4),
+
+                      Text(post.content, style: textTheme.bodyLarge),
+
+                      const SizedBox(height: 8),
+
+                      PostAction(post: post),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Divider(),
-        ],
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            Divider(height: 1, color: colorScheme.onSurface.withOpacity(0.12)),
+          ],
+        ),
       ),
     );
   }

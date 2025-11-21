@@ -21,90 +21,101 @@ class EditProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ProfileManager>();
+    // Lấy Theme
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
-    return Container(
-      color: Colors.black,
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _header(context, vm),
-              const Divider(color: Colors.white24),
-              ListTile(
-                title: Text(
-                  '@${vm.user?.username ?? ''}',
-                  style: const TextStyle(color: Colors.white),
-                ),
-                trailing: Avatar(userId: vm.user!.id, size: 25),
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _header(context, vm, textTheme, colorScheme),
+            Divider(color: colorScheme.onSurface.withOpacity(0.12)),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                '@${vm.user?.username ?? ''}',
+
+                style: textTheme.bodyLarge,
               ),
-              const Divider(color: Colors.white24),
-              _form(context, vm),
-              const SizedBox(height: 24),
-              Center(
-                child: Column(
-                  children: [
-                    TextButton(
-                      onPressed: () async {
-                        await vm.logout();
-                        if (context.mounted) {
-                          context.pushReplacementNamed(AppRouteName.auth.name);
-                        }
-                      },
-                      child: const Text(
-                        'Logout',
-                        style: TextStyle(
-                          color: Colors.blueAccent,
-                          fontWeight: FontWeight.bold,
-                        ),
+              trailing: Avatar(userId: vm.user!.id, size: 25),
+            ),
+            Divider(color: colorScheme.onSurface.withOpacity(0.12)),
+            _form(context, vm, textTheme, colorScheme),
+            const SizedBox(height: 24),
+            Center(
+              child: Column(
+                children: [
+                  TextButton(
+                    onPressed: () async {
+                      await vm.logout();
+                      if (context.mounted) {
+                        context.pushReplacementNamed(AppRouteName.auth.name);
+                      }
+                    },
+                    child: Text(
+                      'Logout',
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    TextButton(
-                      onPressed: vm.deleteAccount,
-                      child: const Text(
-                        'Delete Account',
-                        style: TextStyle(
-                          color: Colors.redAccent,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  ),
+                  TextButton(
+                    onPressed: vm.deleteAccount,
+                    child: Text(
+                      'Delete Account',
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.error,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              if (vm.isLoading)
-                const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(
-                    child: CircularProgressIndicator(color: Colors.white),
+            ),
+            if (vm.isLoading)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: colorScheme.secondary,
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _header(BuildContext context, ProfileManager vm) {
+  Widget _header(
+    BuildContext context,
+    ProfileManager vm,
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         TextButton(
           onPressed: panelController.close,
-          child: const Text(
+          child: Text(
             'Cancel',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
-        const Text(
+        Text(
           'Edit profile',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+
+          style: textTheme.titleLarge?.copyWith(fontSize: 18),
         ),
         TextButton(
           onPressed: vm.isLoading
@@ -132,10 +143,11 @@ class EditProfileScreen extends StatelessWidget {
 
                   if (ok) panelController.close();
                 },
-          child: const Text(
+          child: Text(
             'Done',
-            style: TextStyle(
-              color: Color.fromARGB(255, 20, 132, 237),
+
+            style: textTheme.bodyLarge?.copyWith(
+              color: colorScheme.secondary,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -144,24 +156,44 @@ class EditProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _form(BuildContext context, ProfileManager vm) {
+  Widget _form(
+    BuildContext context,
+    ProfileManager vm,
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+  ) {
     return Column(
       children: [
-        _inputField('Username', vm.usernameController),
-        const Divider(color: Colors.white24),
+        _inputField('Username', vm.usernameController, textTheme, colorScheme),
+        Divider(color: colorScheme.onSurface.withOpacity(0.12)),
         _inputField(
           'Email (cannot be changed)',
           vm.emailController,
+          textTheme,
+          colorScheme,
           enabled: false,
         ),
-
-        const Divider(color: Colors.white24),
-        _inputField('Old Password', vm.oldPasswordController, obscure: true),
-        const Divider(color: Colors.white24),
-        _inputField('New Password', vm.newPasswordController, obscure: true),
+        Divider(color: colorScheme.onSurface.withOpacity(0.12)),
+        _inputField(
+          'Old Password',
+          vm.oldPasswordController,
+          textTheme,
+          colorScheme,
+          obscure: true,
+        ),
+        Divider(color: colorScheme.onSurface.withOpacity(0.12)),
+        _inputField(
+          'New Password',
+          vm.newPasswordController,
+          textTheme,
+          colorScheme,
+          obscure: true,
+        ),
         _inputField(
           'Confirm Password',
           vm.confirmPasswordController,
+          textTheme,
+          colorScheme,
           obscure: true,
         ),
       ],
@@ -170,7 +202,9 @@ class EditProfileScreen extends StatelessWidget {
 
   Widget _inputField(
     String label,
-    TextEditingController controller, {
+    TextEditingController controller,
+    TextTheme textTheme,
+    ColorScheme colorScheme, {
     bool obscure = false,
     bool enabled = true,
   }) {
@@ -180,23 +214,32 @@ class EditProfileScreen extends StatelessWidget {
         controller: controller,
         obscureText: obscure,
         enabled: enabled,
-        style: const TextStyle(color: Colors.white),
+        style: textTheme.bodyLarge,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.white70),
+          labelStyle: textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurface.withOpacity(0.6),
+          ),
           filled: true,
-          fillColor: const Color(0xFF1C1C1C),
+
+          fillColor: colorScheme.surface,
+
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.white24),
+            borderSide: BorderSide(
+              color: colorScheme.onSurface.withOpacity(0.12),
+            ),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.white24),
+            borderSide: BorderSide(
+              color: colorScheme.onSurface.withOpacity(0.12),
+            ),
           ),
+
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.white),
+            borderSide: BorderSide(color: colorScheme.secondary),
           ),
         ),
       ),
