@@ -1,4 +1,3 @@
-// lib/ui/user/profile_header.dart
 import 'package:ct312h_project/models/user.dart';
 import 'package:flutter/material.dart';
 
@@ -8,7 +7,6 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Lấy Theme từ context
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
@@ -21,14 +19,12 @@ class ProfileHeader extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 35,
-
           backgroundColor: colorScheme.surfaceContainerHighest,
           backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl!) : null,
           child: !hasAvatar
               ? Icon(
                   Icons.person,
                   size: 35,
-
                   color: colorScheme.onSurface.withOpacity(0.5),
                 )
               : null,
@@ -40,14 +36,12 @@ class ProfileHeader extends StatelessWidget {
             children: [
               Text(
                 user.username,
-
                 style: textTheme.titleLarge,
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
                 user.email,
-
                 style: textTheme.bodyMedium,
                 overflow: TextOverflow.ellipsis,
               ),

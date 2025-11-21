@@ -108,6 +108,9 @@ class ProfileManager extends ChangeNotifier {
       if (updatedUser != null) {
         user = updatedUser;
 
+        usernameController.text = user?.username ?? '';
+        emailController.text = user?.email ?? '';
+
         final postsManager = WidgetsBinding
             .instance
             .focusManager
