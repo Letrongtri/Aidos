@@ -74,11 +74,11 @@ class _CommentListState extends State<CommentList> {
 
                     avatarRoot: (context, data) => PreferredSize(
                       preferredSize: Size.fromRadius(25),
-                      child: Avatar(userId: data.userId),
+                      child: Avatar(userId: data.userId, size: 30),
                     ),
                     avatarChild: (context, data) => PreferredSize(
                       preferredSize: Size.fromRadius(20),
-                      child: Avatar(userId: data.userId, size: 40),
+                      child: Avatar(userId: data.userId, size: 30),
                     ),
 
                     contentRoot: (context, data) => CommentItem(
@@ -120,14 +120,25 @@ class _CommentListState extends State<CommentList> {
                                   CommentBranchState.loading,
                             );
 
-                            await context
-                                .read<CommentManager>()
-                                .getRepliesForRoot(root.id!);
+                            try {
+                              await context
+                                  .read<CommentManager>()
+                                  .getRepliesForRoot(root.id!);
 
-                            setState(
-                              () => _branchState[root.id!] =
-                                  CommentBranchState.expanded,
-                            );
+                              if (context.mounted) {
+                                setState(
+                                  () => _branchState[root.id!] =
+                                      CommentBranchState.expanded,
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                setState(
+                                  () => _branchState[root.id!] =
+                                      CommentBranchState.collapsed,
+                                );
+                              }
+                            }
                           }
                         },
 

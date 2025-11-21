@@ -22,28 +22,58 @@ class CommentItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final manager = context.watch<CommentManager>();
+
     return Container(
       padding: EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (replyingToUser != null)
-            Text(
-              "Reply to @$replyingToUser",
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
           Row(
             children: [
-              Text(
-                comment.user?.username ??
-                    Generate.generateUsername(comment.userId),
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: BouncingScrollPhysics(),
+                  child: Row(
+                    children: [
+                      Text(
+                        comment.user?.username ??
+                            Generate.generateUsername(comment.userId),
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      if (replyingToUser != null)
+                        Row(
+                          children: [
+                            Icon(Icons.chevron_right),
+                            Text(
+                              "$replyingToUser",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
               ),
-              Spacer(),
+              SizedBox(width: 8),
               Text(Format.getTimeDifference(comment.created)),
               IconButton(
                 onPressed: () {
-                  showPostActionsBottomSheet(context, onUpdate: () {});
+                  showPostActionsBottomSheet(
+                    context,
+                    onUpdate: () {
+                      Navigator.pop(context);
+                      _showEditCommentDialog(context, manager, comment);
+                    },
+                    onDelete: () {
+                      Navigator.pop(context);
+                      context.read<CommentManager>().deleteComment(comment.id!);
+                    },
+                  );
                 },
                 icon: Icon(Icons.more_horiz),
               ),
@@ -81,6 +111,57 @@ class CommentItem extends StatelessWidget {
                 ],
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showEditCommentDialog(
+    BuildContext context,
+    CommentManager manager,
+    Comment comment,
+  ) async {
+    final theme = Theme.of(context);
+    final controller = TextEditingController();
+
+    controller.text = comment.content;
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+        title: const Text("Edit comment"),
+        content: TextField(
+          controller: controller,
+          maxLines: 5,
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.all(8),
+            hintText: "Enter your comment",
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.white38),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: theme.colorScheme.primary),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            hintStyle: TextStyle(color: Colors.white38),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              final value = controller.text;
+
+              manager.updateComment(comment.id!, value);
+              Navigator.pop(context);
+            },
+            child: const Text("Update"),
           ),
         ],
       ),

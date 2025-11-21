@@ -83,13 +83,29 @@ class CommentManager extends ChangeNotifier {
   Future<void> getRepliesForRoot(String rootId) async {
     if (_loadedRoots.contains(rootId)) return; // đã load rồi thì bỏ qua
     try {
-      final replies = await _commentService.getAllRepliesRecursively(rootId);
+      final replies = await _commentService.getRepliesForRootComment(rootId);
 
-      for (final vm in replies) {
-        if (!_comments.any((c) => c.id == vm.id)) {
-          _comments.add(vm);
+      List<Comment> comments = [];
+      List<String> commentIds = [];
+
+      for (final cmt in replies) {
+        if (!_comments.any((c) => c.id == cmt.id)) {
+          comments.add(cmt);
+          commentIds.add(cmt.id!);
         }
       }
+
+      final likedCommentIds = await _likeService.fetchLikedCommentIds(
+        commentIds,
+      );
+
+      if (likedCommentIds.isNotEmpty) {
+        comments = comments
+            .map((c) => c.copyWith(isLiked: likedCommentIds.contains(c.id)))
+            .toList();
+      }
+
+      _comments.addAll(comments);
 
       _loadedRoots.add(rootId);
     } catch (e, s) {
@@ -112,19 +128,10 @@ class CommentManager extends ChangeNotifier {
 
   // Comment reply của một root (kể cả reply lồng nhau)
   List<Comment> getRepliesForRootLocal(String rootId) {
-    final allReplies = _comments.where((c) => c.parentId != null).toList();
-    return allReplies.where((r) {
-      var parent = _comments.firstWhere(
-        (c) => c.id == r.parentId,
-        orElse: () => Comment.empty(),
-      );
-      while (parent.parentId != null) {
-        parent = _comments.firstWhere(
-          (c) => c.id == parent.parentId,
-          orElse: () => Comment.empty(),
-        );
-      }
-      return parent.id == rootId;
+    return _comments.where((c) {
+      if (c.parentId == null || c.parentId!.isEmpty) return false;
+      if (c.rootId == rootId) return true;
+      return false;
     }).toList();
   }
 
@@ -151,6 +158,7 @@ class CommentManager extends ChangeNotifier {
         userId: '',
         content: text,
         parentId: parentComment?.id,
+        rootId: parentComment?.rootId,
         created: DateTime.now(),
         updated: DateTime.now(),
         likesCount: 0,
@@ -236,6 +244,7 @@ class CommentManager extends ChangeNotifier {
         likesCount: updatedLikeCount,
         isLiked: !currentLiked,
       );
+      notifyListeners();
 
       if (currentLiked) {
         await _likeService.unlikeComment(commentId, currentLikeCount);
@@ -261,8 +270,46 @@ class CommentManager extends ChangeNotifier {
     } catch (e) {
       errorMessage = e.toString();
       _comments[index] = comment; // rollback
-    } finally {
       notifyListeners();
+    }
+  }
+
+  Future<void> deleteComment(String commentId) async {
+    final index = _comments.indexWhere((c) => c.id == commentId);
+    if (index == -1) return;
+
+    final comment = _comments[index];
+
+    try {
+      _comments.removeWhere((c) => c.id == commentId);
+      notifyListeners();
+
+      await _commentService.deleteComment(commentId);
+    } catch (e) {
+      // rollback
+      _comments.insert(index, comment);
+      notifyListeners();
+      debugPrint("deleteComment error: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> updateComment(String commentId, String content) async {
+    final index = _comments.indexWhere((c) => c.id == commentId);
+    if (index == -1) return;
+
+    final comment = _comments[index];
+    try {
+      _comments[index] = _comments[index].copyWith(content: content);
+      notifyListeners();
+
+      await _commentService.updateComment(commentId, content);
+    } catch (e) {
+      // rollback
+      _comments[index] = comment;
+      notifyListeners();
+      debugPrint("updateComment error: $e");
+      rethrow;
     }
   }
 }

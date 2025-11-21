@@ -84,7 +84,7 @@ class CommentService {
       const expandFields = 'userId';
 
       // Filter các comment có parentId = rootId
-      final filter = 'parentId="$rootId"';
+      final filter = 'rootId="$rootId"';
 
       final result = await pb
           .collection('comments')
@@ -106,22 +106,26 @@ class CommentService {
     }
   }
 
-  Future<List<Comment>> getAllRepliesRecursively(
-    String rootId, {
-    int depth = 20,
-  }) async {
-    if (depth > 10) return [];
-    final replies = await getRepliesForRootComment(rootId);
-    List<Comment> allReplies = [...replies];
+  Future<void> deleteComment(String commentId) async {
+    try {
+      final pb = await getPocketbaseInstance();
 
-    for (final reply in replies) {
-      final subReplies = await getAllRepliesRecursively(
-        reply.id!,
-        depth: depth + 1,
-      );
-      allReplies.addAll(subReplies);
+      await pb.collection('comments').delete(commentId);
+    } catch (e) {
+      debugPrint(e.toString());
+      throw Exception();
     }
+  }
 
-    return allReplies;
+  Future<void> updateComment(String commentId, String content) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      await pb
+          .collection('comments')
+          .update(commentId, body: {'content': content});
+    } catch (e) {
+      debugPrint(e.toString());
+      throw Exception();
+    }
   }
 }

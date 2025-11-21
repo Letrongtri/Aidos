@@ -122,7 +122,7 @@ class LikeService {
 
       await pb
           .collection('comments')
-          .update(commentId, body: {'likes': totalLikes});
+          .update(commentId, body: {'likesCount': totalLikes});
     } catch (e) {
       debugPrint(e.toString());
       throw Exception();
@@ -155,7 +155,7 @@ class LikeService {
       final totalLikes = likesResult.items.length;
       await pb
           .collection('comments')
-          .update(commentId, body: {'likes': totalLikes});
+          .update(commentId, body: {'likesCount': totalLikes});
     } catch (e) {
       debugPrint(e.toString());
       throw Exception();

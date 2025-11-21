@@ -16,12 +16,14 @@ class AuthTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 20),
       child: TextFormField(
         validator: validator,
         onSaved: onSaved,
         keyboardType: keyboardType,
+        cursorColor: theme.colorScheme.onPrimary,
         style: TextStyle(color: Colors.black),
         decoration: InputDecoration(
           contentPadding: EdgeInsets.all(8),

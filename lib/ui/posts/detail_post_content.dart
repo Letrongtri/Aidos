@@ -22,7 +22,7 @@ class DetailPostContent extends StatelessWidget {
       children: [
         Row(
           children: [
-            Avatar(userId: post.userId, size: 25),
+            Avatar(userId: post.userId, size: 40),
             SizedBox(width: 8),
             Text(
               post.user?.username ?? Generate.generateUsername(post.userId),

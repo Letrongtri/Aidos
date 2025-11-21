@@ -10,6 +10,7 @@ class Comment {
   final String userId;
   final String content;
   final String? parentId;
+  final String? rootId;
   final int likesCount;
   final int replyCount;
   final DateTime created;
@@ -24,6 +25,7 @@ class Comment {
     required this.userId,
     required this.content,
     this.parentId,
+    this.rootId,
     required this.likesCount,
     required this.replyCount,
     required this.created,
@@ -38,6 +40,7 @@ class Comment {
     String? userId,
     String? content,
     String? parentId,
+    String? rootId,
     int? likesCount,
     int? relyCount,
     DateTime? created,
@@ -51,6 +54,7 @@ class Comment {
       userId: userId ?? this.userId,
       content: content ?? this.content,
       parentId: parentId ?? this.parentId,
+      rootId: rootId ?? this.rootId,
       likesCount: likesCount ?? this.likesCount,
       replyCount: relyCount ?? replyCount,
       created: created ?? this.created,
@@ -67,6 +71,7 @@ class Comment {
       'userId': userId,
       'content': content,
       'parentId': parentId,
+      'rootId': rootId,
       'likeCount': likesCount,
       'relyCount': replyCount,
       'created': created.toIso8601String(),
@@ -83,6 +88,7 @@ class Comment {
       userId: map['userId'] as String,
       content: map['content'] as String,
       parentId: map['parentId'] != null ? map['parentId'] as String : null,
+      rootId: map['rootId'] != null ? map['rootId'] as String : null,
       likesCount: map['likesCount'] as int,
       replyCount: map['relyCount'] as int,
       created: DateTime.parse(map['created'] as String),
@@ -99,7 +105,7 @@ class Comment {
 
   @override
   String toString() {
-    return 'Comment(id: $id, postId: $postId, userId: $userId, content: $content, parentId: $parentId, likesCount: $likesCount, relyCount: $replyCount, createdAt: $created, updatedAt: $updated, user: $user, isLiked: $isLiked)';
+    return 'Comment(id: $id, postId: $postId, userId: $userId, content: $content, parentId: $parentId, rootId: $rootId, likesCount: $likesCount, relyCount: $replyCount, createdAt: $created, updatedAt: $updated, user: $user, isLiked: $isLiked)';
   }
 
   @override
@@ -111,6 +117,7 @@ class Comment {
         other.userId == userId &&
         other.content == content &&
         other.parentId == parentId &&
+        other.rootId == rootId &&
         other.likesCount == likesCount &&
         other.replyCount == replyCount &&
         other.created == created &&
@@ -126,6 +133,7 @@ class Comment {
         userId.hashCode ^
         content.hashCode ^
         parentId.hashCode ^
+        rootId.hashCode ^
         likesCount.hashCode ^
         replyCount.hashCode ^
         created.hashCode ^
@@ -140,6 +148,7 @@ class Comment {
     userId: '',
     content: '',
     parentId: null,
+    rootId: null,
     likesCount: 0,
     replyCount: 0,
     created: DateTime.now(),
@@ -161,6 +170,7 @@ class Comment {
       created: DateTime.parse(record.getStringValue('created')),
       updated: DateTime.parse(record.getStringValue('updated')),
       parentId: record.getStringValue('parentId'),
+      rootId: record.getStringValue('rootId'),
       user: (userRecord != null && userRecord.data.isNotEmpty)
           ? User.fromMap(userRecord.data)
           : null,
@@ -173,6 +183,7 @@ class Comment {
       'postId': postId,
       'content': content,
       'parentId': parentId,
+      'rootId': rootId,
       'likeCount': likesCount,
       'relyCount': replyCount,
       'created': created.toIso8601String(),

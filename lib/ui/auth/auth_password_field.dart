@@ -15,12 +15,14 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 20),
       child: TextFormField(
         obscureText: passwordVisible,
         validator: widget.validator,
         onSaved: widget.onSaved,
+        cursorColor: theme.colorScheme.onPrimary,
         style: TextStyle(color: Colors.black),
         decoration: InputDecoration(
           suffixIcon: IconButton(
