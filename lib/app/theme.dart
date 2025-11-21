@@ -1,3 +1,4 @@
+import 'package:ct312h_project/utils/page_transition.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -74,5 +75,13 @@ ThemeData buildTheme() {
 
     // Cấu hình Icon
     iconTheme: const IconThemeData(color: primaryColor, size: 24),
+
+    // Transition
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        TargetPlatform.iOS: const AidosPageTransitionBuilder(),
+        TargetPlatform.android: const AidosPageTransitionBuilder(),
+      },
+    ),
   );
 }

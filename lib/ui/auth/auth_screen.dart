@@ -78,16 +78,17 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(20),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Spacer(),
+              SizedBox(height: 50),
               Center(child: Image.asset('assets/images/logo.png', width: 80)),
+              SizedBox(height: 30),
 
               if (_authMode == AuthMode.signup)
                 SignupForm(
