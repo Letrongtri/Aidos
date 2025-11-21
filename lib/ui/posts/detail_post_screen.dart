@@ -28,8 +28,6 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   final TextEditingController _commentController = TextEditingController();
   Comment? replyingTo;
 
-  String selectedValue = 'Hotest';
-
   @override
   void initState() {
     super.initState();
@@ -50,6 +48,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   @override
   Widget build(BuildContext context) {
     final post = context.watch<PostsManager>().findPostById(widget.id);
+    final isMyPost = post?.userId == context.read<AuthManager>().user?.id;
 
     if (post == null) {
       return Scaffold(
@@ -58,30 +57,96 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
       );
     }
 
-    return ChangeNotifierProvider(
+    return ChangeNotifierProxyProvider<AuthManager, CommentManager>(
       create: (_) => CommentManager(postId: post.id),
+      update: (context, value, previous) => previous!..updateAuthUser(value),
       child: Builder(
         builder: (context) {
-          return _buildDetailPostScreen(context, post);
+          return _buildDetailPostScreen(context, post, isMyPost);
         },
       ),
     );
   }
 
-  Widget _buildDetailPostScreen(BuildContext context, Post post) {
+  Widget _buildDetailPostScreen(
+    BuildContext context,
+    Post post,
+    bool isMyPost,
+  ) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        elevation: 0,
-        title: Text("Aidos"),
-        actions: [
+      appBar: _buildAppBar(isMyPost, context, post),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await context.read<PostsManager>().refreshPost(widget.id);
+          },
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            children: [
+              DetailPostContent(post: post),
+              CommentList(
+                postId: post.id,
+                onReply: (comment) {
+                  setState(() {
+                    replyingTo = comment;
+                  });
+                  FocusScope.of(context).requestFocus(_commentFocusNode);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+
+      // bottom navigation
+      bottomNavigationBar: AnimatedPadding(
+        duration: Duration(milliseconds: 200),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: AddComment(
+          controller: _commentController,
+          focusNode: _commentFocusNode,
+          replyingTo: replyingTo,
+          onSend: (text) async {
+            await context.read<CommentManager>().addComment(
+              text: text,
+              ownerId: post.userId,
+              postCommentCount: post.comments,
+              parentComment: replyingTo,
+            );
+
+            if (context.mounted) {
+              context.read<PostsManager>().incrementCommentCount(post.id);
+
+              context.read<ProfileManager>().fetchMyReplies();
+            }
+          },
+          onCancelReply: () {
+            setState(() {
+              replyingTo = null;
+            });
+            _commentFocusNode.unfocus();
+          },
+        ),
+      ),
+    );
+  }
+
+  AppBar _buildAppBar(bool isMyPost, BuildContext context, Post post) {
+    return AppBar(
+      elevation: 0,
+      title: Text("Aidos"),
+      actions: [
+        if (isMyPost)
           IconButton(
             onPressed: () {
               showPostActionsBottomSheet(
                 context,
                 onUpdate: () {
                   Navigator.pop(context);
-                  context.goNamed(AppRouteName.post.name, extra: post);
+                  context.pushNamed(AppRouteName.post.name, extra: post);
                 },
                 onDelete: () async {
                   Navigator.pop(context);
@@ -147,79 +212,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
             },
             icon: Icon(Icons.more_horiz),
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          children: [
-            DetailPostContent(post: post),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                DropdownButton<String>(
-                  value: selectedValue,
-                  underline: SizedBox(),
-                  items: <String>['Hotest', 'Newest'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedValue = newValue!;
-                    });
-                  },
-                ),
-              ],
-            ),
-            Divider(),
-            CommentList(
-              postId: post.id,
-              onReply: (comment) {
-                setState(() {
-                  replyingTo = comment;
-                });
-                FocusScope.of(context).requestFocus(_commentFocusNode);
-              },
-            ),
-          ],
-        ),
-      ),
-
-      // bottom navigation
-      bottomNavigationBar: AnimatedPadding(
-        duration: Duration(milliseconds: 200),
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: AddComment(
-          controller: _commentController,
-          focusNode: _commentFocusNode,
-          replyingTo: replyingTo,
-          onSend: (text) async {
-            await context.read<CommentManager>().addComment(
-              text: text,
-              ownerId: post.userId,
-              postCommentCount: post.comments,
-              parentComment: replyingTo,
-            );
-
-            if (context.mounted) {
-              context.read<PostsManager>().incrementCommentCount(post.id);
-
-              context.read<ProfileManager>().fetchMyReplies();
-            }
-          },
-          onCancelReply: () {
-            setState(() {
-              replyingTo = null;
-            });
-            _commentFocusNode.unfocus();
-          },
-        ),
-      ),
+      ],
     );
   }
 }

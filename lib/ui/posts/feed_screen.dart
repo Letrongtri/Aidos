@@ -1,4 +1,3 @@
-import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:ct312h_project/ui/posts/single_post_item.dart';
 import 'package:flutter/material.dart';
@@ -12,19 +11,42 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  late Future<void> _fetchPosts;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _fetchPosts = context.read<PostsManager>().fetchPosts();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => context.read<PostsManager>().fetchPosts(isRefresh: true),
+    );
+
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final postsManager = context.read<PostsManager>();
+      if (!postsManager.isLoadingPosts && postsManager.hasMorePosts) {
+        postsManager.fetchPosts();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final posts = context.select<PostsManager, List<Post>>(
-      (postsManager) => postsManager.posts,
-    );
+    // final posts = context.select<PostsManager, List<Post>>(
+    //   (postsManager) => postsManager.posts,
+    // );
+
+    final manager = context.watch<PostsManager>();
+    final posts = manager.posts;
 
     return Scaffold(
       appBar: AppBar(
@@ -34,23 +56,50 @@ class _FeedScreenState extends State<FeedScreen> {
         title: Image.asset("assets/images/logo.png", width: 30),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: FutureBuilder(
-            future: _fetchPosts,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                return ListView.builder(
-                  itemCount: posts.length,
-                  itemBuilder: (context, idx) =>
-                      SinglePostItem(post: posts[idx]),
-                );
-              }
-              return Center(child: CircularProgressIndicator());
-            },
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await manager.fetchPosts(isRefresh: true);
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: manager.isLoadingPostsInitial
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.separated(
+                    controller: _scrollController,
+                    itemCount: posts.length + 1, // +1 cho loading footer
+                    separatorBuilder: (_, __) => const Divider(),
+                    itemBuilder: (context, idx) {
+                      if (idx == posts.length) {
+                        return _buildFooter(manager);
+                      }
+
+                      return SinglePostItem(post: posts[idx]);
+                    },
+                  ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildFooter(PostsManager manager) {
+    if (manager.isLoadingPosts) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (!manager.hasMorePosts && manager.posts.isNotEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(
+          child: Text(
+            "Bạn đã xem hết tin!",
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 }

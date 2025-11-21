@@ -1,5 +1,8 @@
+import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
+import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:ct312h_project/models/post.dart';
@@ -49,10 +52,14 @@ class _PostScreenState extends State<PostScreen> {
 
     setState(() => _isPosting = true);
     final postsManager = context.read<PostsManager>();
+    Post? newPost;
 
     try {
       if (widget.existingPost == null) {
-        await postsManager.createPost(content: content, topicName: topic);
+        newPost = await postsManager.createPost(
+          content: content,
+          topicName: topic,
+        );
       } else {
         await postsManager.updatePost(
           postId: widget.existingPost!.id,
@@ -76,8 +83,18 @@ class _PostScreenState extends State<PostScreen> {
         ),
       );
 
-      if (context.mounted) {
-        Navigator.pop(context);
+      if (widget.existingPost == null) {
+        if (newPost == null) return;
+        context.pushNamed(
+          AppRouteName.detailPost.name,
+          pathParameters: {'id': newPost.id},
+        );
+
+        return;
+      }
+
+      if (context.mounted && context.canPop()) {
+        context.pop();
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -92,16 +109,12 @@ class _PostScreenState extends State<PostScreen> {
   Widget build(BuildContext context) {
     final isEditing = widget.existingPost != null;
 
-    final postsManager = context.watch<PostsManager>();
-    final user = postsManager.currentUser;
-    final isLoadingUser = postsManager.isLoadingUser;
+    final user = context.watch<AuthManager>().user;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      appBar: _buildAppBar(isEditing, context),
       body: SafeArea(
-        child: isLoadingUser
-            ? const Center(child: CircularProgressIndicator())
-            : (user == null)
+        child: (user == null)
             ? const Center(
                 child: Text(
                   "User not found",
@@ -111,52 +124,9 @@ class _PostScreenState extends State<PostScreen> {
             : GestureDetector(
                 onTap: () => FocusScope.of(context).unfocus(),
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
                   child: Column(
                     children: [
-                      // === Header (Cancel | Title | Post) ===
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              if (context.mounted) {
-                                Navigator.pop(context);
-                              }
-                            },
-                            child: const Text(
-                              "Cancel",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            isEditing ? 'Edit Post' : 'New Post',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _isPosting ? null : () => _onPost(),
-                            child: Text(
-                              _isPosting
-                                  ? 'Posting...'
-                                  : (isEditing ? 'Update' : 'Post'),
-                              style: TextStyle(
-                                color: _isPosting
-                                    ? Colors.grey
-                                    : const Color.fromARGB(255, 20, 132, 237),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
                       const Divider(thickness: 1, color: Colors.grey),
                       const SizedBox(height: 12),
 
@@ -251,6 +221,57 @@ class _PostScreenState extends State<PostScreen> {
                 ),
               ),
       ),
+    );
+  }
+
+  AppBar _buildAppBar(bool isEditing, BuildContext context) {
+    return AppBar(
+      leadingWidth: 100,
+      leading: isEditing
+          ? GestureDetector(
+              onTap: () {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
+      centerTitle: true,
+      title: Text(
+        isEditing ? 'Edit Post' : 'New Post',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isPosting ? null : () => _onPost(),
+          child: Text(
+            _isPosting ? 'Posting...' : (isEditing ? 'Update' : 'Post'),
+            style: TextStyle(
+              color: _isPosting
+                  ? Colors.grey
+                  : const Color.fromARGB(255, 20, 132, 237),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

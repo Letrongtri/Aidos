@@ -2,6 +2,7 @@
 import 'package:ct312h_project/models/notification.dart' as notification_model;
 import 'package:ct312h_project/services/services.dart';
 import 'package:ct312h_project/utils/generate.dart';
+import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ct312h_project/models/comment.dart';
@@ -9,6 +10,8 @@ import 'package:ct312h_project/models/comment.dart';
 class CommentManager extends ChangeNotifier {
   CommentManager({required this.postId});
   final String postId;
+
+  AuthManager? _authManager;
 
   final _commentService = CommentService();
   final _likeService = LikeService();
@@ -24,6 +27,20 @@ class CommentManager extends ChangeNotifier {
 
   List<Comment> get comments {
     return [..._comments];
+  }
+
+  void updateAuthUser(AuthManager auth) {
+    _authManager = auth;
+
+    if (auth.user != null) {
+      for (int i = 0; i < _comments.length; i++) {
+        final comment = _comments[i];
+        if (comment.userId == auth.user!.id) {
+          _comments[i] = comment.copyWith(user: auth.user);
+        }
+      }
+    }
+    notifyListeners();
   }
 
   // Lấy comment gốc theo bài viết
@@ -124,6 +141,10 @@ class CommentManager extends ChangeNotifier {
     int postCommentCount = 0,
     Comment? parentComment,
   }) async {
+    final currentUserId = _authManager?.user?.id;
+
+    if (currentUserId == null) return;
+
     try {
       final newComment = Comment(
         postId: postId,
@@ -158,37 +179,34 @@ class CommentManager extends ChangeNotifier {
       _comments.insert(0, comment);
       notifyListeners();
 
-      final currentUserId = await getCurrentUserId();
-      if (currentUserId != null) {
-        final notiId = Generate.generatePocketBaseId();
-        notification_model.Notification? newNoti;
+      final notiId = Generate.generatePocketBaseId();
+      notification_model.Notification? newNoti;
 
-        if (parentComment != null && parentComment.userId != currentUserId) {
-          newNoti = notification_model.Notification(
-            id: notiId,
-            userId: parentComment.userId,
-            title: 'Trả lời bình luận',
-            body: 'Ai đó đã trả lời bình luận của bạn',
-            type: notification_model.NotificationType.reply.name,
-            targetId: parentComment.postId,
-            created: DateTime.now(),
-            updated: DateTime.now(),
-          );
-        } else if (parentComment == null && ownerId != currentUserId) {
-          newNoti = notification_model.Notification(
-            id: notiId,
-            userId: ownerId,
-            title: 'Bình luận mới',
-            body: 'Ai đó đã bình luận bài viết của bạn',
-            type: notification_model.NotificationType.like.name,
-            targetId: postId,
-            created: DateTime.now(),
-            updated: DateTime.now(),
-          );
-        }
-        if (newNoti != null) {
-          await PocketBaseNotificationService.createNotification(newNoti);
-        }
+      if (parentComment != null && parentComment.userId != currentUserId) {
+        newNoti = notification_model.Notification(
+          id: notiId,
+          userId: parentComment.userId,
+          title: 'Trả lời bình luận',
+          body: 'Ai đó đã trả lời bình luận của bạn',
+          type: notification_model.NotificationType.reply.name,
+          targetId: parentComment.postId,
+          created: DateTime.now(),
+          updated: DateTime.now(),
+        );
+      } else if (parentComment == null && ownerId != currentUserId) {
+        newNoti = notification_model.Notification(
+          id: notiId,
+          userId: ownerId,
+          title: 'Bình luận mới',
+          body: 'Ai đó đã bình luận bài viết của bạn',
+          type: notification_model.NotificationType.like.name,
+          targetId: postId,
+          created: DateTime.now(),
+          updated: DateTime.now(),
+        );
+      }
+      if (newNoti != null) {
+        await PocketBaseNotificationService.createNotification(newNoti);
       }
     } catch (e) {
       errorMessage = e.toString();
@@ -204,6 +222,9 @@ class CommentManager extends ChangeNotifier {
     final index = _comments.indexWhere((c) => c.id == commentId);
     if (index == -1) return;
     final comment = _comments[index];
+
+    final currentUserId = _authManager?.user?.id;
+    if (currentUserId == null) return;
 
     try {
       final currentLiked = comment.isLiked ?? false;
@@ -221,8 +242,7 @@ class CommentManager extends ChangeNotifier {
       } else {
         await _likeService.likeComment(commentId, currentLikeCount);
 
-        final currentUserId = await getCurrentUserId();
-        if (currentUserId != null && currentUserId != comment.userId) {
+        if (currentUserId != comment.userId) {
           final notiId = Generate.generatePocketBaseId();
 
           final newNoti = notification_model.Notification(

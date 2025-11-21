@@ -52,7 +52,7 @@ class DetailPostContent extends StatelessWidget {
             SizedBox(width: 4),
             TextButton.icon(
               onPressed: () {
-                context.goNamed(
+                context.pushNamed(
                   AppRouteName.detailPost.name,
                   pathParameters: {'id': post.id},
                   extra: {'focusComment': true},

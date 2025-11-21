@@ -1,79 +1,107 @@
 import 'package:ct312h_project/models/post.dart';
-import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/models/notification.dart' as notification_model;
 import 'package:ct312h_project/services/services.dart';
 import 'package:ct312h_project/utils/generate.dart';
+import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:flutter/material.dart';
 
 class PostsManager extends ChangeNotifier {
   final PostService _postService = PostService();
   final LikeService _likeService = LikeService();
   final RepostService _repostService = RepostService();
-  final UserService _userService = UserService();
 
-  User? _currentUser;
-  bool _isLoadingUser = false;
-  User? get currentUser => _currentUser;
-  bool get isLoadingUser => _isLoadingUser;
+  AuthManager? _authManager;
 
   List<Post> _posts = [];
+  int _postsPage = 1;
+  final int _postsPerPage = 20;
   final List<Post> _repliedPosts = [];
 
   Set<String> _repostedPostIds = {};
 
+  bool _isLoadingPostsInitial = false;
+  bool _isLoadingPosts = false;
+  bool _hasMorePosts = true;
   String? errorMessage;
 
   List<Post> get posts => List<Post>.from(_posts);
   List<Post> get repliedPosts => List<Post>.from(_repliedPosts);
+  bool get isLoadingPostsInitial => _isLoadingPostsInitial;
+  bool get isLoadingPosts => _isLoadingPosts;
+  bool get hasMorePosts => _hasMorePosts;
 
-  PostsManager() {
-    fetchCurrentUser();
-    fetchPosts();
+  void updateAuthUser(AuthManager auth) {
+    _authManager = auth;
+
+    if (auth.user != null) {
+      for (int i = 0; i < _posts.length; i++) {
+        final post = _posts[i];
+        if (post.userId == auth.user!.id) {
+          _posts[i] = post.copyWith(user: auth.user);
+        }
+      }
+    }
+    notifyListeners();
   }
 
-  Future<void> fetchCurrentUser() async {
-    _isLoadingUser = true;
-    notifyListeners();
-    try {
-      _currentUser = await _userService.fetchCurrentUser();
-    } catch (e) {
-      _currentUser = null;
-      debugPrint('Cannot fetch current user: $e');
-    } finally {
-      _isLoadingUser = false;
+  Future<void> fetchPosts({bool isRefresh = false}) async {
+    if (_isLoadingPosts) return;
+
+    if (isRefresh) {
+      _isLoadingPostsInitial = true;
+      _postsPage = 1;
+      _hasMorePosts = true;
+      _posts.clear();
       notifyListeners();
     }
-  }
 
-  Future<void> fetchPosts() async {
+    if (!_hasMorePosts) return;
+
+    _isLoadingPosts = true;
+    notifyListeners();
     try {
-      final fetched = await _postService.fetchPosts();
+      final fetched = await _postService.fetchPosts(
+        page: _postsPage,
+        perPage: _postsPerPage,
+      );
+
+      if (fetched.length < _postsPerPage) {
+        _hasMorePosts = false;
+      } else {
+        _postsPage++;
+      }
+
       final postIds = fetched.map((p) => p.id).toList();
 
       final likedIds = await _likeService.fetchLikedPostIds(postIds);
       _repostedPostIds = await _repostService.fetchRepostedPostIds(postIds);
 
-      _posts = fetched
+      final newPosts = fetched
           .map((p) => p.copyWith(isLiked: likedIds.contains(p.id)))
           .toList();
+
+      _posts.addAll(newPosts);
 
       errorMessage = null;
     } catch (e) {
       errorMessage = e.toString();
       debugPrint("fetchPosts error: $e");
     } finally {
+      if (isRefresh) _isLoadingPostsInitial = false;
+      _isLoadingPosts = false;
       notifyListeners();
     }
   }
 
   Future<Post?> createPost({required String content, String? topicName}) async {
-    if (_currentUser == null) {
+    final currentUser = _authManager?.user;
+    if (currentUser == null) {
       throw Exception('User is not logged in. Cannot create post.');
     }
 
     try {
       final newPost = await _postService.createPostWithTopicName(
-        userId: _currentUser!.id,
+        userId: currentUser.id,
         content: content,
         topicName: topicName,
       );
@@ -85,7 +113,7 @@ class PostsManager extends ChangeNotifier {
 
       final newNoti = notification_model.Notification(
         id: notiId,
-        userId: _currentUser!.id,
+        userId: currentUser.id,
         title: 'Đăng bài viết',
         body: 'Bạn đã đăng thành công 1 bài viết',
         type: notification_model.NotificationType.post.name,
@@ -201,23 +229,14 @@ class PostsManager extends ChangeNotifier {
     return _repostedPostIds.contains(postId);
   }
 
-  Future<void> _refreshPost(String id) async {
+  Future<void> refreshPost(String id) async {
     try {
-      debugPrint('Starting refresh for post: $id');
-
       final updatedPost = await _postService.fetchPostById(id);
-      debugPrint(
-        'Fetched post from DB: likes=${updatedPost?.likes}, reposts=${updatedPost?.reposts}',
-      );
 
       if (updatedPost != null) {
         final index = _posts.indexWhere((p) => p.id == id);
-        debugPrint('Post index in list: $index');
 
         if (index != -1) {
-          final oldLikes = _posts[index].likes;
-          final oldReposts = _posts[index].reposts;
-
           final likedIds = await _likeService.fetchLikedPostIds([id]);
 
           final isReposted = await _repostService.hasUserReposted(id);
@@ -229,14 +248,8 @@ class PostsManager extends ChangeNotifier {
 
           _posts[index] = updatedPost.copyWith(isLiked: likedIds.contains(id));
 
-          debugPrint(
-            'Updated post: oldLikes=$oldLikes, newLikes=${_posts[index].likes}, isLiked=${likedIds.contains(id)}, oldReposts=$oldReposts, newReposts=${_posts[index].reposts}, isReposted=$isReposted',
-          );
-
           notifyListeners();
         }
-      } else {
-        debugPrint('updatedPost is null!');
       }
     } catch (e) {
       debugPrint("Error refreshing post: $e");
@@ -290,16 +303,16 @@ class PostsManager extends ChangeNotifier {
     }
   }
 
-  void updateUserInfoInPosts(User updatedUser) {
-    _currentUser = updatedUser;
-    for (int i = 0; i < _posts.length; i++) {
-      final post = _posts[i];
-      if (post.userId == updatedUser.id) {
-        _posts[i] = post.copyWith(user: updatedUser);
-      }
-    }
-    notifyListeners();
-  }
+  // void updateUserInfoInPosts(User updatedUser) {
+  //   _currentUser = updatedUser;
+  //   for (int i = 0; i < _posts.length; i++) {
+  //     final post = _posts[i];
+  //     if (post.userId == updatedUser.id) {
+  //       _posts[i] = post.copyWith(user: updatedUser);
+  //     }
+  //   }
+  //   notifyListeners();
+  // }
 
   Future<void> updatePost({
     required String postId,

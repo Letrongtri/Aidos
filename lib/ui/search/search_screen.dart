@@ -14,6 +14,8 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   late final SearchController searchController;
+  final scrollController = ScrollController();
+  String keyword = '';
 
   @override
   void initState() {
@@ -23,11 +25,24 @@ class _SearchScreenState extends State<SearchScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vm = context.read<SearchManager>();
       vm.fetchSuggestionTopics();
-      vm.search('');
+      vm.search('', isRefresh: true);
     });
 
     if (widget.keyword != null && widget.keyword!.isNotEmpty) {
       searchController.text = widget.keyword!;
+    }
+
+    scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (scrollController.position.pixels >=
+        scrollController.position.maxScrollExtent - 200) {
+      final vm = context.read<SearchManager>();
+      if (!vm.isLoadingPost && !vm.isSearching && vm.hasMorePosts) {
+        vm.search(keyword);
+        ();
+      }
     }
   }
 
@@ -47,14 +62,15 @@ class _SearchScreenState extends State<SearchScreen> {
         newKeyword != oldWidget.keyword) {
       searchController.text = newKeyword;
       if (mounted) {
-        context.read<SearchManager>().search(newKeyword);
+        context.read<SearchManager>().search(newKeyword, isRefresh: true);
       }
     }
   }
 
   void _submitSearch(String query) {
     final vm = context.read<SearchManager>();
-    vm.search(query);
+    vm.search(query, isRefresh: true);
+    keyword = query;
     searchController.clear();
     FocusScope.of(context).unfocus();
   }
@@ -79,11 +95,19 @@ class _SearchScreenState extends State<SearchScreen> {
 
               SizedBox(height: 12),
               Expanded(
-                child: searchManager.postCount == 0
+                child: searchManager.isSearching
+                    ? Center(child: CircularProgressIndicator())
+                    : searchManager.postCount == 0
                     ? Center(child: Text('Không tìm thấy bài viết'))
-                    : ListView.builder(
-                        itemCount: searchManager.postCount,
+                    : ListView.separated(
+                        controller: scrollController,
+                        separatorBuilder: (_, __) => const Divider(),
+                        itemCount: searchManager.postCount + 1,
                         itemBuilder: (context, index) {
+                          if (index == searchManager.postCount) {
+                            return _buildFooter(searchManager);
+                          }
+
                           return SinglePostItem(
                             post: searchManager.posts[index],
                           );
@@ -95,6 +119,27 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildFooter(SearchManager manager) {
+    if (manager.isLoadingPost) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (!manager.hasMorePosts && manager.posts.isNotEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(
+          child: Text(
+            "Bạn đã xem hết tìm kiếm có liên quan!",
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   SearchAnchor _buildSearchBar(SearchManager searchManager) {
@@ -119,7 +164,9 @@ class _SearchScreenState extends State<SearchScreen> {
             hintText: 'Search',
             onSubmitted: (query) {
               controller.text = query;
-              controller.closeView(query);
+              if (controller.isOpen) {
+                controller.closeView(query);
+              }
               _submitSearch(query);
             },
             onTap: controller.openView,
@@ -129,7 +176,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 icon: const Icon(Icons.search),
                 onPressed: () {
                   controller.text = searchController.text;
-                  controller.closeView(searchController.text);
+                  if (controller.isOpen) {
+                    controller.closeView(searchController.text);
+                  }
                   _submitSearch(searchController.text);
                 },
               ),
@@ -151,7 +200,9 @@ class _SearchScreenState extends State<SearchScreen> {
             onTap: () {
               Future.microtask(() {
                 controller.text = item.name;
-                controller.closeView(item.name);
+                if (controller.isOpen) {
+                  controller.closeView(item.name);
+                }
                 _submitSearch(item.name);
               });
             },

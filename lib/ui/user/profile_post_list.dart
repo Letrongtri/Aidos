@@ -27,7 +27,8 @@ class ProfilePostList extends StatelessWidget {
       color: Colors.white,
       backgroundColor: Colors.black,
       onRefresh: onRefresh,
-      child: ListView.builder(
+      child: ListView.separated(
+        separatorBuilder: (_, __) => const Divider(),
         padding: const EdgeInsets.symmetric(vertical: 8),
         physics: const BouncingScrollPhysics(),
         itemCount: posts.length,

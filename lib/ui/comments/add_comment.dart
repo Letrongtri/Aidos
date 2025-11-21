@@ -1,6 +1,8 @@
 import 'package:ct312h_project/models/comment.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
+import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AddComment extends StatelessWidget {
   const AddComment({
@@ -20,6 +22,8 @@ class AddComment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = context.read<AuthManager>().user;
+
     return SafeArea(
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -51,7 +55,7 @@ class AddComment extends StatelessWidget {
               ),
             Row(
               children: [
-                Avatar(userId: "u001"),
+                Avatar(userId: currentUser?.id ?? 'Ẩn danh'),
                 SizedBox(width: 10),
                 Expanded(
                   child: TextField(

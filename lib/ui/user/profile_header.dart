@@ -1,5 +1,6 @@
 // lib/ui/user/profile_header.dart
 import 'package:ct312h_project/models/user.dart';
+import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:flutter/material.dart';
 
 class ProfileHeader extends StatelessWidget {
@@ -8,20 +9,10 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasAvatar =
-        user.avatarUrl != null && user.avatarUrl!.trim().isNotEmpty;
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CircleAvatar(
-          radius: 35,
-          backgroundColor: Colors.grey[900],
-          backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl!) : null,
-          child: !hasAvatar
-              ? const Icon(Icons.person, size: 35, color: Colors.white54)
-              : null,
-        ),
+        Avatar(userId: user.id, size: 70),
         const SizedBox(width: 16),
         Expanded(
           child: Column(

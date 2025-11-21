@@ -33,9 +33,19 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: authManager),
-        ChangeNotifierProvider(create: (_) => PostsManager()),
+
+        ChangeNotifierProxyProvider<AuthManager, PostsManager>(
+          create: (_) => PostsManager(),
+          update: (context, value, previous) =>
+              previous!..updateAuthUser(value),
+        ),
+
         ChangeNotifierProvider(create: (_) => SearchManager()),
-        ChangeNotifierProvider(create: (_) => ProfileManager()),
+        ChangeNotifierProxyProvider<AuthManager, ProfileManager>(
+          create: (_) => ProfileManager(),
+          update: (context, value, previous) =>
+              previous!..updateAuthUser(value),
+        ),
         ChangeNotifierProvider(
           create: (_) => NotificationManager(widget.localNotifService)..init(),
         ),

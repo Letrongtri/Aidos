@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/services/services.dart';
-import 'package:ct312h_project/viewmodels/posts_manager.dart';
+import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class ProfileManager extends ChangeNotifier {
@@ -13,6 +12,7 @@ class ProfileManager extends ChangeNotifier {
 
   bool isLoading = false;
   User? user;
+  AuthManager? _authManager;
 
   bool _isRepliesLoading = false;
   bool get isRepliesLoading => _isRepliesLoading;
@@ -26,14 +26,29 @@ class ProfileManager extends ChangeNotifier {
   final newPasswordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
+  void updateAuthUser(AuthManager auth) {
+    _authManager = auth;
+
+    // if (auth.user != null) {
+    //   for (int i = 0; i < _repliedPosts.length; i++) {
+    //     final post = _repliedPosts[i];
+    //     if (post.userId == auth.user!.id) {
+    //       _repliedPosts[i] = post.copyWith(user: auth.user);
+    //     }
+    //   }
+    // }
+    user = auth.user;
+    notifyListeners();
+  }
+
   Future<void> loadUser() async {
     isLoading = true;
     notifyListeners();
 
     try {
-      final fetchedUser = await _userService.fetchCurrentUser();
+      final fetchedUser = _authManager?.user;
+
       if (fetchedUser != null) {
-        user = fetchedUser;
         usernameController.text = user?.username ?? '';
         emailController.text = user?.email ?? '';
 
@@ -107,13 +122,13 @@ class ProfileManager extends ChangeNotifier {
       if (updatedUser != null) {
         user = updatedUser;
 
-        final postsManager = WidgetsBinding
-            .instance
-            .focusManager
-            .primaryFocus
-            ?.context
-            ?.read<PostsManager>();
-        postsManager?.updateUserInfoInPosts(updatedUser);
+        // final postsManager = WidgetsBinding
+        //     .instance
+        //     .focusManager
+        //     .primaryFocus
+        //     ?.context
+        //     ?.read<PostsManager>();
+        // postsManager?.updateUserInfoInPosts(updatedUser);
 
         notifyListeners();
         return true;

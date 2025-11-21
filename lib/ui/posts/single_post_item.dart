@@ -14,38 +14,33 @@ class SinglePostItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
-        context.goNamed(
+        context.pushNamed(
           AppRouteName.detailPost.name,
           pathParameters: {'id': post.id},
         );
       },
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Avatar(userId: post.userId, size: 45),
-              SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  children: [
-                    PostHeader(post: post),
+          Avatar(userId: post.userId, size: 45),
+          SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              children: [
+                PostHeader(post: post),
 
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(post.content),
-                        PostAction(post: post),
-                      ],
-                    ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(post.content),
+                    PostAction(post: post),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          Divider(),
         ],
       ),
     );

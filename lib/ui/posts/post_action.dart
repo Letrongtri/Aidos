@@ -33,7 +33,7 @@ class PostAction extends StatelessWidget {
         SizedBox(width: 5),
         TextButton.icon(
           onPressed: () {
-            context.goNamed(
+            context.pushNamed(
               AppRouteName.detailPost.name,
               pathParameters: {'id': post.id},
               extra: {'focusComment': true},
