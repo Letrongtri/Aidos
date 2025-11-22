@@ -2,7 +2,7 @@ import 'package:ct312h_project/services/pocketbase_client.dart';
 import 'package:flutter/material.dart';
 
 class RepostService {
-  Future<void> repostPost(String postId, int currentRepostCount) async {
+  Future<void> repostPost(String postId) async {
     try {
       final pb = await getPocketbaseInstance();
       final authStore = pb.authStore;
@@ -16,17 +16,13 @@ class RepostService {
       await pb
           .collection('reposts')
           .create(body: {'userId': userId, 'postId': postId});
-
-      await pb
-          .collection('posts')
-          .update(postId, body: {'reposts': currentRepostCount + 1});
     } catch (e) {
       debugPrint('Error reposting: $e');
       rethrow;
     }
   }
 
-  Future<void> unrepostPost(String postId, int currentRepostCount) async {
+  Future<void> unrepostPost(String postId) async {
     try {
       final pb = await getPocketbaseInstance();
       final authStore = pb.authStore;
@@ -43,13 +39,6 @@ class RepostService {
 
       if (result.items.isNotEmpty) {
         await pb.collection('reposts').delete(result.items.first.id);
-
-        final newCount = (currentRepostCount - 1)
-            .clamp(0, double.infinity)
-            .toInt();
-        await pb
-            .collection('posts')
-            .update(postId, body: {'reposts': newCount});
       }
     } catch (e) {
       debugPrint('Error unreposting: $e');

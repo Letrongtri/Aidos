@@ -216,10 +216,10 @@ class SearchManager extends ChangeNotifier {
 
       try {
         if (isReposted) {
-          await _repostService.unrepostPost(id, repostCount);
+          await _repostService.unrepostPost(id);
           _repostedPostIds.remove(id);
         } else {
-          await _repostService.repostPost(id, repostCount);
+          await _repostService.repostPost(id);
           _repostedPostIds.add(id);
 
           final currentUserId = await getCurrentUserId();

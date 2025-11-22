@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/services/pocketbase_client.dart';
 import 'package:flutter/foundation.dart'; // Cần thiết để dùng kIsWeb
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:pocketbase/pocketbase.dart';
@@ -357,5 +356,55 @@ class PostService {
       debugPrint('Error fetching single post by ID: $e');
       return null;
     }
+  }
+
+  // Stream<RecordSubscriptionEvent> subscribeToPost() async* {
+  //   final pb = await getPocketbaseInstance();
+  //   final controller = StreamController<RecordSubscriptionEvent>();
+
+  //   pb.collection('posts').subscribe('*', (e) {
+  //     controller.add(e);
+  //   });
+
+  //   controller.onCancel = () {
+  //     pb.collection('posts').unsubscribe('*');
+  //     controller.close();
+  //   };
+
+  //   yield* controller.stream;
+  // }
+  Stream<RecordSubscriptionEvent> subscribeToPost() {
+    // Tạo controller
+    final controller = StreamController<RecordSubscriptionEvent>();
+
+    // Biến để lưu hàm unsubscribe
+    UnsubscribeFunc? unsubscribeFunc;
+
+    // Bắt đầu logic khởi tạo bất đồng bộ
+    getPocketbaseInstance().then((pb) {
+      pb
+          .collection('posts')
+          .subscribe('*', (e) {
+            if (!controller.isClosed) {
+              controller.add(e);
+            }
+          })
+          .then((func) {
+            unsubscribeFunc = func;
+          })
+          .catchError((err) {
+            if (!controller.isClosed) controller.addError(err);
+          });
+    });
+
+    // Dọn dẹp khi không lắng nghe nữa
+    controller.onCancel = () async {
+      if (unsubscribeFunc != null) {
+        await unsubscribeFunc!();
+      }
+      await controller.close();
+    };
+
+    return controller.stream;
   }
 }

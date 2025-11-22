@@ -56,16 +56,6 @@ class LikeService {
       await pb
           .collection('likes')
           .create(body: {'postId': postId, 'userId': userId});
-
-      await Future.delayed(Duration(milliseconds: 100));
-
-      final likesResult = await pb
-          .collection('likes')
-          .getList(filter: 'postId = "$postId"', perPage: 500);
-
-      final totalLikes = likesResult.items.length;
-
-      await pb.collection('posts').update(postId, body: {'likes': totalLikes});
     } catch (e) {
       debugPrint('likePost error: $e');
       throw Exception();
@@ -90,16 +80,6 @@ class LikeService {
 
       final likeId = likes.items.first.id;
       await pb.collection('likes').delete(likeId);
-
-      await Future.delayed(Duration(milliseconds: 100));
-
-      final likesResult = await pb
-          .collection('likes')
-          .getList(filter: 'postId = "$postId"', perPage: 500);
-
-      final totalLikes = likesResult.items.length;
-
-      await pb.collection('posts').update(postId, body: {'likes': totalLikes});
     } catch (e) {
       debugPrint('unlikePost error: $e');
       throw Exception();
@@ -114,15 +94,6 @@ class LikeService {
       await pb
           .collection('likes')
           .create(body: {'commentId': commentId, 'userId': userId});
-      final likesResult = await pb
-          .collection('likes')
-          .getList(filter: 'commentId = "$commentId"', perPage: 500);
-
-      final totalLikes = likesResult.items.length;
-
-      await pb
-          .collection('comments')
-          .update(commentId, body: {'likesCount': totalLikes});
     } catch (e) {
       debugPrint(e.toString());
       throw Exception();
@@ -147,15 +118,6 @@ class LikeService {
 
       final likeId = likes.items.first.id;
       await pb.collection('likes').delete(likeId);
-
-      final likesResult = await pb
-          .collection('likes')
-          .getList(filter: 'commentId = "$commentId"', perPage: 500);
-
-      final totalLikes = likesResult.items.length;
-      await pb
-          .collection('comments')
-          .update(commentId, body: {'likesCount': totalLikes});
     } catch (e) {
       debugPrint(e.toString());
       throw Exception();

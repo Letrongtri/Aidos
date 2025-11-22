@@ -217,4 +217,25 @@ class Post {
       isLiked: isLiked,
     );
   }
+
+  Post copyWithRawData(Map<String, dynamic> rawData) {
+    return Post(
+      id: rawData['id'] as String,
+      userId: rawData['userId'] as String,
+      content: rawData['content'] as String,
+      topicId: rawData['topicId'] != null ? rawData['topicId'] as String : null,
+      parentId: rawData['parentId'] != null
+          ? rawData['parentId'] as String
+          : null,
+      likes: rawData['likes'] as int,
+      comments: rawData['comments'] as int,
+      reposts: rawData['reposts'] as int,
+      reports: rawData['reports'] as int,
+      created: DateTime.parse(rawData['created'] as String),
+      updated: DateTime.parse(rawData['updated'] as String),
+      images: rawData['images'] != null
+          ? List<String>.from(rawData['images'])
+          : const [],
+    );
+  }
 }

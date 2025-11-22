@@ -12,7 +12,7 @@ class LocalNotificationService {
   Stream<String?> get onNotificationClick => _onNotificationClick.stream;
 
   static const AndroidNotificationChannel channel = AndroidNotificationChannel(
-    'aidos_anonymous_social_media',
+    'aidos_anonymous_social_media_v2',
     'Aidos',
     description: 'Thông báo từ Aidos',
     importance: Importance.max,

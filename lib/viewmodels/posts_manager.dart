@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/models/notification.dart' as notification_model;
 import 'package:ct312h_project/services/services.dart';
@@ -5,6 +7,7 @@ import 'package:ct312h_project/utils/generate.dart';
 import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pocketbase/pocketbase.dart';
 
 class PostsManager extends ChangeNotifier {
   final PostService _postService = PostService();
@@ -12,6 +15,8 @@ class PostsManager extends ChangeNotifier {
   final RepostService _repostService = RepostService();
 
   AuthManager? _authManager;
+
+  StreamSubscription? _realtimeSubscription;
 
   List<Post> _posts = [];
   int _postsPage = 1;
@@ -33,6 +38,10 @@ class PostsManager extends ChangeNotifier {
 
   get currentUser => _authManager?.user;
   bool get isLoadingUser => _authManager?.isLoading ?? false;
+
+  PostsManager() {
+    startRealtimeUpdates();
+  }
 
   void updateAuthUser(AuthManager auth) {
     _authManager = auth;
@@ -206,10 +215,10 @@ class PostsManager extends ChangeNotifier {
 
     try {
       if (isReposted) {
-        await _repostService.unrepostPost(id, repostCount);
+        await _repostService.unrepostPost(id);
         _repostedPostIds.remove(id);
       } else {
-        await _repostService.repostPost(id, repostCount);
+        await _repostService.repostPost(id);
         _repostedPostIds.add(id);
 
         final currentUserId = await getCurrentUserId();
@@ -348,5 +357,38 @@ class PostsManager extends ChangeNotifier {
       debugPrint("deletePost error: $e");
       rethrow;
     }
+  }
+
+  void startRealtimeUpdates() {
+    _realtimeSubscription?.cancel();
+
+    _realtimeSubscription = _postService.subscribeToPost().listen((event) {
+      _handleRealtimeEvent(event);
+    });
+  }
+
+  void _handleRealtimeEvent(RecordSubscriptionEvent event) {
+    print('hi');
+    if (event.action == 'update') {
+      print('updated');
+      final updatedRecordId = event.record!.id;
+
+      final index = _posts.indexWhere((p) => p.id == updatedRecordId);
+
+      if (index != -1) {
+        final oldPost = _posts[index];
+
+        final updatedPost = oldPost.copyWithRawData(event.record!.data);
+
+        _posts[index] = updatedPost;
+        notifyListeners();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _realtimeSubscription?.cancel();
+    super.dispose();
   }
 }

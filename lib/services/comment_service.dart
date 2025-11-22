@@ -24,19 +24,6 @@ class CommentService {
 
       final commentModel = await pb.collection('comments').create(body: data);
 
-      if (parentComment != null && comment.parentId!.isNotEmpty) {
-        await pb
-            .collection('comments')
-            .update(
-              parentComment.id!,
-              body: {'replyCount': parentComment.replyCount + 1},
-            );
-      }
-
-      await pb
-          .collection('posts')
-          .update(comment.postId, body: {'comments': postCommentCount + 1});
-
       return comment.copyWith(id: commentModel.id, userId: userId, user: user);
     } catch (e) {
       debugPrint(e.toString());
@@ -111,24 +98,6 @@ class CommentService {
       final pb = await getPocketbaseInstance();
 
       await pb.collection('comments').delete(comment.id!);
-
-      if (parentComment != null && comment.parentId!.isNotEmpty) {
-        await pb
-            .collection('comments')
-            .update(
-              parentComment.id!,
-              body: {'replyCount': parentComment.replyCount - 1},
-            );
-      }
-
-      final postCommentCount = await pb
-          .collection('posts')
-          .getOne(comment.postId)
-          .then((value) => value.get<int>('comments'));
-
-      await pb
-          .collection('posts')
-          .update(comment.postId, body: {'comments': postCommentCount - 1});
     } catch (e) {
       debugPrint(e.toString());
       throw Exception();
