@@ -31,14 +31,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadDataOnce() async {
-    if (_hasLoaded) return;
+    if (_hasLoaded || !mounted) return;
     _hasLoaded = true;
 
     final vm = context.read<ProfileManager>();
     final postsManager = context.read<PostsManager>();
 
     await vm.loadUser();
-    if (vm.user == null) return;
+    if (!mounted || vm.user == null) return;
 
     await Future.wait([
       if (postsManager.posts.isEmpty) postsManager.fetchPosts(),
@@ -62,14 +62,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }(),
     ]);
 
-    postsManager.addListener(_refreshRepostedPosts);
+    if (mounted) {
+      postsManager.addListener(_refreshRepostedPosts);
+    }
   }
 
   void _refreshRepostedPosts() async {
+    if (!mounted) return;
+
     final vm = context.read<ProfileManager>();
     final postsManager = context.read<PostsManager>();
 
-    if (vm.user != null && mounted) {
+    if (vm.user != null) {
       final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
       if (mounted) {
         setState(() {
@@ -81,22 +85,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void dispose() {
-    final postsManager = context.read<PostsManager>();
-    postsManager.removeListener(_refreshRepostedPosts);
+    try {
+      final postsManager = context.read<PostsManager>();
+      postsManager.removeListener(_refreshRepostedPosts);
+    } catch (e) {
+      debugPrint('Error removing listener: $e');
+    }
     super.dispose();
   }
 
   Future<void> _onRefreshPosts() async {
+    if (!mounted) return;
     await context.read<PostsManager>().fetchPosts();
   }
 
   Future<void> _onRefreshReposts() async {
+    if (!mounted) return;
+
     final postsManager = context.read<PostsManager>();
     final vm = context.read<ProfileManager>();
 
     await postsManager.fetchPosts();
 
-    if (vm.user != null) {
+    if (vm.user != null && mounted) {
       final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
       if (mounted) {
         setState(() => _repostedPosts = reposted);
@@ -184,21 +195,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: TabBarView(
                     children: [
                       ProfilePostList(
+                        key: const ValueKey('profile_posts_tab'),
                         posts: userPosts,
                         emptyText: "No posts yet",
                         onRefresh: _onRefreshPosts,
                       ),
+
                       ProfileRepliesList(
+                        key: const ValueKey('profile_replies_tab'),
                         repliedPosts: _repliedPosts,
                         isLoading: _isRepliedLoading,
                       ),
+
                       _isRepostedLoading
                           ? Center(
+                              key: const ValueKey('profile_reposts_loading'),
                               child: CircularProgressIndicator(
                                 color: colorScheme.secondary,
                               ),
                             )
                           : ProfilePostList(
+                              key: const ValueKey('profile_reposts_tab'),
                               posts: _repostedPosts,
                               emptyText: "No reposts yet",
                               onRefresh: _onRefreshReposts,

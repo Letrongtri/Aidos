@@ -102,13 +102,13 @@ class DetailPostContent extends StatelessWidget {
               },
               style: TextButton.styleFrom(
                 foregroundColor: isReposted
-                    ? Colors.green
+                    ? Colors.white
                     : colorScheme.onSurface,
               ),
               label: Text(
                 Format.getCountNumber(post.reposts),
                 style: textTheme.bodyMedium?.copyWith(
-                  color: isReposted ? Colors.green : colorScheme.onSurface,
+                  color: isReposted ? Colors.white : colorScheme.onSurface,
                 ),
               ),
               icon: Icon(isReposted ? Icons.repeat : Icons.repeat_outlined),

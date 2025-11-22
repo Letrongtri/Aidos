@@ -25,8 +25,8 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
         obscureText: passwordVisible,
         validator: widget.validator,
         onSaved: widget.onSaved,
-        cursorColor: colorScheme.onPrimary,
-        style: TextStyle(color: Colors.black),
+        cursorColor: colorScheme.primary,
+        style: TextStyle(color: colorScheme.primary),
         decoration: InputDecoration(
           suffixIcon: IconButton(
             onPressed: () {
