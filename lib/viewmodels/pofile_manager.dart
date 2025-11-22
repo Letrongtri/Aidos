@@ -35,8 +35,7 @@ class ProfileManager extends ChangeNotifier {
         user = fetchedUser;
         usernameController.text = user?.username ?? '';
         emailController.text = user?.email ?? '';
-
-        await fetchMyReplies();
+        fetchMyReplies();
       }
     } catch (e) {
       debugPrint("loadUser error: $e");
@@ -51,10 +50,12 @@ class ProfileManager extends ChangeNotifier {
 
     _isRepliesLoading = true;
     notifyListeners();
+
     try {
+      await Future.delayed(const Duration(milliseconds: 200));
+
       _repliedPosts = await _postService.fetchRepliedPosts(user!.id);
-    } catch (e) {
-      debugPrint("fetchMyReplies error: $e");
+    } catch (_) {
       _repliedPosts = [];
     } finally {
       _isRepliesLoading = false;
@@ -87,12 +88,12 @@ class ProfileManager extends ChangeNotifier {
         username: usernameController.text.trim(),
         avatarFile: avatarFile,
       );
+
       if (newPassword != null &&
           newPassword.isNotEmpty &&
           confirmPassword != null &&
           confirmPassword.isNotEmpty) {
         if (newPassword != confirmPassword) {
-          debugPrint("Passwords do not match");
           return false;
         }
 
@@ -105,17 +106,15 @@ class ProfileManager extends ChangeNotifier {
 
       if (updatedUser != null) {
         user = updatedUser;
-
         usernameController.text = user?.username ?? '';
         emailController.text = user?.email ?? '';
-
+        await fetchMyReplies();
         notifyListeners();
         return true;
       }
 
       return false;
     } catch (e) {
-      debugPrint("saveProfile error: $e");
       return false;
     } finally {
       isLoading = false;
@@ -128,8 +127,7 @@ class ProfileManager extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
       await _userService.deleteUser();
-    } catch (e) {
-      debugPrint("deleteAccount error: $e");
+    } catch (_) {
     } finally {
       isLoading = false;
       notifyListeners();
@@ -146,20 +144,17 @@ class ProfileManager extends ChangeNotifier {
     }
 
     if (newPassword != confirmPassword) {
-      debugPrint("Passwords do not match");
       return false;
     }
 
     try {
-      final userService = _userService;
-      await userService.changePassword(
+      await _userService.changePassword(
         oldPassword: oldPassword,
         newPassword: newPassword,
         confirmPassword: confirmPassword,
       );
       return true;
     } catch (e) {
-      debugPrint("changePasswordIfNeeded error: $e");
       return false;
     }
   }

@@ -18,10 +18,72 @@ class EditProfileScreen extends StatelessWidget {
     required this.user,
   });
 
+  Future<void> _showConfirmDialog(
+    BuildContext context, {
+    required String title,
+    required String content,
+    required String confirmText,
+    required Color confirmColor,
+    required VoidCallback onConfirm,
+  }) {
+    return showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        titlePadding: const EdgeInsets.only(
+          left: 24,
+          top: 24,
+          right: 24,
+          bottom: 10,
+        ),
+        contentPadding: const EdgeInsets.only(left: 24, right: 24, bottom: 10),
+        actionsPadding: const EdgeInsets.only(left: 24, right: 24, bottom: 16),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          content,
+          style: const TextStyle(color: Colors.white70, fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              onConfirm();
+            },
+            style: TextButton.styleFrom(foregroundColor: confirmColor),
+            child: Text(
+              confirmText,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: confirmColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ProfileManager>();
-    // Lấy Theme
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
@@ -38,7 +100,6 @@ class EditProfileScreen extends StatelessWidget {
               contentPadding: EdgeInsets.zero,
               title: Text(
                 '@${vm.user?.username ?? ''}',
-
                 style: textTheme.bodyLarge,
               ),
               trailing: Avatar(userId: vm.user!.id, size: 25),
@@ -50,11 +111,22 @@ class EditProfileScreen extends StatelessWidget {
               child: Column(
                 children: [
                   TextButton(
-                    onPressed: () async {
-                      await vm.logout();
-                      if (context.mounted) {
-                        context.pushReplacementNamed(AppRouteName.auth.name);
-                      }
+                    onPressed: () {
+                      _showConfirmDialog(
+                        context,
+                        title: 'Log out',
+                        content: 'Are you sure you want to log out?',
+                        confirmText: 'Log out',
+                        confirmColor: const Color(0xFFFF3B30),
+                        onConfirm: () async {
+                          await vm.logout();
+                          if (context.mounted) {
+                            context.pushReplacementNamed(
+                              AppRouteName.auth.name,
+                            );
+                          }
+                        },
+                      );
                     },
                     child: Text(
                       'Logout',
@@ -65,7 +137,23 @@ class EditProfileScreen extends StatelessWidget {
                     ),
                   ),
                   TextButton(
-                    onPressed: vm.deleteAccount,
+                    onPressed: () {
+                      _showConfirmDialog(
+                        context,
+                        title: 'Confirm account deletion',
+                        content: 'Are you sure? This action cannot be undone.',
+                        confirmText: 'Delete',
+                        confirmColor: const Color(0xFFFF3B30),
+                        onConfirm: () async {
+                          await vm.deleteAccount();
+                          if (context.mounted) {
+                            context.pushReplacementNamed(
+                              AppRouteName.auth.name,
+                            );
+                          }
+                        },
+                      );
+                    },
                     child: Text(
                       'Delete Account',
                       style: textTheme.bodyLarge?.copyWith(
@@ -105,7 +193,6 @@ class EditProfileScreen extends StatelessWidget {
           onPressed: panelController.close,
           child: Text(
             'Cancel',
-
             style: textTheme.bodyMedium?.copyWith(
               color: colorScheme.onSurface,
               fontWeight: FontWeight.bold,
@@ -114,7 +201,6 @@ class EditProfileScreen extends StatelessWidget {
         ),
         Text(
           'Edit profile',
-
           style: textTheme.titleLarge?.copyWith(fontSize: 18),
         ),
         TextButton(
@@ -145,7 +231,6 @@ class EditProfileScreen extends StatelessWidget {
                 },
           child: Text(
             'Done',
-
             style: textTheme.bodyLarge?.copyWith(
               color: colorScheme.secondary,
               fontWeight: FontWeight.bold,
@@ -221,9 +306,7 @@ class EditProfileScreen extends StatelessWidget {
             color: colorScheme.onSurface.withOpacity(0.6),
           ),
           filled: true,
-
           fillColor: colorScheme.surface,
-
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: BorderSide(
@@ -236,7 +319,6 @@ class EditProfileScreen extends StatelessWidget {
               color: colorScheme.onSurface.withOpacity(0.12),
             ),
           ),
-
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: BorderSide(color: colorScheme.secondary),
