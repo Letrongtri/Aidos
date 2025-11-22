@@ -41,12 +41,9 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final posts = context.select<PostsManager, List<Post>>(
-    //   (postsManager) => postsManager.posts,
-    // );
-
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
 
     final manager = context.watch<PostsManager>();
 
@@ -75,7 +72,10 @@ class _FeedScreenState extends State<FeedScreen> {
                 : ListView.separated(
                     controller: _scrollController,
                     itemCount: posts.length + 1, // +1 cho loading footer
-                    separatorBuilder: (_, __) => const Divider(),
+                    separatorBuilder: (_, __) => Divider(
+                      height: 1,
+                      color: colorScheme.onSurface.withOpacity(0.12),
+                    ),
                     itemBuilder: (context, idx) {
                       if (idx == posts.length) {
                         return _buildFooter(manager);

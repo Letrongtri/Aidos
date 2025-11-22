@@ -153,12 +153,22 @@ class CommentManager extends ChangeNotifier {
     if (currentUserId == null) return;
 
     try {
+      String? rootId;
+
+      if (parentComment != null) {
+        if (parentComment.rootId != null && parentComment.rootId!.isNotEmpty) {
+          rootId = parentComment.rootId;
+        } else {
+          rootId = parentComment.id;
+        }
+      }
+
       final newComment = Comment(
         postId: postId,
         userId: '',
         content: text,
         parentId: parentComment?.id,
-        rootId: parentComment?.rootId,
+        rootId: rootId,
         created: DateTime.now(),
         updated: DateTime.now(),
         likesCount: 0,
@@ -280,11 +290,15 @@ class CommentManager extends ChangeNotifier {
 
     final comment = _comments[index];
 
+    final parentComment = _comments.firstWhere(
+      (c) => c.id == comment.parentId || c.id == comment.rootId,
+    );
+
     try {
       _comments.removeWhere((c) => c.id == commentId);
-      notifyListeners();
 
-      await _commentService.deleteComment(commentId);
+      await _commentService.deleteComment(comment, parentComment);
+      notifyListeners();
     } catch (e) {
       // rollback
       _comments.insert(index, comment);

@@ -9,13 +9,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class SinglePostItem extends StatelessWidget {
-  const SinglePostItem({super.key, required this.post});
+  const SinglePostItem({
+    super.key,
+    required this.post,
+    this.isFromSearch = false,
+  });
   final Post post;
+  final bool isFromSearch;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
     return InkWell(
@@ -48,15 +52,13 @@ class SinglePostItem extends StatelessWidget {
 
                       const SizedBox(height: 8),
 
-                      PostAction(post: post),
+                      PostAction(post: post, isFromSearch: isFromSearch),
                     ],
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-
-            Divider(height: 1, color: colorScheme.onSurface.withOpacity(0.12)),
           ],
         ),
       ),

@@ -106,11 +106,29 @@ class CommentService {
     }
   }
 
-  Future<void> deleteComment(String commentId) async {
+  Future<void> deleteComment(Comment comment, Comment? parentComment) async {
     try {
       final pb = await getPocketbaseInstance();
 
-      await pb.collection('comments').delete(commentId);
+      await pb.collection('comments').delete(comment.id!);
+
+      if (parentComment != null && comment.parentId!.isNotEmpty) {
+        await pb
+            .collection('comments')
+            .update(
+              parentComment.id!,
+              body: {'replyCount': parentComment.replyCount - 1},
+            );
+      }
+
+      final postCommentCount = await pb
+          .collection('posts')
+          .getOne(comment.postId)
+          .then((value) => value.get<int>('comments'));
+
+      await pb
+          .collection('posts')
+          .update(comment.postId, body: {'comments': postCommentCount - 1});
     } catch (e) {
       debugPrint(e.toString());
       throw Exception();

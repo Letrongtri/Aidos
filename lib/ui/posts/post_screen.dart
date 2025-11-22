@@ -131,49 +131,6 @@ class _PostScreenState extends State<PostScreen> {
                   padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
                   child: Column(
                     children: [
-                      // === Header (Cancel | Title | Post) ===
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              if (context.mounted) {
-                                Navigator.pop(context);
-                              }
-                            },
-                            child: const Text(
-                              "Cancel",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            isEditing ? 'Edit Post' : 'New Post',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _isPosting ? null : () => _onPost(),
-                            child: Text(
-                              _isPosting
-                                  ? 'Posting...'
-                                  : (isEditing ? 'Update' : 'Post'),
-                              style: TextStyle(
-                                color: _isPosting
-                                    ? Colors.grey
-                                    : const Color.fromARGB(255, 20, 132, 237),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
                       Divider(
                         thickness: 1,
                         color: colorScheme.onSurface.withOpacity(0.12),

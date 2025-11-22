@@ -2,19 +2,37 @@ import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/utils/format.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
+import 'package:ct312h_project/viewmodels/search_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class PostAction extends StatelessWidget {
-  const PostAction({super.key, required this.post});
+  const PostAction({super.key, required this.post, this.isFromSearch = false});
 
   final Post post;
+  final bool isFromSearch;
 
   @override
   Widget build(BuildContext context) {
-    final postsManager = context.watch<PostsManager>();
-    final isReposted = postsManager.hasUserReposted(post.id);
+    bool isUserReposted;
+    VoidCallback onLike;
+    VoidCallback onRepost;
+
+    if (isFromSearch) {
+      final searchManager = context.watch<SearchManager>();
+      isUserReposted = searchManager.hasUserReposted(post.id);
+
+      onLike = () => context.read<SearchManager>().onLikePostPressed(post.id);
+      onRepost = () => context.read<SearchManager>().onRepostPressed(post.id);
+    } else {
+      final postsManager = context.watch<PostsManager>();
+      isUserReposted = postsManager.hasUserReposted(post.id);
+
+      onLike = () => context.read<PostsManager>().onLikePostPressed(post.id);
+      onRepost = () => context.read<PostsManager>().onRepostPressed(post.id);
+    }
+
     final isLiked = post.isLiked ?? false;
 
     final theme = Theme.of(context);
@@ -24,10 +42,7 @@ class PostAction extends StatelessWidget {
     return Row(
       children: [
         TextButton.icon(
-          onPressed: () {
-            context.read<PostsManager>().onLikePostPressed(post.id);
-          },
-
+          onPressed: onLike,
           style: TextButton.styleFrom(
             foregroundColor: isLiked
                 ? colorScheme.error
@@ -63,19 +78,19 @@ class PostAction extends StatelessWidget {
         const SizedBox(width: 5),
 
         TextButton.icon(
-          onPressed: () {
-            context.read<PostsManager>().onRepostPressed(post.id);
-          },
+          onPressed: onRepost,
           style: TextButton.styleFrom(
-            foregroundColor: isReposted ? Colors.green : colorScheme.onSurface,
+            foregroundColor: isUserReposted
+                ? Colors.green
+                : colorScheme.onSurface,
           ),
           label: Text(
             Format.getCountNumber(post.reposts),
             style: textTheme.bodyMedium?.copyWith(
-              color: isReposted ? Colors.green : colorScheme.onSurface,
+              color: isUserReposted ? Colors.green : colorScheme.onSurface,
             ),
           ),
-          icon: Icon(isReposted ? Icons.repeat : Icons.repeat_outlined),
+          icon: Icon(isUserReposted ? Icons.repeat : Icons.repeat_outlined),
         ),
       ],
     );

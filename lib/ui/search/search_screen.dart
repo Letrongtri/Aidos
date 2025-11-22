@@ -49,6 +49,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void dispose() {
     searchController.dispose();
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -68,10 +69,9 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void _submitSearch(String query) {
-    final vm = context.read<SearchManager>();
-    vm.search(query, isRefresh: true);
+    context.read<SearchManager>().search(query, isRefresh: true);
     keyword = query;
-    searchController.clear();
+    searchController.text = query;
     FocusScope.of(context).unfocus();
   }
 
@@ -81,6 +81,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       body: SafeArea(
@@ -107,7 +108,10 @@ class _SearchScreenState extends State<SearchScreen> {
                       )
                     : ListView.separated(
                         controller: scrollController,
-                        separatorBuilder: (_, __) => const Divider(),
+                        separatorBuilder: (_, __) => Divider(
+                          height: 1,
+                          color: colorScheme.onSurface.withOpacity(0.12),
+                        ),
                         itemCount: searchManager.postCount + 1,
                         itemBuilder: (context, index) {
                           if (index == searchManager.postCount) {
@@ -116,6 +120,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
                           return SinglePostItem(
                             post: searchManager.posts[index],
+                            isFromSearch: true,
                           );
                         },
                       ),
@@ -155,10 +160,9 @@ class _SearchScreenState extends State<SearchScreen> {
     return SearchAnchor(
       searchController: searchController,
 
-      viewBackgroundColor: colorScheme.surface,
+      // viewBackgroundColor: colorScheme.surface,
 
-      viewElevation: 0,
-
+      // viewElevation: 0,
       builder: (context, controller) {
         return Focus(
           autofocus: true,

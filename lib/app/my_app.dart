@@ -40,7 +40,14 @@ class _MyAppState extends State<MyApp> {
               previous!..updateAuthUser(value),
         ),
 
-        ChangeNotifierProvider(create: (_) => SearchManager()),
+        ChangeNotifierProxyProvider<PostsManager, SearchManager>(
+          create: (_) => SearchManager(),
+          update: (context, value, previous) {
+            final search = previous ?? SearchManager();
+            search.update(value);
+            return search;
+          },
+        ),
         ChangeNotifierProxyProvider<AuthManager, ProfileManager>(
           create: (_) => ProfileManager(),
           update: (context, value, previous) =>

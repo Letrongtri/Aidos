@@ -5,6 +5,7 @@ import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/ui/shared/show_post_actions_bottom_sheet.dart';
 import 'package:ct312h_project/utils/format.dart';
 import 'package:ct312h_project/utils/generate.dart';
+import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -17,6 +18,8 @@ class PostHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentUserId = context.read<AuthManager>().user?.id ?? '';
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
@@ -82,83 +85,83 @@ class PostHeader extends StatelessWidget {
             color: colorScheme.onSurface.withOpacity(0.6),
           ),
         ),
+        if (post.userId == currentUserId)
+          IconButton(
+            onPressed: () {
+              showPostActionsBottomSheet(
+                context,
+                onUpdate: () {
+                  Navigator.pop(context);
+                  context.pushNamed(AppRouteName.post.name, extra: post);
+                },
+                onDelete: () async {
+                  Navigator.pop(context);
 
-        IconButton(
-          onPressed: () {
-            showPostActionsBottomSheet(
-              context,
-              onUpdate: () {
-                Navigator.pop(context);
-                context.pushNamed(AppRouteName.post.name, extra: post);
-              },
-              onDelete: () async {
-                Navigator.pop(context);
+                  final postsManager = context.read<PostsManager>();
 
-                final postsManager = context.read<PostsManager>();
-
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: colorScheme.surfaceContainerHighest,
-                    title: Text('Delete Post', style: textTheme.titleLarge),
-                    content: Text(
-                      'Are you sure you want to delete this post?',
-                      style: textTheme.bodyMedium,
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: Text(
-                          'Cancel',
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurface.withOpacity(0.6),
-                          ),
-                        ),
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: colorScheme.surfaceContainerHighest,
+                      title: Text('Delete Post', style: textTheme.titleLarge),
+                      content: Text(
+                        'Are you sure you want to delete this post?',
+                        style: textTheme.bodyMedium,
                       ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: Text(
-                          'Delete',
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.error,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-
-                if (confirmed == true) {
-                  try {
-                    await postsManager.deletePost(post.id);
-
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Post deleted successfully',
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: Text(
+                            'Cancel',
                             style: textTheme.bodyMedium?.copyWith(
-                              color: Colors.black,
+                              color: colorScheme.onSurface.withOpacity(0.6),
                             ),
                           ),
-                          backgroundColor: colorScheme.secondary,
                         ),
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error deleting post: $e')),
-                      );
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: Text(
+                            'Delete',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.error,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmed == true) {
+                    try {
+                      await postsManager.deletePost(post.id);
+
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Post deleted successfully',
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: Colors.black,
+                              ),
+                            ),
+                            backgroundColor: colorScheme.secondary,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error deleting post: $e')),
+                        );
+                      }
                     }
                   }
-                }
-              },
-            );
-          },
-          icon: Icon(Icons.more_horiz, color: colorScheme.onSurface),
-        ),
+                },
+              );
+            },
+            icon: Icon(Icons.more_horiz, color: colorScheme.onSurface),
+          ),
       ],
     );
   }

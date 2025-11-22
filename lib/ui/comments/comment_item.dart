@@ -57,7 +57,7 @@ class CommentItem extends StatelessWidget {
                           children: [
                             Icon(Icons.chevron_right),
                             Text(
-                              "$replyingToUser",
+                              Generate.generateUsername(replyingToUser!),
                               style: textTheme.labelSmall?.copyWith(
                                 color: colorScheme.onSurface.withOpacity(0.6),
                                 fontSize: 12,
