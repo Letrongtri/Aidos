@@ -49,7 +49,7 @@ class _CommentListState extends State<CommentList> {
         if (snapshot.hasError) {
           return Center(
             child: Text(
-              "Lỗi tải bình luận",
+              "Fail to load comment",
               style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
             ),
           );
@@ -62,7 +62,7 @@ class _CommentListState extends State<CommentList> {
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Text(
-                "Chưa có bình luận nào.",
+                "There is no comment yet.",
                 style: textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurface.withOpacity(0.6),
                 ),
