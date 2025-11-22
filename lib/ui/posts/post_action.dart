@@ -15,6 +15,11 @@ class PostAction extends StatelessWidget {
   Widget build(BuildContext context) {
     final postsManager = context.watch<PostsManager>();
     final isReposted = postsManager.hasUserReposted(post.id);
+    final isLiked = post.isLiked ?? false;
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Row(
       children: [
@@ -22,15 +27,23 @@ class PostAction extends StatelessWidget {
           onPressed: () {
             context.read<PostsManager>().onLikePostPressed(post.id);
           },
-          label: Text(Format.getCountNumber(post.likes)),
-          icon: Icon(
-            post.isLiked ?? false ? Icons.favorite : Icons.favorite_outline,
-            color: (post.isLiked != null && post.isLiked!)
-                ? Colors.red
-                : Colors.white,
+
+          style: TextButton.styleFrom(
+            foregroundColor: isLiked
+                ? colorScheme.error
+                : colorScheme.onSurface,
           ),
+          label: Text(
+            Format.getCountNumber(post.likes),
+            style: textTheme.bodyMedium?.copyWith(
+              color: isLiked ? colorScheme.error : colorScheme.onSurface,
+            ),
+          ),
+          icon: Icon(isLiked ? Icons.favorite : Icons.favorite_outline),
         ),
-        SizedBox(width: 5),
+
+        const SizedBox(width: 5),
+
         TextButton.icon(
           onPressed: () {
             context.pushNamed(
@@ -39,19 +52,30 @@ class PostAction extends StatelessWidget {
               extra: {'focusComment': true},
             );
           },
-          label: Text(Format.getCountNumber(post.comments)),
-          icon: Icon(Icons.mode_comment_outlined),
+          style: TextButton.styleFrom(foregroundColor: colorScheme.onSurface),
+          label: Text(
+            Format.getCountNumber(post.comments),
+            style: textTheme.bodyMedium,
+          ),
+          icon: const Icon(Icons.mode_comment_outlined),
         ),
-        SizedBox(width: 5),
+
+        const SizedBox(width: 5),
+
         TextButton.icon(
           onPressed: () {
             context.read<PostsManager>().onRepostPressed(post.id);
           },
-          label: Text(Format.getCountNumber(post.reposts)),
-          icon: Icon(
-            isReposted ? Icons.repeat : Icons.repeat_outlined,
-            color: isReposted ? Colors.green : Colors.white,
+          style: TextButton.styleFrom(
+            foregroundColor: isReposted ? Colors.green : colorScheme.onSurface,
           ),
+          label: Text(
+            Format.getCountNumber(post.reposts),
+            style: textTheme.bodyMedium?.copyWith(
+              color: isReposted ? Colors.green : colorScheme.onSurface,
+            ),
+          ),
+          icon: Icon(isReposted ? Icons.repeat : Icons.repeat_outlined),
         ),
       ],
     );

@@ -1,4 +1,3 @@
-// lib/ui/user/profile_screen.dart
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/ui/user/edit_profile_screen.dart';
 import 'package:ct312h_project/ui/user/profile_replies_list.dart';
@@ -110,19 +109,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final vm = context.watch<ProfileManager>();
     final postsManager = context.watch<PostsManager>();
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     if (vm.isLoading) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator(color: Colors.white)),
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: colorScheme.secondary),
+        ),
       );
     }
 
     if (vm.user == null) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: Text("User not found", style: TextStyle(color: Colors.white)),
-        ),
+      return Scaffold(
+        body: Center(child: Text("User not found", style: textTheme.bodyLarge)),
       );
     }
 
@@ -132,11 +133,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: Colors.black,
         body: SlidingUpPanel(
           controller: vm.panelController,
           minHeight: 0,
           maxHeight: MediaQuery.of(context).size.height * 0.9,
+
+          color: colorScheme.surfaceContainerHighest,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(25),
             topRight: Radius.circular(25),
@@ -154,7 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Align(
                     alignment: Alignment.topRight,
                     child: IconButton(
-                      icon: const Icon(Icons.settings, color: Colors.white),
+                      icon: Icon(Icons.settings, color: colorScheme.primary),
                       onPressed: vm.openEditPanel,
                     ),
                   ),
@@ -164,15 +166,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: ProfileHeader(user: user),
                 ),
                 const SizedBox(height: 15),
-                const TabBar(
-                  labelColor: Colors.white,
-                  indicatorColor: Colors.white,
-                  tabs: [
+                TabBar(
+                  labelColor: colorScheme.primary,
+                  unselectedLabelColor: colorScheme.onSurface.withOpacity(0.5),
+                  indicatorColor: colorScheme.secondary,
+                  indicatorSize: TabBarIndicatorSize.tab,
+
+                  labelStyle: textTheme.titleLarge?.copyWith(fontSize: 16),
+                  tabs: const [
                     Tab(text: 'Posts'),
                     Tab(text: 'Replied'),
                     Tab(text: 'Reposts'),
                   ],
                 ),
+
                 Expanded(
                   child: TabBarView(
                     children: [
@@ -186,9 +193,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         isLoading: _isRepliedLoading,
                       ),
                       _isRepostedLoading
-                          ? const Center(
+                          ? Center(
                               child: CircularProgressIndicator(
-                                color: Colors.white,
+                                color: colorScheme.secondary,
                               ),
                             )
                           : ProfilePostList(

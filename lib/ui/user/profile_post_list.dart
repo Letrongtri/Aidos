@@ -17,15 +17,18 @@ class ProfilePostList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     if (posts.isEmpty) {
-      return Center(
-        child: Text(emptyText, style: const TextStyle(color: Colors.grey)),
-      );
+      return Center(child: Text(emptyText, style: textTheme.bodyMedium));
     }
 
     return RefreshIndicator(
-      color: Colors.white,
-      backgroundColor: Colors.black,
+      color: colorScheme.secondary,
+
+      backgroundColor: colorScheme.surface,
       onRefresh: onRefresh,
       child: ListView.separated(
         separatorBuilder: (_, __) => const Divider(),

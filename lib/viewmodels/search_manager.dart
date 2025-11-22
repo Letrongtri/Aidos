@@ -7,6 +7,9 @@ class SearchManager extends ChangeNotifier {
   final _postService = PostService();
   final _topicService = TopicService();
 
+  final _likeService = LikeService();
+  final _repostService = RepostService();
+
   String? errorMessage;
   List<Post> searchResults = [];
   List<Topic> topicSuggestions = [];
@@ -17,6 +20,8 @@ class SearchManager extends ChangeNotifier {
   bool _isLoadingPost = false; // load more search post
   bool _isSearching = false;
   bool _hasMorePosts = true;
+
+  Set<String> _repostedPostIds = {};
 
   List<Post> get posts => [...searchResults];
   int get postCount => searchResults.length;
@@ -40,12 +45,46 @@ class SearchManager extends ChangeNotifier {
     }
   }
 
+  Future<List<Post>> _enrichPostsWithInteractionState(
+    List<Post> rawPosts,
+  ) async {
+    if (rawPosts.isEmpty) return [];
+
+    final postIds = rawPosts.map((p) => p.id).toList();
+
+    final likedIds = await _likeService.fetchLikedPostIds(postIds);
+    _repostedPostIds = await _repostService.fetchRepostedPostIds(postIds);
+
+    return rawPosts.map((p) {
+      return p.copyWith(isLiked: likedIds.contains(p.id));
+    }).toList();
+  }
+
+  Future<List<Post>> _enrichPostsWithInteractionState(
+    List<Post> rawPosts,
+  ) async {
+    if (rawPosts.isEmpty) return [];
+
+    final postIds = rawPosts.map((p) => p.id).toList();
+
+    final likedIds = await _likeService.fetchLikedPostIds(postIds);
+    _repostedPostIds = await _repostService.fetchRepostedPostIds(postIds);
+
+    return rawPosts.map((p) {
+      return p.copyWith(isLiked: likedIds.contains(p.id));
+    }).toList();
+  }
+
   Future<List<Post>> _fetchTrendingPosts() async {
     int perPage = 10;
 
     List<Post> posts = [];
     try {
-      posts = await _postService.fetchTrendingPosts(perPage: perPage);
+      final rawPosts = await _postService.fetchTrendingPosts(perPage: perPage);
+
+      posts = await _enrichPostsWithInteractionState(rawPosts);
+
+      searchResults = posts;
     } catch (e) {
       errorMessage = e.toString();
     } finally {
@@ -93,7 +132,7 @@ class SearchManager extends ChangeNotifier {
         _page++;
       }
 
-      if (posts.isEmpty) {
+      if (rawPosts.isEmpty) {
         searchResults = [];
         notifyListeners();
         return;
@@ -106,6 +145,36 @@ class SearchManager extends ChangeNotifier {
       if (isRefresh) _isSearching = false;
       _isLoadingPost = false;
       notifyListeners();
+    }
+  }
+
+  bool hasUserReposted(String postId) {
+    return _repostedPostIds.contains(postId);
+  }
+
+  Future<void> onLikePostPressed(String id) async {
+    final index = searchResults.indexWhere((p) => p.id == id);
+    if (index == -1) return;
+
+    final post = searchResults[index];
+    final isLiked = post.isLiked ?? false;
+    final likeCount = post.likes;
+
+    searchResults[index] = post.copyWith(
+      isLiked: !isLiked,
+      likes: isLiked ? likeCount - 1 : likeCount + 1,
+    );
+    notifyListeners();
+
+    // Gọi API thực tế
+    try {
+      if (isLiked) {
+        await _likeService.unlikePost(id, likeCount);
+      } else {
+        await _likeService.likePost(id, likeCount);
+      }
+    } catch (e) {
+      debugPrint('Error toggling like in search: $e');
     }
   }
 }

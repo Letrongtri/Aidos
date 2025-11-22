@@ -17,6 +17,9 @@ class AuthTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Padding(
       padding: const EdgeInsets.only(top: 20),
       child: TextFormField(
@@ -24,19 +27,37 @@ class AuthTextField extends StatelessWidget {
         onSaved: onSaved,
         keyboardType: keyboardType,
         cursorColor: theme.colorScheme.onPrimary,
-        style: TextStyle(color: Colors.black),
+
+        style: textTheme.bodyLarge,
         decoration: InputDecoration(
-          contentPadding: EdgeInsets.all(8),
+          contentPadding: const EdgeInsets.all(16),
           hintText: hint,
+
+          hintStyle: textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurface.withOpacity(0.5),
+          ),
+          filled: true,
+
+          fillColor: colorScheme.surfaceContainerHighest,
+
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.black54),
-            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(12),
           ),
+
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.black),
-            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: colorScheme.secondary),
+            borderRadius: BorderRadius.circular(12),
           ),
-          hintStyle: TextStyle(color: Colors.black87),
+
+          errorBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: colorScheme.error),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: colorScheme.error),
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );

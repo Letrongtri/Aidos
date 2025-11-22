@@ -1,4 +1,3 @@
-// lib/ui/user/profile_header.dart
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,9 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -20,21 +22,14 @@ class ProfileHeader extends StatelessWidget {
             children: [
               Text(
                 user.username,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                style: textTheme.titleLarge,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
                 user.email,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                style: textTheme.bodyMedium,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

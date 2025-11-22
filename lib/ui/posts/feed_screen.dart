@@ -45,7 +45,12 @@ class _FeedScreenState extends State<FeedScreen> {
     //   (postsManager) => postsManager.posts,
     // );
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     final manager = context.watch<PostsManager>();
+
     final posts = manager.posts;
 
     return Scaffold(
@@ -64,6 +69,10 @@ class _FeedScreenState extends State<FeedScreen> {
             padding: const EdgeInsets.all(10),
             child: manager.isLoadingPostsInitial
                 ? const Center(child: CircularProgressIndicator())
+                : posts.isEmpty
+                ? Center(
+                    child: Text("No posts yet", style: textTheme.bodyMedium),
+                  )
                 : ListView.separated(
                     controller: _scrollController,
                     itemCount: posts.length + 1, // +1 cho loading footer

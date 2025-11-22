@@ -77,12 +77,16 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Lấy Theme
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -104,21 +108,25 @@ class _AuthScreenState extends State<AuthScreen> {
                     _authData[key] = value;
                   },
                 ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               ValueListenableBuilder<bool>(
                 valueListenable: _isSubmitting,
                 builder: (context, isSubmitting, child) {
                   if (isSubmitting) {
-                    return const CircularProgressIndicator();
+                    return CircularProgressIndicator(
+                      color: colorScheme.secondary,
+                    );
                   }
-                  return _buildSubmitButton();
+                  return _buildSubmitButton(theme, colorScheme);
                 },
               ),
 
-              Spacer(),
-              Divider(),
-              _buildAuthModeSwitch(),
+              const Spacer(),
+
+              Divider(color: colorScheme.onSurface.withOpacity(0.12)),
+
+              _buildAuthModeSwitch(theme, colorScheme),
             ],
           ),
         ),
@@ -126,7 +134,7 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  Widget _buildAuthModeSwitch() {
+  Widget _buildAuthModeSwitch(ThemeData theme, ColorScheme colorScheme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -134,29 +142,47 @@ class _AuthScreenState extends State<AuthScreen> {
           _authMode == AuthMode.login
               ? "Don't have an account yet?"
               : "Already have an account?",
-          style: TextStyle(color: Colors.black87),
+
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurface.withOpacity(0.6),
+          ),
         ),
         TextButton(
           onPressed: _switchAuthMode,
           child: Text(
             _authMode == AuthMode.login ? 'SIGN UP' : 'LOG IN',
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.secondary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
     );
   }
 
-  SizedBox _buildSubmitButton() {
+  Widget _buildSubmitButton(ThemeData theme, ColorScheme colorScheme) {
     return SizedBox(
       width: double.infinity,
-      height: 42,
+      height: 48,
       child: ElevatedButton(
         onPressed: _submit,
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colorScheme.secondary,
+
+          foregroundColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 0,
+        ),
         child: Text(
           _authMode == AuthMode.login ? 'LOGIN' : 'SIGN UP',
-          style: TextStyle(color: Colors.white),
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

@@ -22,37 +22,54 @@ class AddComment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Lấy Theme
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     final currentUser = context.read<AuthManager>().user;
 
     return SafeArea(
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.grey.shade800)),
+          color: colorScheme.surface,
+
+          border: Border(
+            top: BorderSide(color: colorScheme.onSurface.withOpacity(0.12)),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (replyingTo != null)
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      "Replying @${replyingTo!.userId}",
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0, left: 45),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "Replying @${replyingTo!.userId}",
+
+                        style: textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: onCancelReply,
-                    child: const Icon(
-                      Icons.close,
-                      size: 16,
-                      color: Colors.grey,
+                    GestureDetector(
+                      onTap: onCancelReply,
+                      child: Icon(
+                        Icons.close,
+                        size: 16,
+                        color: colorScheme.onSurface.withOpacity(0.6),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+
             Row(
               children: [
                 Avatar(userId: currentUser?.id ?? 'Ẩn danh'),
@@ -61,16 +78,22 @@ class AddComment extends StatelessWidget {
                   child: TextField(
                     controller: controller,
                     focusNode: focusNode,
+
+                    style: textTheme.bodyMedium,
                     decoration: InputDecoration(
                       hintText: replyingTo == null
-                          ? "Comment here"
-                          : "Reply ${replyingTo!.userId}",
-                      hintStyle: TextStyle(color: Colors.grey[500]),
+                          ? "Comment here..."
+                          : "Reply to user...",
+
+                      hintStyle: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface.withOpacity(0.5),
+                      ),
                       filled: true,
-                      fillColor: const Color(0xFF1A1A1A),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
+
+                      fillColor: colorScheme.surfaceContainerHighest,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
@@ -79,13 +102,18 @@ class AddComment extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
+
+                const SizedBox(width: 8),
+
                 IconButton(
                   onPressed: () {
-                    onSend(controller.text);
-                    controller.clear();
+                    if (controller.text.trim().isNotEmpty) {
+                      onSend(controller.text);
+                      controller.clear();
+                    }
                   },
-                  icon: Icon(Icons.send),
+
+                  icon: Icon(Icons.send, color: colorScheme.secondary),
                 ),
               ],
             ),

@@ -5,8 +5,14 @@ void showPostActionsBottomSheet(
   required void Function()? onUpdate,
   void Function()? onDelete,
 }) {
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
+  final textTheme = theme.textTheme;
+
   showModalBottomSheet(
     context: context,
+
+    backgroundColor: colorScheme.surfaceContainerHighest,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
@@ -16,27 +22,49 @@ void showPostActionsBottomSheet(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 16),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colorScheme.onSurface.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+
             ListTile(
-              title: const Text("Update"),
-              trailing: const Icon(Icons.update),
+              title: Text(
+                "Update",
+
+                style: textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              trailing: Icon(Icons.update, color: colorScheme.primary),
               onTap: onUpdate,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              tileColor: const Color.fromARGB(255, 41, 41, 41),
+
+              tileColor: colorScheme.surface,
             ),
             const SizedBox(height: 10),
+
             ListTile(
-              title: const Text("Delete"),
-              trailing: const Icon(Icons.delete),
+              title: Text(
+                "Delete",
+                style: textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.error,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              trailing: Icon(Icons.delete, color: colorScheme.error),
               onTap: onDelete,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              tileColor: const Color.fromARGB(255, 41, 41, 41),
-              textColor: Colors.red,
-              iconColor: Colors.red,
+
+              tileColor: colorScheme.surface,
             ),
             const SizedBox(height: 16),
           ],

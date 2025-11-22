@@ -22,10 +22,17 @@ class CommentItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Lấy Theme
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    final isLiked = comment.isLiked ?? false;
+
     final manager = context.watch<CommentManager>();
 
     return Container(
-      padding: EdgeInsets.all(8),
+      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -40,7 +47,10 @@ class CommentItem extends StatelessWidget {
                       Text(
                         comment.user?.username ??
                             Generate.generateUsername(comment.userId),
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[300],
+                        ),
                       ),
                       if (replyingToUser != null)
                         Row(
@@ -48,8 +58,8 @@ class CommentItem extends StatelessWidget {
                             Icon(Icons.chevron_right),
                             Text(
                               "$replyingToUser",
-                              style: TextStyle(
-                                color: Colors.grey,
+                              style: textTheme.labelSmall?.copyWith(
+                                color: colorScheme.onSurface.withOpacity(0.6),
                                 fontSize: 12,
                               ),
                             ),
@@ -60,7 +70,12 @@ class CommentItem extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 8),
-              Text(Format.getTimeDifference(comment.created)),
+              Text(
+                Format.getTimeDifference(comment.created),
+                style: textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
               IconButton(
                 onPressed: () {
                   showPostActionsBottomSheet(
@@ -75,14 +90,20 @@ class CommentItem extends StatelessWidget {
                     },
                   );
                 },
-                icon: Icon(Icons.more_horiz),
+                icon: Icon(
+                  Icons.more_horiz,
+                  color: colorScheme.onSurface,
+                  size: 20,
+                ),
               ),
             ],
           ),
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(comment.content),
+              Text(comment.content, style: textTheme.bodyMedium),
+
               Row(
                 children: [
                   TextButton.icon(
@@ -92,21 +113,44 @@ class CommentItem extends StatelessWidget {
                         comment.likesCount,
                       );
                     },
-                    label: Text(Format.getCountNumber(comment.likesCount)),
+                    style: TextButton.styleFrom(
+                      foregroundColor: isLiked
+                          ? colorScheme.error
+                          : colorScheme.onSurface,
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 36),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    label: Text(
+                      Format.getCountNumber(comment.likesCount),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: isLiked
+                            ? colorScheme.error
+                            : colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     icon: Icon(
-                      comment.isLiked ?? false
-                          ? Icons.favorite
-                          : Icons.favorite_outline,
-                      color: comment.isLiked ?? false
-                          ? Colors.red
-                          : Colors.white,
+                      isLiked ? Icons.favorite : Icons.favorite_outline,
+                      size: 18,
                     ),
                   ),
-                  SizedBox(width: 5),
+
+                  const SizedBox(width: 16),
+
                   TextButton.icon(
                     onPressed: onReply,
-                    label: Text(Format.getCountNumber(comment.replyCount)),
-                    icon: Icon(Icons.mode_comment_outlined),
+                    style: TextButton.styleFrom(
+                      foregroundColor: colorScheme.onSurface,
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 36),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    label: Text(
+                      Format.getCountNumber(comment.replyCount),
+                      style: textTheme.bodySmall,
+                    ),
+                    icon: const Icon(Icons.mode_comment_outlined, size: 18),
                   ),
                 ],
               ),

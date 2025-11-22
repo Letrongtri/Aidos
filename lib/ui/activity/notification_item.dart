@@ -1,4 +1,3 @@
-import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/notification.dart' as app_model;
 import 'package:ct312h_project/utils/format.dart';
 import 'package:ct312h_project/viewmodels/notification_manager.dart';
@@ -86,7 +85,7 @@ class NotificationItem extends StatelessWidget {
             if (context.mounted) {
               if (noti.targetId == null) return;
               context.pushNamed(
-                AppRouteName.detailPost.name,
+                'detail',
                 pathParameters: {'id': noti.targetId!},
               );
             }

@@ -15,21 +15,25 @@ class ProfileRepliesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+      return Center(
+        child: CircularProgressIndicator(color: colorScheme.secondary),
       );
     }
 
     if (repliedPosts.isEmpty) {
-      return const Center(
-        child: Text('No replies yet', style: TextStyle(color: Colors.grey)),
-      );
+      return Center(child: Text('No replies yet', style: textTheme.bodyMedium));
     }
 
     return ListView.separated(
       physics: const BouncingScrollPhysics(),
-      separatorBuilder: (_, __) => const Divider(color: Colors.grey),
+
+      separatorBuilder: (_, __) =>
+          Divider(color: colorScheme.onSurface.withOpacity(0.2)),
       itemCount: repliedPosts.length,
       itemBuilder: (context, index) {
         final post = repliedPosts[index]['post'] as Post;
@@ -48,16 +52,21 @@ class ProfileRepliesList extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A1A),
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white12, width: 1),
+
+                  border: Border.all(
+                    color: colorScheme.onSurface.withOpacity(0.12),
+                    width: 1,
+                  ),
                 ),
                 child: Text(
                   comment,
-                  style: const TextStyle(
-                    color: Colors.white,
+
+                  style: textTheme.bodyLarge?.copyWith(
                     fontSize: 15,
                     height: 1.4,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ),

@@ -11,11 +11,15 @@ class NotificationScreen extends StatelessWidget {
     final manager = context.watch<NotificationManager>();
     final notifications = manager.notifications;
 
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+
     if (notifications.isEmpty) {
       return Scaffold(
-        backgroundColor: Colors.black,
         appBar: _buildAppbar(context, manager),
-        body: Center(child: Text('Chưa có thông báo')),
+        body: Center(
+          child: Text('No notifications yet', style: textTheme.bodyMedium),
+        ),
       );
     }
 
@@ -25,6 +29,7 @@ class NotificationScreen extends StatelessWidget {
         children: [
           Expanded(
             child: ListView.builder(
+              physics: const BouncingScrollPhysics(),
               itemCount: notifications.length,
               itemBuilder: (context, index) {
                 final notif = notifications[index];
@@ -42,24 +47,30 @@ class NotificationScreen extends StatelessWidget {
     NotificationManager manager, {
     bool hasItem = false,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return AppBar(
       elevation: 0,
-      backgroundColor: Colors.black,
-      title: Text(
-        'Hoạt động',
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-      ),
+
+      title: Text('Activity', style: textTheme.titleLarge),
       actions: [
         PopupMenuButton(
-          icon: const Icon(Icons.more_vert, color: Colors.white),
+          icon: Icon(Icons.more_vert, color: colorScheme.onSurface),
+
+          color: colorScheme.surfaceContainerHighest,
           itemBuilder: (context) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'readAll',
-              child: Text('Đánh dấu đã đọc'),
+              child: Text('Mark all as read', style: textTheme.bodyMedium),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'deleteAll',
-              child: Text('Xóa tất cả'),
+              child: Text(
+                'Delete all',
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
+              ),
             ),
           ],
           onSelected: (value) async {
@@ -72,17 +83,33 @@ class NotificationScreen extends StatelessWidget {
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    title: const Text('Xóa tất cả thông báo'),
-                    content: const Text(
-                      'Bạn có muốn xóa tất cả thông báo?',
+                    backgroundColor: colorScheme.surfaceContainerHighest,
+                    title: Text(
+                      'Delete all notifications',
+                      style: textTheme.titleLarge,
+                    ),
+                    content: Text(
+                      'Are you sure you want to delete all notifications?',
+                      style: textTheme.bodyMedium,
                     ),
                     actions: [
                       TextButton(
-                        child: const Text('Huỷ'),
+                        child: Text(
+                          'Cancel',
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                       TextButton(
-                        child: const Text('Xóa'),
+                        child: Text(
+                          'Delete',
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.error,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         onPressed: () async {
                           await manager.deleteAll();
                           if (context.mounted) {

@@ -25,6 +25,9 @@ class SignupForm extends StatelessWidget {
               onSavedField('username', value!);
             },
           ),
+
+          const SizedBox(height: 16),
+
           AuthTextField(
             hint: "Enter your email",
             keyboardType: TextInputType.emailAddress,
@@ -38,6 +41,9 @@ class SignupForm extends StatelessWidget {
               return null;
             },
           ),
+
+          const SizedBox(height: 16),
+
           AuthPasswordField(
             onSaved: (value) {
               onSavedField('password', value!);

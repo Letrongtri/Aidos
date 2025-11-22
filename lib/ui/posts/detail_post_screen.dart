@@ -48,12 +48,21 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   @override
   Widget build(BuildContext context) {
     final post = context.watch<PostsManager>().findPostById(widget.id);
+
+    // Lấy Theme
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
     final isMyPost = post?.userId == context.read<AuthManager>().user?.id;
 
     if (post == null) {
       return Scaffold(
-        appBar: AppBar(elevation: 0, title: Text("Aidos")),
-        body: Center(child: Text("Không tìm thấy bài viết.")),
+        appBar: AppBar(
+          elevation: 0,
+          title: Text("Aidos", style: textTheme.titleLarge),
+        ),
+        body: Center(
+          child: Text("Không tìm thấy bài viết.", style: textTheme.bodyMedium),
+        ),
       );
     }
 
@@ -73,6 +82,9 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     Post post,
     bool isMyPost,
   ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: _buildAppBar(isMyPost, context, post),
@@ -135,9 +147,12 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   }
 
   AppBar _buildAppBar(bool isMyPost, BuildContext context, Post post) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
     return AppBar(
       elevation: 0,
-      title: Text("Aidos"),
+      title: Text("Aidos", style: textTheme.titleLarge),
       actions: [
         if (isMyPost)
           IconButton(
@@ -156,28 +171,30 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
                   final confirmed = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
-                      backgroundColor: Colors.black,
-                      title: const Text(
-                        'Delete Post',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      content: const Text(
+                      backgroundColor: colorScheme.surfaceContainerHighest,
+                      title: Text('Delete Post', style: textTheme.titleLarge),
+                      content: Text(
                         'Are you sure you want to delete this post?',
-                        style: TextStyle(color: Colors.white70),
+                        style: textTheme.bodyMedium,
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context, false),
-                          child: const Text(
+                          child: Text(
                             'Cancel',
-                            style: TextStyle(color: Colors.grey),
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurface.withOpacity(0.6),
+                            ),
                           ),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(context, true),
-                          child: const Text(
+                          child: Text(
                             'Delete',
-                            style: TextStyle(color: Colors.redAccent),
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.error,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -190,8 +207,14 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
 
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Post deleted successfully'),
+                          SnackBar(
+                            content: Text(
+                              'Post deleted successfully',
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: Colors.black,
+                              ),
+                            ),
+                            backgroundColor: colorScheme.secondary,
                           ),
                         );
 
@@ -210,7 +233,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
                 },
               );
             },
-            icon: Icon(Icons.more_horiz),
+            icon: Icon(Icons.more_horiz, color: colorScheme.onSurface),
           ),
       ],
     );
