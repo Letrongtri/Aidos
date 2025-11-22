@@ -1,16 +1,31 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/ui/posts/post_action.dart';
 import 'package:ct312h_project/ui/posts/post_header.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
+import 'package:ct312h_project/ui/shared/full_image_viewer.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 
-class SinglePostItem extends StatelessWidget {
+class SinglePostItem extends StatefulWidget {
   const SinglePostItem({super.key, required this.post});
   final Post post;
+
+  @override
+  State<SinglePostItem> createState() => _SinglePostItemState();
+}
+
+class _SinglePostItemState extends State<SinglePostItem> {
+  int _currentImageIndex = 0;
+
+  String get baseUrl {
+    String url = dotenv.env['POCKETBASE_URL'] ?? 'http://127.0.0.1:8090';
+    if (url.endsWith('/')) {
+      return url.substring(0, url.length - 1);
+    }
+    return url;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,10 +37,9 @@ class SinglePostItem extends StatelessWidget {
       onTap: () {
         context.pushNamed(
           AppRouteName.detailPost.name,
-          pathParameters: {'id': post.id},
+          pathParameters: {'id': widget.post.id},
         );
       },
-
       child: Container(
         color: Colors.transparent,
         padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
@@ -34,32 +48,118 @@ class SinglePostItem extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Avatar(userId: post.userId, size: 45),
+                Avatar(userId: widget.post.userId, size: 45),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      PostHeader(post: post),
-
+                      PostHeader(post: widget.post),
                       const SizedBox(height: 4),
-
-                      Text(post.content, style: textTheme.bodyLarge),
-
+                      Text(widget.post.content, style: textTheme.bodyLarge),
+                      if (widget.post.images != null &&
+                          widget.post.images!.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        _buildImageSlider(context, widget.post.images!),
+                      ],
                       const SizedBox(height: 8),
-
-                      PostAction(post: post),
+                      PostAction(post: widget.post),
                     ],
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-
             Divider(height: 1, color: colorScheme.onSurface.withOpacity(0.12)),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildImageSlider(BuildContext context, List<String> images) {
+    return Column(
+      children: [
+        AspectRatio(
+          aspectRatio: 16 / 9,
+          child: PageView.builder(
+            itemCount: images.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentImageIndex = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FullImageViewer(
+                            images: images,
+                            initialIndex: index,
+                            postId: widget.post.id,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Image.network(
+                      _getImageUrl(images[index]),
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: Colors.grey.withOpacity(0.1),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey.withOpacity(0.1),
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.broken_image,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        if (images.length > 1) ...[
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(images.length, (index) {
+              return Container(
+                width: 6.0,
+                height: 6.0,
+                margin: const EdgeInsets.symmetric(horizontal: 3.0),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _currentImageIndex == index
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                ),
+              );
+            }),
+          ),
+        ],
+      ],
+    );
+  }
+
+  String _getImageUrl(String fileName) {
+    return '$baseUrl/api/files/posts/${widget.post.id}/$fileName';
   }
 }

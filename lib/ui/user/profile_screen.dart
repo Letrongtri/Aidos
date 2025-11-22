@@ -150,7 +150,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           tabController.addListener(() async {
             if (tabController.indexIsChanging) return;
             if (tabController.index == 1) {
-              // Tab Replied
               setState(() {
                 _isRepliedLoading = true;
               });
