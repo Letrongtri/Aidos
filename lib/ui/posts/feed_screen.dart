@@ -46,7 +46,6 @@ class _FeedScreenState extends State<FeedScreen> {
     // );
 
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
     final manager = context.watch<PostsManager>();

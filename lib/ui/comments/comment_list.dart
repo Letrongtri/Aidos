@@ -144,28 +144,28 @@ class _CommentListState extends State<CommentList> {
                                         CommentBranchState.loading,
                                   );
 
-                            try {
-                              await context
-                                  .read<CommentManager>()
-                                  .getRepliesForRoot(root.id!);
+                                  try {
+                                    await context
+                                        .read<CommentManager>()
+                                        .getRepliesForRoot(root.id!);
 
-                              if (context.mounted) {
-                                setState(
-                                  () => _branchState[root.id!] =
-                                      CommentBranchState.expanded,
-                                );
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                setState(
-                                  () => _branchState[root.id!] =
-                                      CommentBranchState.collapsed,
-                                );
-                              }
-                            }
-                          }
-                        },
-                        style: TextButton.styleFrom(
+                                    if (context.mounted) {
+                                      setState(
+                                        () => _branchState[root.id!] =
+                                            CommentBranchState.expanded,
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      setState(
+                                        () => _branchState[root.id!] =
+                                            CommentBranchState.collapsed,
+                                      );
+                                    }
+                                  }
+                                }
+                              },
+                              style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 minimumSize: const Size(0, 0),
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -173,17 +173,18 @@ class _CommentListState extends State<CommentList> {
                                     .withOpacity(0.6),
                               ),
 
-                        icon: Icon(
-                          state == CommentBranchState.collapsed
-                              ? Icons.arrow_drop_down
-                              : Icons.arrow_drop_up,
-                        ),
-                        label: Text(
-                          state == CommentBranchState.collapsed
-                              ? "Show ${root.replyCount}"
-                              : "Hide",
-                        ),
-                      ),
+                              icon: Icon(
+                                state == CommentBranchState.collapsed
+                                    ? Icons.arrow_drop_down
+                                    : Icons.arrow_drop_up,
+                              ),
+                              label: Text(
+                                state == CommentBranchState.collapsed
+                                    ? "Show ${root.replyCount}"
+                                    : "Hide",
+                              ),
+                            ),
+                    ),
                 ],
               ),
             );

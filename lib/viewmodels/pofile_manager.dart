@@ -2,9 +2,7 @@ import 'dart:io';
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/services/post_service.dart';
 import 'package:ct312h_project/services/user_service.dart';
-import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class ProfileManager extends ChangeNotifier {
@@ -110,14 +108,6 @@ class ProfileManager extends ChangeNotifier {
 
         usernameController.text = user?.username ?? '';
         emailController.text = user?.email ?? '';
-
-        final postsManager = WidgetsBinding
-            .instance
-            .focusManager
-            .primaryFocus
-            ?.context
-            ?.read<PostsManager>();
-        postsManager?.updateUserInfoInPosts(updatedUser);
 
         notifyListeners();
         return true;

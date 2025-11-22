@@ -82,9 +82,6 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     Post post,
     bool isMyPost,
   ) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: _buildAppBar(isMyPost, context, post),

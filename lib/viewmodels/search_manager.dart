@@ -60,21 +60,6 @@ class SearchManager extends ChangeNotifier {
     }).toList();
   }
 
-  Future<List<Post>> _enrichPostsWithInteractionState(
-    List<Post> rawPosts,
-  ) async {
-    if (rawPosts.isEmpty) return [];
-
-    final postIds = rawPosts.map((p) => p.id).toList();
-
-    final likedIds = await _likeService.fetchLikedPostIds(postIds);
-    _repostedPostIds = await _repostService.fetchRepostedPostIds(postIds);
-
-    return rawPosts.map((p) {
-      return p.copyWith(isLiked: likedIds.contains(p.id));
-    }).toList();
-  }
-
   Future<List<Post>> _fetchTrendingPosts() async {
     int perPage = 10;
 
@@ -132,7 +117,7 @@ class SearchManager extends ChangeNotifier {
         _page++;
       }
 
-      if (rawPosts.isEmpty) {
+      if (posts.isEmpty) {
         searchResults = [];
         notifyListeners();
         return;
