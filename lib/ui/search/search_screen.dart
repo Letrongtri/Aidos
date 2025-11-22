@@ -101,7 +101,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     : searchManager.postCount == 0
                     ? Center(
                         child: Text(
-                          'Không tìm thấy bài viết',
+                          'Posts not founds.',
 
                           style: textTheme.bodyMedium,
                         ),
@@ -144,7 +144,7 @@ class _SearchScreenState extends State<SearchScreen> {
         padding: EdgeInsets.all(16.0),
         child: Center(
           child: Text(
-            "Bạn đã xem hết tìm kiếm có liên quan!",
+            "You are at the end of this part",
             style: TextStyle(color: Colors.grey),
           ),
         ),

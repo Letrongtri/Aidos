@@ -22,13 +22,10 @@ class CommentItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Lấy Theme
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-
     final isLiked = comment.isLiked ?? false;
-
     final manager = context.watch<CommentManager>();
 
     return Container(
@@ -41,7 +38,7 @@ class CommentItem extends StatelessWidget {
               Expanded(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  physics: BouncingScrollPhysics(),
+                  physics: const BouncingScrollPhysics(),
                   child: Row(
                     children: [
                       Text(
@@ -55,9 +52,9 @@ class CommentItem extends StatelessWidget {
                       if (replyingToUser != null)
                         Row(
                           children: [
-                            Icon(Icons.chevron_right),
+                            const Icon(Icons.chevron_right),
                             Text(
-                              Generate.generateUsername(replyingToUser!),
+                              "$replyingToUser",
                               style: textTheme.labelSmall?.copyWith(
                                 color: colorScheme.onSurface.withOpacity(0.6),
                                 fontSize: 12,
@@ -69,7 +66,7 @@ class CommentItem extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
                 Format.getTimeDifference(comment.created),
                 style: textTheme.labelSmall?.copyWith(
@@ -86,7 +83,7 @@ class CommentItem extends StatelessWidget {
                     },
                     onDelete: () {
                       Navigator.pop(context);
-                      context.read<CommentManager>().deleteComment(comment.id!);
+                      _showDeleteConfirmation(context, manager, comment.id!);
                     },
                   );
                 },
@@ -98,12 +95,10 @@ class CommentItem extends StatelessWidget {
               ),
             ],
           ),
-
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(comment.content, style: textTheme.bodyMedium),
-
               Row(
                 children: [
                   TextButton.icon(
@@ -135,9 +130,7 @@ class CommentItem extends StatelessWidget {
                       size: 18,
                     ),
                   ),
-
                   const SizedBox(width: 16),
-
                   TextButton.icon(
                     onPressed: onReply,
                     style: TextButton.styleFrom(
@@ -171,26 +164,32 @@ class CommentItem extends StatelessWidget {
 
     controller.text = comment.content;
 
+    final messenger = ScaffoldMessenger.of(context);
+
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: theme.colorScheme.surfaceContainerHighest,
-        title: const Text("Edit comment"),
+        title: const Text(
+          "Edit comment",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         content: TextField(
           controller: controller,
           maxLines: 5,
+          style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
-            contentPadding: EdgeInsets.all(8),
+            contentPadding: const EdgeInsets.all(8),
             hintText: "Enter your comment",
             enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white38),
+              borderSide: const BorderSide(color: Colors.white38),
               borderRadius: BorderRadius.circular(10),
             ),
             focusedBorder: OutlineInputBorder(
               borderSide: BorderSide(color: theme.colorScheme.primary),
               borderRadius: BorderRadius.circular(10),
             ),
-            hintStyle: TextStyle(color: Colors.white38),
+            hintStyle: const TextStyle(color: Colors.white38),
           ),
         ),
         actions: [
@@ -199,16 +198,117 @@ class CommentItem extends StatelessWidget {
             child: const Text("Cancel"),
           ),
           TextButton(
-            onPressed: () {
-              final value = controller.text;
+            onPressed: () async {
+              final value = controller.text.trim();
+              if (value.isEmpty) return;
 
-              manager.updateComment(comment.id!, value);
-              Navigator.pop(context);
+              try {
+                await manager.updateComment(comment.id!, value);
+
+                if (context.mounted) Navigator.pop(context);
+
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'Comment updated successfully!',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    backgroundColor: theme.colorScheme.secondary,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              } catch (e) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Error updating comment: $e',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    backgroundColor: theme.colorScheme.error,
+                  ),
+                );
+              }
             },
             child: const Text("Update"),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _showDeleteConfirmation(
+    BuildContext context,
+    CommentManager manager,
+    String commentId,
+  ) async {
+    final theme = Theme.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+        title: const Text(
+          "Delete Comment",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          "Are you sure you want to delete this comment?",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: Colors.white.withOpacity(0.7)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              "Delete",
+              style: TextStyle(
+                color: theme.colorScheme.error,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await manager.deleteComment(commentId);
+
+        messenger.showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Comment deleted successfully!',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            backgroundColor: theme.colorScheme.secondary,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } catch (e) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error deleting comment: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: theme.colorScheme.error,
+          ),
+        );
+      }
+    }
   }
 }

@@ -45,17 +45,23 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   Future<void> _pickImages() async {
+    final theme = Theme.of(context);
     try {
       final List<XFile> images = await _picker.pickMultiImage();
       if (images.length > 0) {
         setState(() {
           _selectedImages.addAll(images);
-          // Giới hạn tối đa 4 ảnh
           if (_selectedImages.length > 4) {
             _selectedImages = _selectedImages.sublist(0, 4);
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Maximum 4 images allowed')),
+                SnackBar(
+                  content: const Text(
+                    'Maximum 4 images allowed',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  backgroundColor: theme.colorScheme.error,
+                ),
               );
             }
           }
@@ -63,14 +69,21 @@ class _PostScreenState extends State<PostScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error picking images: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error picking images: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: theme.colorScheme.error,
+          ),
+        );
       }
     }
   }
 
   Future<void> _pickCamera() async {
+    final theme = Theme.of(context);
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.camera);
       if (image != null) {
@@ -80,7 +93,13 @@ class _PostScreenState extends State<PostScreen> {
           } else {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Maximum 4 images allowed')),
+                SnackBar(
+                  content: const Text(
+                    'Maximum 4 images allowed',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  backgroundColor: theme.colorScheme.error,
+                ),
               );
             }
           }
@@ -88,9 +107,15 @@ class _PostScreenState extends State<PostScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error taking photo: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error taking photo: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: theme.colorScheme.error,
+          ),
+        );
       }
     }
   }
@@ -105,10 +130,17 @@ class _PostScreenState extends State<PostScreen> {
     FocusScope.of(context).unfocus();
     final content = _contentController.text.trim();
     final topic = _topicController.text.trim();
+    final theme = Theme.of(context);
 
     if (content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter post content')),
+        SnackBar(
+          content: const Text(
+            'Please enter post content',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: theme.colorScheme.error,
+        ),
       );
       return;
     }
@@ -145,7 +177,13 @@ class _PostScreenState extends State<PostScreen> {
             widget.existingPost == null
                 ? 'Post created successfully!'
                 : 'Post updated successfully!',
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+          backgroundColor: theme.colorScheme.secondary,
+          behavior: SnackBarBehavior.floating,
         ),
       );
 
@@ -162,9 +200,17 @@ class _PostScreenState extends State<PostScreen> {
         context.pop();
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error: ${e.toString()}',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: theme.colorScheme.error,
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isPosting = false);
     }
@@ -179,7 +225,7 @@ class _PostScreenState extends State<PostScreen> {
     final textTheme = theme.textTheme;
 
     return Scaffold(
-      appBar: _buildAppBar(isEditing, context),
+      appBar: _buildAppBar(isEditing, context, theme),
       body: SafeArea(
         child: (user == null)
             ? const Center(
@@ -199,7 +245,6 @@ class _PostScreenState extends State<PostScreen> {
                         color: colorScheme.onSurface.withOpacity(0.12),
                       ),
                       const SizedBox(height: 12),
-
                       Expanded(
                         child: SingleChildScrollView(
                           child: Row(
@@ -207,12 +252,10 @@ class _PostScreenState extends State<PostScreen> {
                             children: [
                               Avatar(userId: user.id, size: 25),
                               const SizedBox(width: 14),
-
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Username và Topic
                                     Row(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
@@ -254,10 +297,7 @@ class _PostScreenState extends State<PostScreen> {
                                         ),
                                       ],
                                     ),
-
                                     const SizedBox(height: 8),
-
-                                    // Content TextField
                                     TextFormField(
                                       controller: _contentController,
                                       style: textTheme.bodyLarge,
@@ -274,10 +314,9 @@ class _PostScreenState extends State<PostScreen> {
                                       minLines: 3,
                                       autofocus: isEditing ? false : true,
                                     ),
-
+                                    const SizedBox(height: 8),
+                                    _buildMediaButtons(theme),
                                     const SizedBox(height: 16),
-
-                                    // Image Grid
                                     if (_selectedImages.length > 0)
                                       _buildImageGrid(),
                                   ],
@@ -287,9 +326,6 @@ class _PostScreenState extends State<PostScreen> {
                           ),
                         ),
                       ),
-
-                      // Bottom toolbar
-                      _buildBottomToolbar(colorScheme),
                     ],
                   ),
                 ),
@@ -345,51 +381,34 @@ class _PostScreenState extends State<PostScreen> {
     );
   }
 
-  Widget _buildBottomToolbar(ColorScheme colorScheme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: colorScheme.onSurface.withOpacity(0.12)),
+  Widget _buildMediaButtons(ThemeData theme) {
+    return Row(
+      children: [
+        IconButton(
+          onPressed: _selectedImages.length >= 4 ? null : _pickImages,
+          icon: Icon(
+            Icons.image_outlined,
+            color: _selectedImages.length >= 4
+                ? Colors.grey
+                : theme.colorScheme.secondary,
+          ),
+          tooltip: 'Add images',
         ),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _selectedImages.length >= 4 ? null : _pickImages,
-            icon: Icon(
-              Icons.image_outlined,
-              color: _selectedImages.length >= 4
-                  ? Colors.grey
-                  : const Color.fromARGB(255, 20, 132, 237),
-            ),
-            tooltip: 'Add images',
+        IconButton(
+          onPressed: _selectedImages.length >= 4 ? null : _pickCamera,
+          icon: Icon(
+            Icons.camera_alt_outlined,
+            color: _selectedImages.length >= 4
+                ? Colors.grey
+                : theme.colorScheme.secondary,
           ),
-          IconButton(
-            onPressed: _selectedImages.length >= 4 ? null : _pickCamera,
-            icon: Icon(
-              Icons.camera_alt_outlined,
-              color: _selectedImages.length >= 4
-                  ? Colors.grey
-                  : const Color.fromARGB(255, 20, 132, 237),
-            ),
-            tooltip: 'Take photo',
-          ),
-          const Spacer(),
-          if (_selectedImages.length > 0)
-            Text(
-              '${_selectedImages.length}/4',
-              style: TextStyle(
-                color: colorScheme.onSurface.withOpacity(0.6),
-                fontSize: 12,
-              ),
-            ),
-        ],
-      ),
+          tooltip: 'Take photo',
+        ),
+      ],
     );
   }
 
-  AppBar _buildAppBar(bool isEditing, BuildContext context) {
+  AppBar _buildAppBar(bool isEditing, BuildContext context, ThemeData theme) {
     return AppBar(
       leadingWidth: 100,
       leading: isEditing
@@ -429,9 +448,7 @@ class _PostScreenState extends State<PostScreen> {
           child: Text(
             _isPosting ? 'Posting...' : (isEditing ? 'Update' : 'Post'),
             style: TextStyle(
-              color: _isPosting
-                  ? Colors.grey
-                  : const Color.fromARGB(255, 20, 132, 237),
+              color: _isPosting ? Colors.grey : theme.colorScheme.secondary,
               fontWeight: FontWeight.bold,
             ),
           ),
