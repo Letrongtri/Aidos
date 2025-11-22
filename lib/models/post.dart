@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:ct312h_project/models/topic.dart';
 import 'package:ct312h_project/models/user.dart';
+import 'package:flutter/foundation.dart'; // Để dùng listEquals nếu cần, hoặc giữ nguyên logic cũ
 import 'package:pocketbase/pocketbase.dart';
 
 // ignore_for_file: public_member_api_docs, sort_constructors_first
@@ -17,6 +18,9 @@ class Post {
   final int reports;
   final DateTime created;
   final DateTime updated;
+
+  // --- UPDATE: Thêm list images ---
+  final List<String> images;
 
   final User? user;
   final Topic? topic;
@@ -34,6 +38,7 @@ class Post {
     required this.reports,
     required this.created,
     required this.updated,
+    this.images = const [], // Mặc định là list rỗng
     this.user,
     this.topic,
     this.isLiked,
@@ -51,6 +56,7 @@ class Post {
     int? reports,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<String>? images, // Thêm vào copyWith
     User? user,
     Topic? topic,
     bool? isLiked,
@@ -67,6 +73,7 @@ class Post {
       reports: reports ?? this.reports,
       created: createdAt ?? created,
       updated: updatedAt ?? updated,
+      images: images ?? this.images, // Cập nhật images
       user: user ?? this.user,
       topic: topic ?? this.topic,
       isLiked: isLiked ?? this.isLiked,
@@ -86,6 +93,7 @@ class Post {
       'reports': reports,
       'created': created.toIso8601String(),
       'updated': updated.toIso8601String(),
+      'images': images, // Thêm vào map
       'user': user,
       'topic': topic,
     };
@@ -104,6 +112,10 @@ class Post {
       reports: map['reports'] as int,
       created: DateTime.parse(map['created'] as String),
       updated: DateTime.parse(map['updated'] as String),
+      // Parse images an toàn từ List dynamic
+      images: map['images'] != null
+          ? List<String>.from(map['images'])
+          : const [],
       user: map['user'] != null ? map['user'] as User : null,
       topic: map['topic'] != null ? map['topic'] as Topic : null,
     );
@@ -116,7 +128,7 @@ class Post {
 
   @override
   String toString() {
-    return 'Post(id: $id, userId: $userId, content: $content, topicId: $topicId, parentId: $parentId, likeCount: $likes, commentCount: $comments, repostCount: $reposts, reportCount: $reports, createdAt: $created, updatedAt: $updated, user: $user, topic: $topic, isLiked: $isLiked)';
+    return 'Post(id: $id, userId: $userId, content: $content, topicId: $topicId, parentId: $parentId, likeCount: $likes, commentCount: $comments, repostCount: $reposts, reportCount: $reports, created: $created, updated: $updated, images: $images, user: $user, topic: $topic, isLiked: $isLiked)';
   }
 
   @override
@@ -134,6 +146,10 @@ class Post {
         other.reports == reports &&
         other.created == created &&
         other.updated == updated &&
+        listEquals(
+          other.images,
+          images,
+        ) && // Dùng listEquals để so sánh nội dung list
         other.user == user &&
         other.topic == topic &&
         other.isLiked == isLiked;
@@ -152,6 +168,7 @@ class Post {
         reports.hashCode ^
         created.hashCode ^
         updated.hashCode ^
+        images.hashCode ^
         user.hashCode ^
         topic.hashCode ^
         isLiked.hashCode;
@@ -168,6 +185,7 @@ class Post {
     reports: 0,
     created: DateTime.now(),
     updated: DateTime.now(),
+    images: const [], // Khởi tạo rỗng
   );
 
   factory Post.fromPocketbase({
@@ -188,6 +206,8 @@ class Post {
       updated: DateTime.parse(record.getStringValue('updated')),
       topicId: record.getStringValue('topicId'),
       parentId: record.getStringValue('parentId'),
+      // Lấy list file names từ PocketBase record
+      images: record.getListValue<String>('images'),
       user: (userRecord != null && userRecord.data.isNotEmpty)
           ? User.fromMap(userRecord.data)
           : null,

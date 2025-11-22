@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/ui/shared/avatar.dart';
 import 'package:ct312h_project/viewmodels/auth_manager.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:ct312h_project/models/post.dart';
@@ -19,7 +22,10 @@ class PostScreen extends StatefulWidget {
 class _PostScreenState extends State<PostScreen> {
   final _contentController = TextEditingController();
   final _topicController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+
   bool _isPosting = false;
+  List<XFile> _selectedImages = [];
 
   @override
   void initState() {
@@ -36,6 +42,63 @@ class _PostScreenState extends State<PostScreen> {
     _contentController.dispose();
     _topicController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImages() async {
+    try {
+      final List<XFile> images = await _picker.pickMultiImage();
+      if (images.length > 0) {
+        setState(() {
+          _selectedImages.addAll(images);
+          // Giới hạn tối đa 4 ảnh
+          if (_selectedImages.length > 4) {
+            _selectedImages = _selectedImages.sublist(0, 4);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Maximum 4 images allowed')),
+              );
+            }
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking images: $e')));
+      }
+    }
+  }
+
+  Future<void> _pickCamera() async {
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+      if (image != null) {
+        setState(() {
+          if (_selectedImages.length < 4) {
+            _selectedImages.add(image);
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Maximum 4 images allowed')),
+              );
+            }
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error taking photo: $e')));
+      }
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+    });
   }
 
   Future<void> _onPost() async {
@@ -59,12 +122,14 @@ class _PostScreenState extends State<PostScreen> {
         newPost = await postsManager.createPost(
           content: content,
           topicName: topic,
+          images: _selectedImages.length > 0 ? _selectedImages : null,
         );
       } else {
         await postsManager.updatePost(
           postId: widget.existingPost!.id,
           content: content,
           topicName: topic,
+          images: _selectedImages.length > 0 ? _selectedImages : null,
         );
       }
 
@@ -72,6 +137,7 @@ class _PostScreenState extends State<PostScreen> {
 
       _contentController.clear();
       _topicController.clear();
+      setState(() => _selectedImages.clear());
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -89,7 +155,6 @@ class _PostScreenState extends State<PostScreen> {
           AppRouteName.detailPost.name,
           pathParameters: {'id': newPost.id},
         );
-
         return;
       }
 
@@ -108,9 +173,7 @@ class _PostScreenState extends State<PostScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.existingPost != null;
-
     final user = context.watch<AuthManager>().user;
-
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
@@ -138,66 +201,65 @@ class _PostScreenState extends State<PostScreen> {
                       const SizedBox(height: 12),
 
                       Expanded(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Avatar(userId: user.id, size: 25),
-                            const SizedBox(width: 14),
+                        child: SingleChildScrollView(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Avatar(userId: user.id, size: 25),
+                              const SizedBox(width: 14),
 
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          user.username,
-
-                                          style: textTheme.titleMedium
-                                              ?.copyWith(
-                                                color: Colors.grey[300],
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Icon(
-                                        Icons.chevron_right,
-                                        size: 18,
-                                        color: colorScheme.onSurface
-                                            .withOpacity(0.5),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _topicController,
-
-                                          style: textTheme.bodyMedium,
-                                          decoration: InputDecoration(
-                                            hintText: 'Enter topic...',
-                                            hintStyle: textTheme.bodyMedium
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Username và Topic
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            user.username,
+                                            style: textTheme.titleMedium
                                                 ?.copyWith(
-                                                  color: colorScheme.onSurface
-                                                      .withOpacity(0.5),
+                                                  color: Colors.grey[300],
+                                                  fontWeight: FontWeight.bold,
                                                 ),
-                                            border: InputBorder.none,
-                                            isDense: true,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          Icons.chevron_right,
+                                          size: 18,
+                                          color: colorScheme.onSurface
+                                              .withOpacity(0.5),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: TextField(
+                                            controller: _topicController,
+                                            style: textTheme.bodyMedium,
+                                            decoration: InputDecoration(
+                                              hintText: 'Enter topic...',
+                                              hintStyle: textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                    color: colorScheme.onSurface
+                                                        .withOpacity(0.5),
+                                                  ),
+                                              border: InputBorder.none,
+                                              isDense: true,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
 
-                                  const SizedBox(height: 8),
+                                    const SizedBox(height: 8),
 
-                                  Expanded(
-                                    child: TextFormField(
+                                    // Content TextField
+                                    TextFormField(
                                       controller: _contentController,
-
                                       style: textTheme.bodyLarge,
                                       decoration: InputDecoration(
                                         hintText: "What's new?",
@@ -209,20 +271,120 @@ class _PostScreenState extends State<PostScreen> {
                                         border: InputBorder.none,
                                       ),
                                       maxLines: null,
-                                      expands: true,
+                                      minLines: 3,
                                       autofocus: isEditing ? false : true,
                                     ),
-                                  ),
-                                ],
+
+                                    const SizedBox(height: 16),
+
+                                    // Image Grid
+                                    if (_selectedImages.length > 0)
+                                      _buildImageGrid(),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
+
+                      // Bottom toolbar
+                      _buildBottomToolbar(colorScheme),
                     ],
                   ),
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildImageGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: _selectedImages.length,
+      itemBuilder: (context, index) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: kIsWeb
+                  ? Image.network(
+                      _selectedImages[index].path,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.file(
+                      File(_selectedImages[index].path),
+                      fit: BoxFit.cover,
+                    ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: () => _removeImage(index),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, color: Colors.white, size: 20),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomToolbar(ColorScheme colorScheme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: colorScheme.onSurface.withOpacity(0.12)),
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: _selectedImages.length >= 4 ? null : _pickImages,
+            icon: Icon(
+              Icons.image_outlined,
+              color: _selectedImages.length >= 4
+                  ? Colors.grey
+                  : const Color.fromARGB(255, 20, 132, 237),
+            ),
+            tooltip: 'Add images',
+          ),
+          IconButton(
+            onPressed: _selectedImages.length >= 4 ? null : _pickCamera,
+            icon: Icon(
+              Icons.camera_alt_outlined,
+              color: _selectedImages.length >= 4
+                  ? Colors.grey
+                  : const Color.fromARGB(255, 20, 132, 237),
+            ),
+            tooltip: 'Take photo',
+          ),
+          const Spacer(),
+          if (_selectedImages.length > 0)
+            Text(
+              '${_selectedImages.length}/4',
+              style: TextStyle(
+                color: colorScheme.onSurface.withOpacity(0.6),
+                fontSize: 12,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -237,11 +399,11 @@ class _PostScreenState extends State<PostScreen> {
                   Navigator.pop(context);
                 }
               },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.0),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: const Text(
+                  child: Text(
                     "Cancel",
                     style: TextStyle(
                       color: Colors.white,

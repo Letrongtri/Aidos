@@ -28,15 +28,15 @@ class NotificationItem extends StatelessWidget {
         return showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Xóa thông báo'),
-            content: const Text('Bạn có muốn xóa thông báo này?'),
+            title: const Text('Delete notification'),
+            content: const Text('Do you want to delete this notification?'),
             actions: [
               TextButton(
-                child: const Text('Huỷ'),
+                child: const Text('Cancel'),
                 onPressed: () => Navigator.pop(context, false),
               ),
               TextButton(
-                child: const Text('Xóa'),
+                child: const Text('Delete'),
                 onPressed: () => Navigator.pop(context, true),
               ),
             ],

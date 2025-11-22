@@ -4,6 +4,7 @@ import 'package:ct312h_project/services/services.dart';
 import 'package:ct312h_project/utils/generate.dart';
 import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class PostsManager extends ChangeNotifier {
   final PostService _postService = PostService();
@@ -29,6 +30,9 @@ class PostsManager extends ChangeNotifier {
   bool get isLoadingPostsInitial => _isLoadingPostsInitial;
   bool get isLoadingPosts => _isLoadingPosts;
   bool get hasMorePosts => _hasMorePosts;
+
+  get currentUser => _authManager?.user;
+  bool get isLoadingUser => _authManager?.isLoading ?? false;
 
   void updateAuthUser(AuthManager auth) {
     _authManager = auth;
@@ -93,7 +97,11 @@ class PostsManager extends ChangeNotifier {
     }
   }
 
-  Future<Post?> createPost({required String content, String? topicName}) async {
+  Future<Post?> createPost({
+    required String content,
+    String? topicName,
+    List<XFile>? images,
+  }) async {
     final currentUser = _authManager?.user;
     if (currentUser == null) {
       throw Exception('User is not logged in. Cannot create post.');
@@ -104,7 +112,9 @@ class PostsManager extends ChangeNotifier {
         userId: currentUser.id,
         content: content,
         topicName: topicName,
+        images: images,
       );
+
       _posts = [newPost, ..._posts];
       errorMessage = null;
       notifyListeners();
@@ -303,27 +313,18 @@ class PostsManager extends ChangeNotifier {
     }
   }
 
-  // void updateUserInfoInPosts(User updatedUser) {
-  //   _currentUser = updatedUser;
-  //   for (int i = 0; i < _posts.length; i++) {
-  //     final post = _posts[i];
-  //     if (post.userId == updatedUser.id) {
-  //       _posts[i] = post.copyWith(user: updatedUser);
-  //     }
-  //   }
-  //   notifyListeners();
-  // }
-
   Future<void> updatePost({
     required String postId,
     required String content,
     String? topicName,
+    List<XFile>? images,
   }) async {
     try {
       final updatedPost = await _postService.updatePost(
         postId: postId,
         content: content,
         topicName: topicName,
+        images: images,
       );
 
       final index = _posts.indexWhere((p) => p.id == postId);
@@ -334,6 +335,7 @@ class PostsManager extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint("updatePost error: $e");
+      rethrow;
     }
   }
 

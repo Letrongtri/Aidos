@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/services/pocketbase_client.dart';
+import 'package:flutter/foundation.dart'; // Cần thiết để dùng kIsWeb
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:pocketbase/pocketbase.dart';
-import 'dart:async';
 
 class PostService {
   Future<List<Post>> fetchPosts({int page = 1, int perPage = 10}) async {
@@ -114,6 +118,7 @@ class PostService {
     required String userId,
     required String content,
     String? topicName,
+    List<XFile>? images,
   }) async {
     try {
       final pb = await getPocketbaseInstance();
@@ -138,6 +143,30 @@ class PostService {
         }
       }
 
+      // --- FIX: Xử lý ảnh cho Web và Mobile ---
+      List<http.MultipartFile> fileList = [];
+      if (images != null && images.isNotEmpty) {
+        for (var image in images) {
+          if (kIsWeb) {
+            // Web: Đọc bytes
+            final bytes = await image.readAsBytes();
+            fileList.add(
+              http.MultipartFile.fromBytes(
+                'images',
+                bytes,
+                filename: image.name,
+              ),
+            );
+          } else {
+            // Mobile: Đọc từ path
+            fileList.add(
+              await http.MultipartFile.fromPath('images', image.path),
+            );
+          }
+        }
+      }
+      // ----------------------------------------
+
       final record = await pb
           .collection('posts')
           .create(
@@ -146,6 +175,7 @@ class PostService {
               'content': content,
               if (finalTopicId != null) 'topicId': finalTopicId,
             },
+            files: fileList,
             expand: 'userId,topicId,posts_via_topicId',
           );
 
@@ -234,6 +264,7 @@ class PostService {
     required String postId,
     required String content,
     String? topicName,
+    List<XFile>? images,
   }) async {
     final pb = await getPocketbaseInstance();
     String? finalTopicId;
@@ -253,6 +284,22 @@ class PostService {
       }
     }
 
+    // --- FIX: Xử lý ảnh cho Web và Mobile ---
+    List<http.MultipartFile> fileList = [];
+    if (images != null && images.isNotEmpty) {
+      for (var image in images) {
+        if (kIsWeb) {
+          final bytes = await image.readAsBytes();
+          fileList.add(
+            http.MultipartFile.fromBytes('images', bytes, filename: image.name),
+          );
+        } else {
+          fileList.add(await http.MultipartFile.fromPath('images', image.path));
+        }
+      }
+    }
+    // ----------------------------------------
+
     final record = await pb
         .collection('posts')
         .update(
@@ -261,6 +308,7 @@ class PostService {
             'content': content,
             if (finalTopicId != null) 'topicId': finalTopicId,
           },
+          files: fileList,
           expand: 'userId,topicId',
         );
 
