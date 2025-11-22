@@ -145,7 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       length: 3,
       child: Builder(
         builder: (context) {
-          final tabController = DefaultTabController.of(context)!;
+          final tabController = DefaultTabController.of(context);
 
           tabController.addListener(() async {
             if (tabController.indexIsChanging) return;

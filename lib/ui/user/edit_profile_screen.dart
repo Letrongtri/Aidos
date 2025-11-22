@@ -227,7 +227,12 @@ class EditProfileScreen extends StatelessWidget {
                     showErrorDialog(context, 'Failed to update profile');
                   }
 
-                  if (ok) panelController.close();
+                  if (ok && context.mounted) {
+                    showAppSnackBar(context, message: 'Profile updated!');
+                    if (panelController.isAttached) {
+                      panelController.close();
+                    }
+                  }
                 },
           child: Text(
             'Done',

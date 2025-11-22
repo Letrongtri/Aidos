@@ -66,12 +66,12 @@ class _DetailPostContentState extends State<DetailPostContent> {
         ),
         const SizedBox(height: 10),
         Text(widget.post.content, style: textTheme.bodyLarge),
-        if (widget.post.images != null && widget.post.images!.isNotEmpty)
+        if (widget.post.images.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 12.0, bottom: 8.0),
             child: _buildImageSlider(
               context,
-              widget.post.images!,
+              widget.post.images,
               widget.post.id,
             ),
           ),
