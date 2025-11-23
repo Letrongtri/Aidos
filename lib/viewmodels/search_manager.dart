@@ -10,7 +10,6 @@ class SearchManager extends ChangeNotifier {
   final _postService = PostService();
   final _topicService = TopicService();
   final _likeService = LikeService();
-  final _repostService = RepostService();
 
   PostsManager? _postsManager;
 
@@ -37,8 +36,6 @@ class SearchManager extends ChangeNotifier {
   List<Topic> topicSuggestions = [];
   String currentQuery = '';
 
-  final Set<String> _repostedPostIds = {};
-
   int _page = 1;
   final int _perPage = 30;
   bool _isLoadingPost = false; // load more search post
@@ -64,13 +61,6 @@ class SearchManager extends ChangeNotifier {
   bool get isLoadingPost => _isLoadingPost;
   bool get isSearching => _isSearching;
   bool get hasMorePosts => _hasMorePosts;
-
-  bool hasUserReposted(String postId) {
-    if (_postsManager?.findPostById(postId) != null) {
-      return _postsManager!.hasUserReposted(postId);
-    }
-    return _repostedPostIds.contains(postId);
-  }
 
   Future<void> fetchSuggestionTopics() async {
     try {
@@ -193,55 +183,6 @@ class SearchManager extends ChangeNotifier {
         }
       } catch (e) {
         debugPrint('SearchManager like error: $e');
-      }
-    }
-  }
-
-  Future<void> onRepostPressed(String id) async {
-    final inFeed = _postsManager?.findPostById(id) != null;
-    if (inFeed) {
-      await _postsManager!.onRepostPressed(id);
-    } else {
-      final index = _localSearchResults.indexWhere((p) => p.id == id);
-      if (index == -1) return;
-
-      final post = _localSearchResults[index];
-      final isReposted = _repostedPostIds.contains(id);
-      final repostCount = post.reposts;
-
-      _localSearchResults[index] = post.copyWith(
-        reposts: isReposted ? repostCount - 1 : repostCount + 1,
-      );
-      notifyListeners();
-
-      try {
-        if (isReposted) {
-          await _repostService.unrepostPost(id);
-          _repostedPostIds.remove(id);
-        } else {
-          await _repostService.repostPost(id);
-          _repostedPostIds.add(id);
-
-          final currentUserId = await getCurrentUserId();
-          if (currentUserId != null && currentUserId != post.userId) {
-            final notiId = Generate.generatePocketBaseId();
-
-            final newNoti = notification_model.Notification(
-              id: notiId,
-              userId: post.userId,
-              title: 'Đăng lại bài viết',
-              body: 'Ai đó đã đăng lại 1 bài viết của bạn',
-              type: notification_model.NotificationType.post.name,
-              targetId: post.id,
-              created: DateTime.now(),
-              updated: DateTime.now(),
-            );
-            await PocketBaseNotificationService.createNotification(newNoti);
-          }
-        }
-        notifyListeners();
-      } catch (e) {
-        debugPrint('Error toggling repost: $e');
       }
     }
   }

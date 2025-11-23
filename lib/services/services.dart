@@ -5,7 +5,6 @@ export 'package:ct312h_project/services/local_notification_service.dart';
 export 'package:ct312h_project/services/pocketbase_client.dart';
 export 'package:ct312h_project/services/pocketbase_notification_service.dart';
 export 'package:ct312h_project/services/post_service.dart';
-export 'package:ct312h_project/services/repost_service.dart';
 export 'package:ct312h_project/services/sqlite_service.dart';
 export 'package:ct312h_project/services/topic_service.dart';
 export 'package:ct312h_project/services/user_service.dart';

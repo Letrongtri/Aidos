@@ -38,7 +38,8 @@ class _SinglePostItemState extends State<SinglePostItem> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return InkWell(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         context.pushNamed(
           AppRouteName.detailPost.name,
@@ -47,7 +48,7 @@ class _SinglePostItemState extends State<SinglePostItem> {
       },
       child: Container(
         color: Colors.transparent,
-        padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
+        padding: const EdgeInsets.only(top: 12, left: 8, right: 8),
         child: Column(
           children: [
             Row(
@@ -67,6 +68,11 @@ class _SinglePostItemState extends State<SinglePostItem> {
                         _buildImageSlider(context, widget.post.images),
                       ],
                       const SizedBox(height: 8),
+
+                      if (widget.post.parentId != null &&
+                          widget.post.parentPost != null)
+                        _buildRepostCard(context, textTheme, colorScheme),
+
                       PostAction(
                         post: widget.post,
                         isFromSearch: widget.isFromSearch,
@@ -77,8 +83,55 @@ class _SinglePostItemState extends State<SinglePostItem> {
               ],
             ),
             const SizedBox(height: 12),
-            Divider(height: 1, color: colorScheme.onSurface.withOpacity(0.12)),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRepostCard(
+    BuildContext context,
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+  ) {
+    return Card(
+      clipBehavior: Clip.hardEdge,
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: colorScheme.onSurface.withAlpha(150)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        onTap: () {
+          context.pushNamed(
+            AppRouteName.detailPost.name,
+            pathParameters: {'id': widget.post.parentId!},
+          );
+        },
+        child: Padding(
+          padding: EdgeInsets.all(8),
+          child: Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: Row(
+                  children: [
+                    Avatar(userId: widget.post.parentId!, size: 30),
+                    SizedBox(width: 4),
+                    Expanded(
+                      child: PostHeader(
+                        post: widget.post.parentPost!,
+                        showOptions: false,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(widget.post.parentPost!.content, style: textTheme.bodyLarge),
+            ],
+          ),
         ),
       ),
     );
@@ -146,8 +199,4 @@ class _SinglePostItemState extends State<SinglePostItem> {
       ],
     );
   }
-
-  // String _getImageUrl(String fileName) {
-  //   return '$baseUrl/api/files/posts/${widget.post.id}/$fileName';
-  // }
 }

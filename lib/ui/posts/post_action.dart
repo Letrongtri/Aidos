@@ -1,5 +1,6 @@
 import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/post.dart';
+import 'package:ct312h_project/ui/posts/repost_message_dialog.dart';
 import 'package:ct312h_project/utils/format.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:ct312h_project/viewmodels/search_manager.dart';
@@ -15,22 +16,15 @@ class PostAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isUserReposted;
     VoidCallback onLike;
     VoidCallback onRepost;
 
     if (isFromSearch) {
-      final searchManager = context.watch<SearchManager>();
-      isUserReposted = searchManager.hasUserReposted(post.id);
-
       onLike = () => context.read<SearchManager>().onLikePostPressed(post.id);
-      onRepost = () => context.read<SearchManager>().onRepostPressed(post.id);
+      onRepost = () => showRepostMessageDialog(context, post.id);
     } else {
-      final postsManager = context.watch<PostsManager>();
-      isUserReposted = postsManager.hasUserReposted(post.id);
-
       onLike = () => context.read<PostsManager>().onLikePostPressed(post.id);
-      onRepost = () => context.read<PostsManager>().onRepostPressed(post.id);
+      onRepost = () => showRepostMessageDialog(context, post.id);
     }
 
     final isLiked = post.isLiked ?? false;
@@ -80,19 +74,21 @@ class PostAction extends StatelessWidget {
         TextButton.icon(
           onPressed: onRepost,
           style: TextButton.styleFrom(
-            foregroundColor: isUserReposted
-                ? colorScheme.secondary
-                : colorScheme.onSurface,
+            foregroundColor: colorScheme.onSurface,
+            // isUserReposted
+            //     ? colorScheme.secondary
+            //     : colorScheme.onSurface,
           ),
           label: Text(
             Format.getCountNumber(post.reposts),
             style: textTheme.bodyMedium?.copyWith(
-              color: isUserReposted
-                  ? colorScheme.secondary
-                  : colorScheme.onSurface,
+              color: colorScheme.onSurface,
+              // isUserReposted
+              //     ? colorScheme.secondary
+              //     : colorScheme.onSurface,
             ),
           ),
-          icon: Icon(isUserReposted ? Icons.repeat : Icons.repeat_outlined),
+          icon: Icon(Icons.repeat),
         ),
       ],
     );

@@ -17,7 +17,7 @@ class _FeedScreenState extends State<FeedScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => context.read<PostsManager>().fetchPosts(isRefresh: true),
+      (_) => context.read<PostsManager>().fetchFeedPosts(isRefresh: true),
     );
 
     _scrollController.addListener(_onScroll);
@@ -28,7 +28,7 @@ class _FeedScreenState extends State<FeedScreen> {
         _scrollController.position.maxScrollExtent - 200) {
       final postsManager = context.read<PostsManager>();
       if (!postsManager.isLoadingPosts && postsManager.hasMorePosts) {
-        postsManager.fetchPosts();
+        postsManager.fetchFeedPosts();
       }
     }
   }
@@ -59,7 +59,7 @@ class _FeedScreenState extends State<FeedScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            await manager.fetchPosts(isRefresh: true);
+            await manager.fetchFeedPosts(isRefresh: true);
           },
           child: Padding(
             padding: const EdgeInsets.all(10),

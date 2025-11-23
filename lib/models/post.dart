@@ -25,6 +25,7 @@ class Post {
   final User? user;
   final Topic? topic;
   final bool? isLiked;
+  final Post? parentPost;
 
   Post({
     required this.id,
@@ -42,6 +43,7 @@ class Post {
     this.user,
     this.topic,
     this.isLiked,
+    this.parentPost,
   });
 
   Post copyWith({
@@ -60,6 +62,7 @@ class Post {
     User? user,
     Topic? topic,
     bool? isLiked,
+    Post? parentPost,
   }) {
     return Post(
       id: id ?? this.id,
@@ -77,6 +80,7 @@ class Post {
       user: user ?? this.user,
       topic: topic ?? this.topic,
       isLiked: isLiked ?? this.isLiked,
+      parentPost: parentPost ?? this.parentPost,
     );
   }
 
@@ -96,6 +100,7 @@ class Post {
       'images': images, // Thêm vào map
       'user': user,
       'topic': topic,
+      'parentPost': parentPost,
     };
   }
 
@@ -118,6 +123,7 @@ class Post {
           : const [],
       user: map['user'] != null ? map['user'] as User : null,
       topic: map['topic'] != null ? map['topic'] as Topic : null,
+      parentPost: map['parentPost'] != null ? map['parentPost'] as Post : null,
     );
   }
 
@@ -128,7 +134,7 @@ class Post {
 
   @override
   String toString() {
-    return 'Post(id: $id, userId: $userId, content: $content, topicId: $topicId, parentId: $parentId, likeCount: $likes, commentCount: $comments, repostCount: $reposts, reportCount: $reports, created: $created, updated: $updated, images: $images, user: $user, topic: $topic, isLiked: $isLiked)';
+    return 'Post(id: $id, userId: $userId, content: $content, topicId: $topicId, parentId: $parentId, likeCount: $likes, commentCount: $comments, repostCount: $reposts, reportCount: $reports, created: $created, updated: $updated, images: $images, user: $user, topic: $topic, isLiked: $isLiked, parentPost: $parentPost)';
   }
 
   @override
@@ -152,7 +158,8 @@ class Post {
         ) && // Dùng listEquals để so sánh nội dung list
         other.user == user &&
         other.topic == topic &&
-        other.isLiked == isLiked;
+        other.isLiked == isLiked &&
+        other.parentPost == parentPost;
   }
 
   @override
@@ -171,7 +178,8 @@ class Post {
         images.hashCode ^
         user.hashCode ^
         topic.hashCode ^
-        isLiked.hashCode;
+        isLiked.hashCode ^
+        parentPost.hashCode;
   }
 
   factory Post.empty() => Post(
@@ -193,6 +201,7 @@ class Post {
     RecordModel? userRecord,
     RecordModel? topicRecord,
     bool? isLiked,
+    RecordModel? parentPostRecord,
   }) {
     return Post(
       id: record.id,
@@ -215,10 +224,17 @@ class Post {
           ? Topic.fromMap(topicRecord.data)
           : null,
       isLiked: isLiked,
+      parentPost: (parentPostRecord != null && parentPostRecord.data.isNotEmpty)
+          ? Post.fromMap(parentPostRecord.data)
+          : null,
     );
   }
 
-  Post copyWithRawData(Map<String, dynamic> rawData, bool? isLiked) {
+  Post copyWithRawData(
+    Map<String, dynamic> rawData,
+    bool? isLiked,
+    Post? parentPost,
+  ) {
     return Post(
       id: rawData['id'] as String,
       userId: rawData['userId'] as String,
@@ -237,6 +253,7 @@ class Post {
           ? List<String>.from(rawData['images'])
           : const [],
       isLiked: isLiked,
+      parentPost: parentPost,
     );
   }
 }

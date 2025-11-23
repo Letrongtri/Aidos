@@ -1,5 +1,6 @@
 import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/post.dart';
+import 'package:ct312h_project/ui/posts/repost_message_dialog.dart';
 import 'package:ct312h_project/ui/shared/app_images.dart';
 import 'package:ct312h_project/ui/shared/full_image_viewer.dart';
 import 'package:ct312h_project/utils/format.dart';
@@ -22,8 +23,6 @@ class _DetailPostContentState extends State<DetailPostContent> {
 
   @override
   Widget build(BuildContext context) {
-    final postsManager = context.watch<PostsManager>();
-    final isReposted = postsManager.hasUserReposted(widget.post.id);
     final isLiked = widget.post.isLiked ?? false;
 
     final theme = Theme.of(context);
@@ -137,20 +136,18 @@ class _DetailPostContentState extends State<DetailPostContent> {
             const SizedBox(width: 4),
             TextButton.icon(
               onPressed: () {
-                context.read<PostsManager>().onRepostPressed(post.id);
+                showRepostMessageDialog(context, post.id);
               },
               style: TextButton.styleFrom(
-                foregroundColor: isReposted
-                    ? Colors.white
-                    : colorScheme.onSurface,
+                foregroundColor: colorScheme.onSurface,
               ),
               label: Text(
                 Format.getCountNumber(post.reposts),
                 style: textTheme.bodyMedium?.copyWith(
-                  color: isReposted ? Colors.white : colorScheme.onSurface,
+                  color: colorScheme.onSurface,
                 ),
               ),
-              icon: Icon(isReposted ? Icons.repeat : Icons.repeat_outlined),
+              icon: Icon(Icons.repeat),
             ),
           ],
         ),

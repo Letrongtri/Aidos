@@ -12,7 +12,6 @@ import 'package:pocketbase/pocketbase.dart';
 class PostsManager extends ChangeNotifier {
   final PostService _postService = PostService();
   final LikeService _likeService = LikeService();
-  final RepostService _repostService = RepostService();
 
   AuthManager? _authManager;
 
@@ -23,14 +22,16 @@ class PostsManager extends ChangeNotifier {
   final int _postsPerPage = 20;
   final List<Post> _repliedPosts = [];
 
-  Set<String> _repostedPostIds = {};
+  final Set<String> _feedPostIds = {};
+  final Set<String> _repostedPostIds = {};
+  final Set<String> _userPostIds = {};
 
   bool _isLoadingPostsInitial = false;
   bool _isLoadingPosts = false;
   bool _hasMorePosts = true;
   String? errorMessage;
 
-  List<Post> get posts => List<Post>.from(_posts);
+  // List<Post> get posts => List<Post>.from(_posts);
   List<Post> get repliedPosts => List<Post>.from(_repliedPosts);
   bool get isLoadingPostsInitial => _isLoadingPostsInitial;
   bool get isLoadingPosts => _isLoadingPosts;
@@ -38,6 +39,39 @@ class PostsManager extends ChangeNotifier {
 
   get currentUser => _authManager?.user;
   bool get isLoadingUser => _authManager?.isLoading ?? false;
+
+  List<Post> get posts => _feedPostIds
+      .map((id) {
+        try {
+          return _posts.firstWhere((post) => post.id == id);
+        } catch (e) {
+          return null;
+        }
+      })
+      .whereType<Post>() // Lọc bỏ null
+      .toList();
+
+  List<Post> get userPosts => _userPostIds
+      .map((id) {
+        try {
+          return _posts.firstWhere((post) => post.id == id);
+        } catch (e) {
+          return null;
+        }
+      })
+      .whereType<Post>()
+      .toList();
+
+  List<Post> get userReposts => _repostedPostIds
+      .map((id) {
+        try {
+          return _posts.firstWhere((post) => post.id == id);
+        } catch (e) {
+          return null;
+        }
+      })
+      .whereType<Post>()
+      .toList();
 
   PostsManager() {
     startRealtimeUpdates();
@@ -57,14 +91,14 @@ class PostsManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchPosts({bool isRefresh = false}) async {
+  Future<void> fetchFeedPosts({bool isRefresh = false}) async {
     if (_isLoadingPosts) return;
 
     if (isRefresh) {
       _isLoadingPostsInitial = true;
       _postsPage = 1;
       _hasMorePosts = true;
-      _posts.clear();
+      _feedPostIds.clear();
       notifyListeners();
     }
 
@@ -72,8 +106,11 @@ class PostsManager extends ChangeNotifier {
 
     _isLoadingPosts = true;
     notifyListeners();
+
+    final currentUser = _authManager?.user;
     try {
       final fetched = await _postService.fetchPosts(
+        currentUser?.id,
         page: _postsPage,
         perPage: _postsPerPage,
       );
@@ -87,13 +124,21 @@ class PostsManager extends ChangeNotifier {
       final postIds = fetched.map((p) => p.id).toList();
 
       final likedIds = await _likeService.fetchLikedPostIds(postIds);
-      _repostedPostIds = await _repostService.fetchRepostedPostIds(postIds);
 
       final newPosts = fetched
           .map((p) => p.copyWith(isLiked: likedIds.contains(p.id)))
           .toList();
 
-      _posts.addAll(newPosts);
+      for (final post in newPosts) {
+        _feedPostIds.add(post.id);
+
+        final index = _posts.indexWhere((p) => p.id == post.id);
+        if (index != -1) {
+          _posts[index] = post;
+        } else {
+          _posts.add(post);
+        }
+      }
 
       errorMessage = null;
     } catch (e) {
@@ -200,54 +245,6 @@ class PostsManager extends ChangeNotifier {
     }
   }
 
-  Future<void> onRepostPressed(String id) async {
-    final index = _posts.indexWhere((p) => p.id == id);
-    if (index == -1) return;
-
-    final post = _posts[index];
-    final isReposted = _repostedPostIds.contains(id);
-    final repostCount = post.reposts;
-
-    _posts[index] = post.copyWith(
-      reposts: isReposted ? repostCount - 1 : repostCount + 1,
-    );
-    notifyListeners();
-
-    try {
-      if (isReposted) {
-        await _repostService.unrepostPost(id);
-        _repostedPostIds.remove(id);
-      } else {
-        await _repostService.repostPost(id);
-        _repostedPostIds.add(id);
-
-        final currentUserId = await getCurrentUserId();
-        if (currentUserId != null && currentUserId != post.userId) {
-          final notiId = Generate.generatePocketBaseId();
-
-          final newNoti = notification_model.Notification(
-            id: notiId,
-            userId: post.userId,
-            title: 'Đăng lại bài viết',
-            body: 'Ai đó đã đăng lại 1 bài viết của bạn',
-            type: notification_model.NotificationType.post.name,
-            targetId: post.id,
-            created: DateTime.now(),
-            updated: DateTime.now(),
-          );
-          await PocketBaseNotificationService.createNotification(newNoti);
-        }
-      }
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error toggling repost: $e');
-    }
-  }
-
-  bool hasUserReposted(String postId) {
-    return _repostedPostIds.contains(postId);
-  }
-
   Future<void> refreshPost(String id) async {
     try {
       final updatedPost = await _postService.fetchPostById(id);
@@ -257,13 +254,6 @@ class PostsManager extends ChangeNotifier {
 
         if (index != -1) {
           final likedIds = await _likeService.fetchLikedPostIds([id]);
-
-          final isReposted = await _repostService.hasUserReposted(id);
-          if (isReposted) {
-            _repostedPostIds.add(id);
-          } else {
-            _repostedPostIds.remove(id);
-          }
 
           _posts[index] = updatedPost.copyWith(isLiked: likedIds.contains(id));
 
@@ -275,42 +265,48 @@ class PostsManager extends ChangeNotifier {
     }
   }
 
-  List<Post> getUserPosts(String userId) {
-    return _posts.where((p) => p.userId == userId).toList();
+  Future<void> getUserPosts(String userId) async {
+    try {
+      final posts = await _postService.fetchPostsByUser(userId);
+
+      // nếu đã có trong post thì bỏ qua, k thì thêm vào post
+      for (final post in posts) {
+        _userPostIds.add(post.id);
+
+        final index = _posts.indexWhere((p) => p.id == post.id);
+        if (index != -1) {
+          _posts[index] = post;
+        } else {
+          _posts.add(post);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error getting user posts: $e');
+    }
+  }
+
+  Future<void> getUserReposts(String userId) async {
+    try {
+      final reposts = await _postService.fetchRepostsByUser(userId);
+
+      // nếu đã có trong post thì bỏ qua, k thì thêm vào post
+      for (final post in reposts) {
+        _repostedPostIds.add(post.id);
+
+        final index = _posts.indexWhere((p) => p.id == post.id);
+        if (index != -1) {
+          _posts[index] = post;
+        } else {
+          _posts.add(post);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error getting user posts: $e');
+    }
   }
 
   Future<List<Map<String, dynamic>>> getUserRepliedPosts(String userId) async {
     return await _postService.fetchRepliedPosts(userId);
-  }
-
-  Future<List<Post>> getUserRepostedPosts(String userId) async {
-    try {
-      final repostedPostIds = await _repostService.fetchUserRepostedPostIds(
-        userId,
-      );
-
-      final repostedPosts = <Post>[];
-      for (final postId in repostedPostIds) {
-        final cachedPost = _posts.firstWhere(
-          (p) => p.id == postId,
-          orElse: () => Post.empty(),
-        );
-
-        if (cachedPost.id.isNotEmpty) {
-          repostedPosts.add(cachedPost);
-        } else {
-          final post = await _postService.fetchPostById(postId);
-          if (post != null) {
-            repostedPosts.add(post);
-          }
-        }
-      }
-
-      return repostedPosts;
-    } catch (e) {
-      debugPrint('Error getting user reposted posts: $e');
-      return [];
-    }
   }
 
   Future<void> updatePost({
@@ -350,6 +346,52 @@ class PostsManager extends ChangeNotifier {
     }
   }
 
+  Future<void> createRepost({
+    String? content,
+    required String parentPostId,
+  }) async {
+    final currentUser = _authManager?.user;
+    if (currentUser == null) {
+      throw Exception('User is not logged in. Cannot create post.');
+    }
+
+    final parentPost = _posts.firstWhere((post) => post.id == parentPostId);
+
+    try {
+      final newPost = await _postService.createRepost(
+        userId: currentUser.id,
+        parentPostId: parentPostId,
+        content: content,
+      );
+
+      _posts = [
+        newPost.copyWith(user: currentUser, parentPost: parentPost),
+        ..._posts,
+      ];
+      errorMessage = null;
+      notifyListeners();
+
+      if (parentPost.userId != currentUser.id) {
+        final notiId = Generate.generatePocketBaseId();
+        final newNoti = notification_model.Notification(
+          id: notiId,
+          userId: parentPost.userId,
+          title: 'Đăng lại mới',
+          body: 'Ai đó đã đăng lại bài viết của bạn',
+          type: notification_model.NotificationType.post.name,
+          targetId: newPost.id,
+          created: DateTime.now(),
+          updated: DateTime.now(),
+        );
+        await PocketBaseNotificationService.createNotification(newNoti);
+      }
+    } catch (e) {
+      errorMessage = e.toString();
+      debugPrint("Create repost error: $e");
+      rethrow;
+    }
+  }
+
   void startRealtimeUpdates() {
     _realtimeSubscription?.cancel();
 
@@ -370,6 +412,7 @@ class PostsManager extends ChangeNotifier {
         final updatedPost = oldPost.copyWithRawData(
           event.record!.data,
           oldPost.isLiked,
+          oldPost.parentPost,
         );
 
         _posts[index] = updatedPost;

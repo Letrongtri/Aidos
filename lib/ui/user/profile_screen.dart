@@ -1,4 +1,3 @@
-import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/ui/user/edit_profile_screen.dart';
 import 'package:ct312h_project/ui/user/profile_replies_list.dart';
 import 'package:ct312h_project/viewmodels/profile_manager.dart';
@@ -20,9 +19,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _hasLoaded = false;
   List<Map<String, dynamic>> _repliedPosts = [];
-  List<Post> _repostedPosts = [];
   bool _isRepliedLoading = true;
-  bool _isRepostedLoading = true;
 
   @override
   void initState() {
@@ -41,7 +38,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted || vm.user == null) return;
 
     await Future.wait([
-      if (postsManager.posts.isEmpty) postsManager.fetchPosts(),
+      postsManager.getUserPosts(vm.user!.id),
+      postsManager.getUserReposts(vm.user!.id),
       () async {
         final replied = await postsManager.getUserRepliedPosts(vm.user!.id);
         if (mounted) {
@@ -51,67 +49,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
           });
         }
       }(),
-      () async {
-        final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
-        if (mounted) {
-          setState(() {
-            _repostedPosts = reposted;
-            _isRepostedLoading = false;
-          });
-        }
-      }(),
     ]);
-
-    if (mounted) {
-      postsManager.addListener(_refreshRepostedPosts);
-    }
   }
 
-  void _refreshRepostedPosts() async {
+  Future<void> _onRefreshUserPosts() async {
     if (!mounted) return;
-
     final vm = context.read<ProfileManager>();
-    final postsManager = context.read<PostsManager>();
-
     if (vm.user != null) {
-      final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
-      if (mounted) {
-        setState(() {
-          _repostedPosts = reposted;
-        });
-      }
+      await context.read<PostsManager>().getUserPosts(vm.user!.id);
     }
-  }
-
-  @override
-  void dispose() {
-    try {
-      final postsManager = context.read<PostsManager>();
-      postsManager.removeListener(_refreshRepostedPosts);
-    } catch (e) {
-      debugPrint('Error removing listener: $e');
-    }
-    super.dispose();
-  }
-
-  Future<void> _onRefreshPosts() async {
-    if (!mounted) return;
-    await context.read<PostsManager>().fetchPosts();
   }
 
   Future<void> _onRefreshReposts() async {
     if (!mounted) return;
-
-    final postsManager = context.read<PostsManager>();
     final vm = context.read<ProfileManager>();
-
-    await postsManager.fetchPosts();
-
-    if (vm.user != null && mounted) {
-      final reposted = await postsManager.getUserRepostedPosts(vm.user!.id);
-      if (mounted) {
-        setState(() => _repostedPosts = reposted);
-      }
+    if (vm.user != null) {
+      await context.read<PostsManager>().getUserReposts(vm.user!.id);
     }
   }
 
@@ -139,7 +92,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     final user = vm.user!;
-    final userPosts = postsManager.getUserPosts(user.id);
+
+    final userPosts = postsManager.userPosts;
+    final repostPosts = postsManager.userReposts;
 
     return DefaultTabController(
       length: 3,
@@ -220,28 +175,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             key: const ValueKey('profile_posts_tab'),
                             posts: userPosts,
                             emptyText: "No posts yet",
-                            onRefresh: _onRefreshPosts,
+                            onRefresh: _onRefreshUserPosts,
                           ),
                           ProfileRepliesList(
                             key: const ValueKey('profile_replies_tab'),
                             repliedPosts: _repliedPosts,
                             isLoading: _isRepliedLoading,
                           ),
-                          _isRepostedLoading
-                              ? Center(
-                                  key: const ValueKey(
-                                    'profile_reposts_loading',
-                                  ),
-                                  child: CircularProgressIndicator(
-                                    color: colorScheme.secondary,
-                                  ),
-                                )
-                              : ProfilePostList(
-                                  key: const ValueKey('profile_reposts_tab'),
-                                  posts: _repostedPosts,
-                                  emptyText: "No reposts yet",
-                                  onRefresh: _onRefreshReposts,
-                                ),
+                          ProfilePostList(
+                            key: const ValueKey('profile_reposts_tab'),
+                            posts: repostPosts,
+                            emptyText: "No reposts yet",
+                            onRefresh: _onRefreshReposts,
+                          ),
                         ],
                       ),
                     ),

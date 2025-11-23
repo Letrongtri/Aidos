@@ -189,7 +189,7 @@ class _PostScreenState extends State<PostScreen> {
 
       if (widget.existingPost == null) {
         if (newPost == null) return;
-        context.pushNamed(
+        context.pushReplacementNamed(
           AppRouteName.detailPost.name,
           pathParameters: {'id': newPost.id},
         );

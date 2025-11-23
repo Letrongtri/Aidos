@@ -12,9 +12,10 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class PostHeader extends StatelessWidget {
-  const PostHeader({super.key, required this.post});
+  const PostHeader({super.key, required this.post, this.showOptions = true});
 
   final Post post;
+  final bool showOptions;
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +86,7 @@ class PostHeader extends StatelessWidget {
             color: colorScheme.onSurface.withOpacity(0.6),
           ),
         ),
-        if (post.userId == currentUserId)
+        if (showOptions && post.userId == currentUserId)
           IconButton(
             onPressed: () {
               showPostActionsBottomSheet(

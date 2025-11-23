@@ -8,17 +8,22 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pocketbase/pocketbase.dart';
 
 class PostService {
-  Future<List<Post>> fetchPosts({int page = 1, int perPage = 10}) async {
+  Future<List<Post>> fetchPosts(
+    String? userId, {
+    int page = 1,
+    int perPage = 10,
+  }) async {
     List<Post> posts = [];
     try {
       final pb = await getPocketbaseInstance();
-      final expandFields = 'userId,topicId';
+      final expandFields = 'userId,topicId,parentId';
 
       final result = await pb
           .collection('posts')
           .getList(
             page: page,
             perPage: perPage,
+            filter: userId == null ? '' : 'userId!="$userId"',
             sort: '-created',
             expand: expandFields,
           );
@@ -26,10 +31,12 @@ class PostService {
       posts = result.items.map((record) {
         final user = record.get<RecordModel>('expand.userId');
         final topic = record.get<RecordModel>('expand.topicId');
+        final parentPost = record.get<RecordModel>('expand.parentId');
         return Post.fromPocketbase(
           record: record,
           userRecord: user,
           topicRecord: topic,
+          parentPostRecord: parentPost,
         );
       }).toList();
 
@@ -46,7 +53,7 @@ class PostService {
     List<Post> posts = [];
     try {
       final pb = await getPocketbaseInstance();
-      final expandFields = 'userId,topicId';
+      final expandFields = 'userId,topicId,parentId';
 
       final result = await pb
           .collection('posts')
@@ -60,10 +67,12 @@ class PostService {
       posts = result.items.map((record) {
         final user = record.get<RecordModel>('expand.userId');
         final topic = record.get<RecordModel>('expand.topicId');
+        final parentPost = record.get<RecordModel>('expand.parentId');
         return Post.fromPocketbase(
           record: record,
           userRecord: user,
           topicRecord: topic,
+          parentPostRecord: parentPost,
         );
       }).toList();
 
@@ -81,7 +90,7 @@ class PostService {
     List<Post> posts = [];
     try {
       final pb = await getPocketbaseInstance();
-      final expandFields = 'userId,topicId,posts_via_topicId';
+      final expandFields = 'userId,topicId,posts_via_topicId,parentId';
 
       final filter = queries.isEmpty
           ? ''
@@ -100,10 +109,12 @@ class PostService {
       posts = result.items.map((record) {
         final user = record.get<RecordModel>('expand.userId');
         final topic = record.get<RecordModel>('expand.topicId');
+        final parentPost = record.get<RecordModel>('expand.parentId');
         return Post.fromPocketbase(
           record: record,
           userRecord: user,
           topicRecord: topic,
+          parentPostRecord: parentPost,
         );
       }).toList();
 
@@ -195,11 +206,11 @@ class PostService {
   Future<List<Post>> fetchPostsByUser(String userId) async {
     try {
       final pb = await getPocketbaseInstance();
-      final expandFields = 'userId,topicId';
+      final expandFields = 'userId,topicId,parentId';
       final result = await pb
           .collection('posts')
           .getList(
-            filter: 'userId="$userId"',
+            filter: 'userId="$userId" && parentId=null',
             sort: '-created',
             expand: expandFields,
           );
@@ -207,14 +218,45 @@ class PostService {
       return result.items.map((record) {
         final user = record.get<RecordModel>('expand.userId');
         final topic = record.get<RecordModel>('expand.topicId');
+        final parentPost = record.get<RecordModel>('expand.parentId');
         return Post.fromPocketbase(
           record: record,
           userRecord: user,
           topicRecord: topic,
+          parentPostRecord: parentPost,
         );
       }).toList();
     } catch (e) {
       debugPrint('Error fetching user posts: $e');
+      return [];
+    }
+  }
+
+  Future<List<Post>> fetchRepostsByUser(String userId) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      final expandFields = 'userId,topicId,parentId';
+      final result = await pb
+          .collection('posts')
+          .getList(
+            filter: 'userId="$userId" && parentId!=null',
+            sort: '-created',
+            expand: expandFields,
+          );
+
+      return result.items.map((record) {
+        final user = record.get<RecordModel>('expand.userId');
+        final topic = record.get<RecordModel>('expand.topicId');
+        final parentPost = record.get<RecordModel>('expand.parentId');
+        return Post.fromPocketbase(
+          record: record,
+          userRecord: user,
+          topicRecord: topic,
+          parentPostRecord: parentPost,
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('Error fetching user reposts: $e');
       return [];
     }
   }
@@ -334,7 +376,7 @@ class PostService {
   Future<Post?> fetchPostById(String id) async {
     try {
       final pb = await getPocketbaseInstance();
-      final expandFields = 'userId,topicId';
+      final expandFields = 'userId,topicId,parentId';
 
       final record = await pb
           .collection('posts')
@@ -342,11 +384,12 @@ class PostService {
 
       final user = record.get<RecordModel>('expand.userId');
       final topic = record.get<RecordModel>('expand.topicId');
-
+      final parentPost = record.get<RecordModel>('expand.parentId');
       return Post.fromPocketbase(
         record: record,
         userRecord: user,
         topicRecord: topic,
+        parentPostRecord: parentPost,
       );
     } on ClientException catch (e) {
       if (e.statusCode == 404) return null;
@@ -355,6 +398,31 @@ class PostService {
     } catch (e) {
       debugPrint('Error fetching single post by ID: $e');
       return null;
+    }
+  }
+
+  Future<Post> createRepost({
+    required String userId,
+    required String parentPostId,
+    String? content,
+  }) async {
+    try {
+      final pb = await getPocketbaseInstance();
+
+      final record = await pb
+          .collection('posts')
+          .create(
+            body: {
+              'userId': userId,
+              'content': content,
+              'parentId': parentPostId,
+            },
+          );
+
+      return Post.fromPocketbase(record: record);
+    } catch (e, st) {
+      debugPrint('Create Repost ERROR: $e\n$st');
+      rethrow;
     }
   }
 
