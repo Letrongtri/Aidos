@@ -15,7 +15,6 @@ class Post {
   final int likes;
   final int comments;
   final int reposts;
-  final int reports;
   final DateTime created;
   final DateTime updated;
 
@@ -36,7 +35,6 @@ class Post {
     required this.likes,
     required this.comments,
     required this.reposts,
-    required this.reports,
     required this.created,
     required this.updated,
     this.images = const [], // Mặc định là list rỗng
@@ -55,7 +53,6 @@ class Post {
     int? likes,
     int? comments,
     int? reposts,
-    int? reports,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<String>? images, // Thêm vào copyWith
@@ -73,7 +70,6 @@ class Post {
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,
       reposts: reposts ?? this.reposts,
-      reports: reports ?? this.reports,
       created: createdAt ?? created,
       updated: updatedAt ?? updated,
       images: images ?? this.images, // Cập nhật images
@@ -94,7 +90,6 @@ class Post {
       'likes': likes,
       'comments': comments,
       'reposts': reposts,
-      'reports': reports,
       'created': created.toIso8601String(),
       'updated': updated.toIso8601String(),
       'images': images, // Thêm vào map
@@ -114,7 +109,6 @@ class Post {
       likes: map['likes'] as int,
       comments: map['comments'] as int,
       reposts: map['reposts'] as int,
-      reports: map['reports'] as int,
       created: DateTime.parse(map['created'] as String),
       updated: DateTime.parse(map['updated'] as String),
       // Parse images an toàn từ List dynamic
@@ -134,7 +128,7 @@ class Post {
 
   @override
   String toString() {
-    return 'Post(id: $id, userId: $userId, content: $content, topicId: $topicId, parentId: $parentId, likeCount: $likes, commentCount: $comments, repostCount: $reposts, reportCount: $reports, created: $created, updated: $updated, images: $images, user: $user, topic: $topic, isLiked: $isLiked, parentPost: $parentPost)';
+    return 'Post(id: $id, userId: $userId, content: $content, topicId: $topicId, parentId: $parentId, likeCount: $likes, commentCount: $comments, repostCount: $reposts, created: $created, updated: $updated, images: $images, user: $user, topic: $topic, isLiked: $isLiked, parentPost: $parentPost)';
   }
 
   @override
@@ -149,7 +143,6 @@ class Post {
         other.likes == likes &&
         other.comments == comments &&
         other.reposts == reposts &&
-        other.reports == reports &&
         other.created == created &&
         other.updated == updated &&
         listEquals(
@@ -172,7 +165,6 @@ class Post {
         likes.hashCode ^
         comments.hashCode ^
         reposts.hashCode ^
-        reports.hashCode ^
         created.hashCode ^
         updated.hashCode ^
         images.hashCode ^
@@ -190,7 +182,6 @@ class Post {
     likes: 0,
     comments: 0,
     reposts: 0,
-    reports: 0,
     created: DateTime.now(),
     updated: DateTime.now(),
     images: const [], // Khởi tạo rỗng
@@ -210,7 +201,6 @@ class Post {
       likes: record.getIntValue('likes'),
       comments: record.getIntValue('comments'),
       reposts: record.getIntValue('reposts'),
-      reports: record.getIntValue('reports'),
       created: DateTime.parse(record.getStringValue('created')),
       updated: DateTime.parse(record.getStringValue('updated')),
       topicId: record.getStringValue('topicId'),
@@ -246,7 +236,6 @@ class Post {
       likes: rawData['likes'] as int,
       comments: rawData['comments'] as int,
       reposts: rawData['reposts'] as int,
-      reports: rawData['reports'] as int,
       created: DateTime.parse(rawData['created'] as String),
       updated: DateTime.parse(rawData['updated'] as String),
       images: rawData['images'] != null
