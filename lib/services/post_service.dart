@@ -358,21 +358,6 @@ class PostService {
     }
   }
 
-  // Stream<RecordSubscriptionEvent> subscribeToPost() async* {
-  //   final pb = await getPocketbaseInstance();
-  //   final controller = StreamController<RecordSubscriptionEvent>();
-
-  //   pb.collection('posts').subscribe('*', (e) {
-  //     controller.add(e);
-  //   });
-
-  //   controller.onCancel = () {
-  //     pb.collection('posts').unsubscribe('*');
-  //     controller.close();
-  //   };
-
-  //   yield* controller.stream;
-  // }
   Stream<RecordSubscriptionEvent> subscribeToPost() {
     // Tạo controller
     final controller = StreamController<RecordSubscriptionEvent>();

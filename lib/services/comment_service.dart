@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ct312h_project/models/comment.dart';
 import 'package:ct312h_project/models/user.dart';
 import 'package:ct312h_project/services/pocketbase_client.dart';
@@ -93,11 +95,11 @@ class CommentService {
     }
   }
 
-  Future<void> deleteComment(Comment comment, Comment? parentComment) async {
+  Future<void> deleteComment(String commentId) async {
     try {
       final pb = await getPocketbaseInstance();
 
-      await pb.collection('comments').delete(comment.id!);
+      await pb.collection('comments').delete(commentId);
     } catch (e) {
       debugPrint(e.toString());
       throw Exception();
@@ -114,5 +116,40 @@ class CommentService {
       debugPrint(e.toString());
       throw Exception();
     }
+  }
+
+  Stream<RecordSubscriptionEvent> subscribeToComment() {
+    // Tạo controller
+    final controller = StreamController<RecordSubscriptionEvent>();
+
+    // Biến để lưu hàm unsubscribe
+    UnsubscribeFunc? unsubscribeFunc;
+
+    // Bắt đầu logic khởi tạo bất đồng bộ
+    getPocketbaseInstance().then((pb) {
+      pb
+          .collection('comments')
+          .subscribe('*', (e) {
+            if (!controller.isClosed) {
+              controller.add(e);
+            }
+          })
+          .then((func) {
+            unsubscribeFunc = func;
+          })
+          .catchError((err) {
+            if (!controller.isClosed) controller.addError(err);
+          });
+    });
+
+    // Dọn dẹp khi không lắng nghe nữa
+    controller.onCancel = () async {
+      if (unsubscribeFunc != null) {
+        await unsubscribeFunc!();
+      }
+      await controller.close();
+    };
+
+    return controller.stream;
   }
 }

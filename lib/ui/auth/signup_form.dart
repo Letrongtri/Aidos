@@ -55,6 +55,8 @@ class SignupForm extends StatelessWidget {
               return null;
             },
           ),
+
+          const SizedBox(height: 16),
         ],
       ),
     );

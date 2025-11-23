@@ -2,7 +2,7 @@ import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/post.dart';
 import 'package:ct312h_project/ui/posts/post_action.dart';
 import 'package:ct312h_project/ui/posts/post_header.dart';
-import 'package:ct312h_project/ui/shared/avatar.dart';
+import 'package:ct312h_project/ui/shared/app_images.dart';
 import 'package:ct312h_project/ui/shared/full_image_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -114,28 +114,9 @@ class _SinglePostItemState extends State<SinglePostItem> {
                         ),
                       );
                     },
-                    child: Image.network(
-                      _getImageUrl(images[index]),
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          color: Colors.grey.withOpacity(0.1),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.withOpacity(0.1),
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.broken_image,
-                            color: Colors.grey,
-                          ),
-                        );
-                      },
+                    child: PostImage(
+                      postId: widget.post.id,
+                      image: images[index],
                     ),
                   ),
                 ),
@@ -166,7 +147,7 @@ class _SinglePostItemState extends State<SinglePostItem> {
     );
   }
 
-  String _getImageUrl(String fileName) {
-    return '$baseUrl/api/files/posts/${widget.post.id}/$fileName';
-  }
+  // String _getImageUrl(String fileName) {
+  //   return '$baseUrl/api/files/posts/${widget.post.id}/$fileName';
+  // }
 }

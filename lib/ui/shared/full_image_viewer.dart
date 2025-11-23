@@ -1,5 +1,5 @@
+import 'package:ct312h_project/utils/url.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
@@ -21,15 +21,6 @@ class FullImageViewer extends StatefulWidget {
 
 class _FullImageViewerState extends State<FullImageViewer> {
   late PageController _pageController;
-
-  // Lấy baseUrl giống như các file khác
-  String get baseUrl {
-    String url = dotenv.env['POCKETBASE_URL'] ?? 'http://127.0.0.1:8090';
-    if (url.endsWith('/')) {
-      return url.substring(0, url.length - 1);
-    }
-    return url;
-  }
 
   @override
   void initState() {
@@ -55,8 +46,10 @@ class _FullImageViewerState extends State<FullImageViewer> {
       body: PhotoViewGallery.builder(
         scrollPhysics: const BouncingScrollPhysics(),
         builder: (BuildContext context, int index) {
-          final imageUrl =
-              '$baseUrl/api/files/posts/${widget.postId}/${widget.images[index]}';
+          final imageUrl = Url.getPostImageUrl(
+            widget.postId,
+            widget.images[index],
+          );
 
           return PhotoViewGalleryPageOptions(
             imageProvider: NetworkImage(imageUrl),

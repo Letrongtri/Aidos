@@ -31,7 +31,7 @@ class Comment {
     required this.created,
     required this.updated,
     this.user,
-    this.isLiked,
+    this.isLiked = false,
   });
 
   Comment copyWith({
@@ -42,7 +42,7 @@ class Comment {
     String? parentId,
     String? rootId,
     int? likesCount,
-    int? relyCount,
+    int? replyCount,
     DateTime? created,
     DateTime? updated,
     User? user,
@@ -56,7 +56,7 @@ class Comment {
       parentId: parentId ?? this.parentId,
       rootId: rootId ?? this.rootId,
       likesCount: likesCount ?? this.likesCount,
-      replyCount: relyCount ?? replyCount,
+      replyCount: replyCount ?? this.replyCount,
       created: created ?? this.created,
       updated: updated ?? this.updated,
       user: user ?? this.user,
@@ -73,7 +73,7 @@ class Comment {
       'parentId': parentId,
       'rootId': rootId,
       'likeCount': likesCount,
-      'relyCount': replyCount,
+      'replyCount': replyCount,
       'created': created.toIso8601String(),
       'updated': updated.toIso8601String(),
       'user': user,
@@ -90,11 +90,11 @@ class Comment {
       parentId: map['parentId'] != null ? map['parentId'] as String : null,
       rootId: map['rootId'] != null ? map['rootId'] as String : null,
       likesCount: map['likesCount'] as int,
-      replyCount: map['relyCount'] as int,
+      replyCount: map['replyCount'] as int,
       created: DateTime.parse(map['created'] as String),
       updated: DateTime.parse(map['updated'] as String),
       user: map['user'] != null ? map['user'] as User : null,
-      isLiked: map['isLiked'] != null ? map['isLiked'] as bool : null,
+      isLiked: map['isLiked'] != null ? map['isLiked'] as bool : false,
     );
   }
 
@@ -105,7 +105,7 @@ class Comment {
 
   @override
   String toString() {
-    return 'Comment(id: $id, postId: $postId, userId: $userId, content: $content, parentId: $parentId, rootId: $rootId, likesCount: $likesCount, relyCount: $replyCount, createdAt: $created, updatedAt: $updated, user: $user, isLiked: $isLiked)';
+    return 'Comment(id: $id, postId: $postId, userId: $userId, content: $content, parentId: $parentId, rootId: $rootId, likesCount: $likesCount, replyCount: $replyCount, createdAt: $created, updatedAt: $updated, user: $user, isLiked: $isLiked)';
   }
 
   @override
@@ -185,9 +185,25 @@ class Comment {
       'parentId': parentId,
       'rootId': rootId,
       'likeCount': likesCount,
-      'relyCount': replyCount,
+      'replyCount': replyCount,
       'created': created.toIso8601String(),
       'updated': updated.toIso8601String(),
     };
+  }
+
+  Comment copyWithRawData(Map<String, dynamic> data, bool isLiked) {
+    return Comment(
+      id: data['id'] != null ? data['id'] as String : null,
+      postId: data['postId'] as String,
+      userId: data['userId'] as String,
+      content: data['content'] as String,
+      parentId: data['parentId'] != null ? data['parentId'] as String : null,
+      rootId: data['rootId'] != null ? data['rootId'] as String : null,
+      likesCount: data['likesCount'] as int,
+      replyCount: data['replyCount'] as int,
+      created: DateTime.parse(data['created'] as String),
+      updated: DateTime.parse(data['updated'] as String),
+      isLiked: isLiked,
+    );
   }
 }

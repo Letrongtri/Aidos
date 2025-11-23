@@ -1,4 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:async';
+
 import 'package:ct312h_project/models/notification.dart' as notification_model;
 import 'package:ct312h_project/services/services.dart';
 import 'package:ct312h_project/utils/generate.dart';
@@ -6,14 +8,19 @@ import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ct312h_project/models/comment.dart';
+import 'package:pocketbase/pocketbase.dart';
 
 class CommentManager extends ChangeNotifier {
-  CommentManager({required this.postId});
+  final _commentService = CommentService();
+
+  CommentManager({required this.postId}) {
+    startRealtimeUpdates();
+  }
   final String postId;
 
   AuthManager? _authManager;
 
-  final _commentService = CommentService();
+  StreamSubscription? _realtimeSubscription;
   final _likeService = LikeService();
 
   final List<Comment> _comments = [];
@@ -21,13 +28,8 @@ class CommentManager extends ChangeNotifier {
 
   String? errorMessage;
 
-  int get commentCount {
-    return _comments.length;
-  }
-
-  List<Comment> get comments {
-    return [..._comments];
-  }
+  int get commentCount => _comments.length;
+  List<Comment> get comments => [..._comments];
 
   void updateAuthUser(AuthManager auth) {
     _authManager = auth;
@@ -185,16 +187,20 @@ class CommentManager extends ChangeNotifier {
         throw Exception("Cannot add your comment");
       }
 
-      if (parentComment != null && comment.parentId!.isNotEmpty) {
-        final newCount = parentComment.replyCount + 1;
+      _comments.insert(0, comment);
 
-        final index = _comments.indexWhere((c) => c.id == parentComment.id);
-        if (index != -1) {
-          _comments[index] = parentComment.copyWith(relyCount: newCount);
+      if (rootId != null) {
+        final rootIndex = _comments.indexWhere((c) => c.id == rootId);
+
+        if (rootIndex != -1) {
+          final oldRoot = _comments[rootIndex];
+          final updatedRoot = oldRoot.copyWith(
+            replyCount: (oldRoot.replyCount) + 1,
+          );
+          _comments[rootIndex] = updatedRoot;
         }
       }
 
-      _comments.insert(0, comment);
       notifyListeners();
 
       final notiId = Generate.generatePocketBaseId();
@@ -290,14 +296,10 @@ class CommentManager extends ChangeNotifier {
 
     final comment = _comments[index];
 
-    final parentComment = _comments.firstWhere(
-      (c) => c.id == comment.parentId || c.id == comment.rootId,
-    );
-
     try {
       _comments.removeWhere((c) => c.id == commentId);
 
-      await _commentService.deleteComment(comment, parentComment);
+      await _commentService.deleteComment(commentId);
       notifyListeners();
     } catch (e) {
       // rollback
@@ -325,5 +327,58 @@ class CommentManager extends ChangeNotifier {
       debugPrint("updateComment error: $e");
       rethrow;
     }
+  }
+
+  void startRealtimeUpdates() {
+    // Hủy đăng ký cũ nếu có để tránh leak
+    _realtimeSubscription?.cancel();
+
+    _realtimeSubscription = _commentService.subscribeToComment().listen((
+      event,
+    ) {
+      _handleRealtimeEvent(event);
+    });
+  }
+
+  void _handleRealtimeEvent(RecordSubscriptionEvent event) {
+    if (event.record?.data['postId'] != postId) return;
+
+    // Chỉ quan tâm action update cho việc đếm like/reply
+    if (event.action == 'update' && event.record != null) {
+      final updatedRecordId = event.record!.id;
+
+      final index = _comments.indexWhere((c) => c.id == updatedRecordId);
+
+      if (index != -1) {
+        final oldCmt = _comments[index];
+
+        final updatedComment = oldCmt.copyWithRawData(
+          event.record!.data,
+          oldCmt.isLiked!,
+        );
+
+        _comments[index] = updatedComment;
+        notifyListeners();
+      }
+    }
+    // Xử lý thêm action 'create' hoặc 'delete' nếu cần
+
+    if (event.action == 'create') {
+      final newComment = Comment.fromMap(event.record!.toJson());
+      _comments.insert(0, newComment);
+      notifyListeners();
+    }
+
+    if (event.action == 'delete') {
+      final deletedCommentId = event.record!.id;
+      _comments.removeWhere((c) => c.id == deletedCommentId);
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    _realtimeSubscription?.cancel();
+    super.dispose();
   }
 }

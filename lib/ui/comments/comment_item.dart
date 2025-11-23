@@ -2,6 +2,7 @@ import 'package:ct312h_project/models/comment.dart';
 import 'package:ct312h_project/ui/shared/show_post_actions_bottom_sheet.dart';
 import 'package:ct312h_project/utils/format.dart';
 import 'package:ct312h_project/utils/generate.dart';
+import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:ct312h_project/viewmodels/comment_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +28,10 @@ class CommentItem extends StatelessWidget {
     final textTheme = theme.textTheme;
     final isLiked = comment.isLiked ?? false;
     final manager = context.watch<CommentManager>();
+    final currentUser = context.read<AuthManager>().user;
+    final replyingToUserName = comment.user?.id == currentUser?.id
+        ? currentUser?.username
+        : replyingToUser;
 
     return Container(
       padding: const EdgeInsets.all(8),
@@ -54,7 +59,7 @@ class CommentItem extends StatelessWidget {
                           children: [
                             const Icon(Icons.chevron_right),
                             Text(
-                              "$replyingToUser",
+                              '$replyingToUserName',
                               style: textTheme.labelSmall?.copyWith(
                                 color: colorScheme.onSurface.withOpacity(0.6),
                                 fontSize: 12,
@@ -73,26 +78,27 @@ class CommentItem extends StatelessWidget {
                   color: colorScheme.onSurface.withOpacity(0.6),
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  showPostActionsBottomSheet(
-                    context,
-                    onUpdate: () {
-                      Navigator.pop(context);
-                      _showEditCommentDialog(context, manager, comment);
-                    },
-                    onDelete: () {
-                      Navigator.pop(context);
-                      _showDeleteConfirmation(context, manager, comment.id!);
-                    },
-                  );
-                },
-                icon: Icon(
-                  Icons.more_horiz,
-                  color: colorScheme.onSurface,
-                  size: 20,
+              if (currentUser?.id == comment.user?.id)
+                IconButton(
+                  onPressed: () {
+                    showPostActionsBottomSheet(
+                      context,
+                      onUpdate: () {
+                        Navigator.pop(context);
+                        _showEditCommentDialog(context, manager, comment);
+                      },
+                      onDelete: () {
+                        Navigator.pop(context);
+                        _showDeleteConfirmation(context, manager, comment.id!);
+                      },
+                    );
+                  },
+                  icon: Icon(
+                    Icons.more_horiz,
+                    color: colorScheme.onSurface,
+                    size: 20,
+                  ),
                 ),
-              ),
             ],
           ),
           Column(

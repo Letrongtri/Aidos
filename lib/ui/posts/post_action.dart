@@ -81,13 +81,15 @@ class PostAction extends StatelessWidget {
           onPressed: onRepost,
           style: TextButton.styleFrom(
             foregroundColor: isUserReposted
-                ? Colors.white
+                ? colorScheme.secondary
                 : colorScheme.onSurface,
           ),
           label: Text(
             Format.getCountNumber(post.reposts),
             style: textTheme.bodyMedium?.copyWith(
-              color: isUserReposted ? Colors.white : colorScheme.onSurface,
+              color: isUserReposted
+                  ? colorScheme.secondary
+                  : colorScheme.onSurface,
             ),
           ),
           icon: Icon(isUserReposted ? Icons.repeat : Icons.repeat_outlined),

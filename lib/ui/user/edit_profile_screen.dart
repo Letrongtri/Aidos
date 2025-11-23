@@ -1,6 +1,6 @@
 import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/user.dart';
-import 'package:ct312h_project/ui/shared/avatar.dart';
+import 'package:ct312h_project/ui/shared/app_images.dart';
 import 'package:ct312h_project/ui/shared/dialog_utils.dart';
 import 'package:ct312h_project/viewmodels/profile_manager.dart';
 import 'package:flutter/material.dart';

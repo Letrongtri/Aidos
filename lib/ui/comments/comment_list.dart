@@ -2,7 +2,7 @@ import 'package:comment_tree/comment_tree.dart' hide Comment;
 import 'package:ct312h_project/models/comment.dart';
 import 'package:ct312h_project/ui/comments/comment_item.dart';
 import 'package:ct312h_project/viewmodels/comment_manager.dart';
-import 'package:ct312h_project/ui/shared/avatar.dart';
+import 'package:ct312h_project/ui/shared/app_images.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

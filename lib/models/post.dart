@@ -218,7 +218,7 @@ class Post {
     );
   }
 
-  Post copyWithRawData(Map<String, dynamic> rawData) {
+  Post copyWithRawData(Map<String, dynamic> rawData, bool? isLiked) {
     return Post(
       id: rawData['id'] as String,
       userId: rawData['userId'] as String,
@@ -236,6 +236,7 @@ class Post {
       images: rawData['images'] != null
           ? List<String>.from(rawData['images'])
           : const [],
+      isLiked: isLiked,
     );
   }
 }

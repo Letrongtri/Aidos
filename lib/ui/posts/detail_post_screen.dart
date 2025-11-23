@@ -127,8 +127,6 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
             );
 
             if (context.mounted) {
-              context.read<PostsManager>().incrementCommentCount(post.id);
-
               context.read<ProfileManager>().fetchMyReplies();
             }
           },

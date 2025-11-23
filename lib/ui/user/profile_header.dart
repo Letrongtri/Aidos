@@ -1,5 +1,5 @@
 import 'package:ct312h_project/models/user.dart';
-import 'package:ct312h_project/ui/shared/avatar.dart';
+import 'package:ct312h_project/ui/shared/app_images.dart';
 import 'package:flutter/material.dart';
 
 class ProfileHeader extends StatelessWidget {

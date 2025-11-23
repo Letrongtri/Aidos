@@ -275,15 +275,6 @@ class PostsManager extends ChangeNotifier {
     }
   }
 
-  void incrementCommentCount(String postId) {
-    final index = _posts.indexWhere((p) => p.id == postId);
-    if (index != -1) {
-      final post = _posts[index];
-      _posts[index] = post.copyWith(comments: post.comments + 1);
-      notifyListeners();
-    }
-  }
-
   List<Post> getUserPosts(String userId) {
     return _posts.where((p) => p.userId == userId).toList();
   }
@@ -368,9 +359,7 @@ class PostsManager extends ChangeNotifier {
   }
 
   void _handleRealtimeEvent(RecordSubscriptionEvent event) {
-    print('hi');
     if (event.action == 'update') {
-      print('updated');
       final updatedRecordId = event.record!.id;
 
       final index = _posts.indexWhere((p) => p.id == updatedRecordId);
@@ -378,7 +367,10 @@ class PostsManager extends ChangeNotifier {
       if (index != -1) {
         final oldPost = _posts[index];
 
-        final updatedPost = oldPost.copyWithRawData(event.record!.data);
+        final updatedPost = oldPost.copyWithRawData(
+          event.record!.data,
+          oldPost.isLiked,
+        );
 
         _posts[index] = updatedPost;
         notifyListeners();

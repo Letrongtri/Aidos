@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:ct312h_project/app/app_route.dart';
-import 'package:ct312h_project/ui/shared/avatar.dart';
+import 'package:ct312h_project/ui/shared/app_images.dart';
 import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +48,7 @@ class _PostScreenState extends State<PostScreen> {
     final theme = Theme.of(context);
     try {
       final List<XFile> images = await _picker.pickMultiImage();
-      if (images.length > 0) {
+      if (images.isNotEmpty) {
         setState(() {
           _selectedImages.addAll(images);
           if (_selectedImages.length > 4) {
@@ -154,14 +154,14 @@ class _PostScreenState extends State<PostScreen> {
         newPost = await postsManager.createPost(
           content: content,
           topicName: topic,
-          images: _selectedImages.length > 0 ? _selectedImages : null,
+          images: _selectedImages.isNotEmpty ? _selectedImages : null,
         );
       } else {
         await postsManager.updatePost(
           postId: widget.existingPost!.id,
           content: content,
           topicName: topic,
-          images: _selectedImages.length > 0 ? _selectedImages : null,
+          images: _selectedImages.isNotEmpty ? _selectedImages : null,
         );
       }
 
@@ -317,7 +317,7 @@ class _PostScreenState extends State<PostScreen> {
                                     const SizedBox(height: 8),
                                     _buildMediaButtons(theme),
                                     const SizedBox(height: 16),
-                                    if (_selectedImages.length > 0)
+                                    if (_selectedImages.isNotEmpty)
                                       _buildImageGrid(),
                                   ],
                                 ),

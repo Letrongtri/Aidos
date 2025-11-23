@@ -1,12 +1,11 @@
 import 'package:ct312h_project/app/app_route.dart';
 import 'package:ct312h_project/models/post.dart';
-import 'package:ct312h_project/ui/shared/avatar.dart';
+import 'package:ct312h_project/ui/shared/app_images.dart';
 import 'package:ct312h_project/ui/shared/full_image_viewer.dart';
 import 'package:ct312h_project/utils/format.dart';
 import 'package:ct312h_project/utils/generate.dart';
 import 'package:ct312h_project/viewmodels/posts_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -21,14 +20,6 @@ class DetailPostContent extends StatefulWidget {
 class _DetailPostContentState extends State<DetailPostContent> {
   int _currentImageIndex = 0;
 
-  String get baseUrl {
-    String url = dotenv.env['POCKETBASE_URL'] ?? 'http://127.0.0.1:8090';
-    if (url.endsWith('/')) {
-      return url.substring(0, url.length - 1);
-    }
-    return url;
-  }
-
   @override
   Widget build(BuildContext context) {
     final postsManager = context.watch<PostsManager>();
@@ -38,6 +29,7 @@ class _DetailPostContentState extends State<DetailPostContent> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
+    final post = widget.post;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,9 +46,42 @@ class _DetailPostContentState extends State<DetailPostContent> {
                 color: Colors.grey[300],
               ),
             ),
+
+            if (post.topic != null)
+              Row(
+                children: [
+                  Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      context.goNamed(
+                        AppRouteName.search.name,
+                        queryParameters: {'q': post.topic!.name},
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      post.topic!.name,
+
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.secondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
             const Spacer(),
             Text(
-              Format.getTimeDifference(widget.post.created),
+              Format.getTimeDifference(post.created),
               style: textTheme.labelSmall?.copyWith(
                 color: colorScheme.onSurface.withOpacity(0.6),
                 fontSize: 13,
@@ -65,22 +90,18 @@ class _DetailPostContentState extends State<DetailPostContent> {
           ],
         ),
         const SizedBox(height: 10),
-        Text(widget.post.content, style: textTheme.bodyLarge),
-        if (widget.post.images.isNotEmpty)
+        Text(post.content, style: textTheme.bodyLarge),
+        if (post.images.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 12.0, bottom: 8.0),
-            child: _buildImageSlider(
-              context,
-              widget.post.images,
-              widget.post.id,
-            ),
+            child: _buildImageSlider(context, post.images, post.id),
           ),
         const SizedBox(height: 4),
         Row(
           children: [
             TextButton.icon(
               onPressed: () {
-                context.read<PostsManager>().onLikePostPressed(widget.post.id);
+                context.read<PostsManager>().onLikePostPressed(post.id);
               },
               style: TextButton.styleFrom(
                 foregroundColor: isLiked
@@ -88,7 +109,7 @@ class _DetailPostContentState extends State<DetailPostContent> {
                     : colorScheme.onSurface,
               ),
               label: Text(
-                Format.getCountNumber(widget.post.likes),
+                Format.getCountNumber(post.likes),
                 style: textTheme.bodyMedium?.copyWith(
                   color: isLiked ? colorScheme.error : colorScheme.onSurface,
                 ),
@@ -100,7 +121,7 @@ class _DetailPostContentState extends State<DetailPostContent> {
               onPressed: () {
                 context.pushNamed(
                   AppRouteName.detailPost.name,
-                  pathParameters: {'id': widget.post.id},
+                  pathParameters: {'id': post.id},
                   extra: {'focusComment': true},
                 );
               },
@@ -108,7 +129,7 @@ class _DetailPostContentState extends State<DetailPostContent> {
                 foregroundColor: colorScheme.onSurface,
               ),
               label: Text(
-                Format.getCountNumber(widget.post.comments),
+                Format.getCountNumber(post.comments),
                 style: textTheme.bodyMedium,
               ),
               icon: const Icon(Icons.mode_comment_outlined),
@@ -116,7 +137,7 @@ class _DetailPostContentState extends State<DetailPostContent> {
             const SizedBox(width: 4),
             TextButton.icon(
               onPressed: () {
-                context.read<PostsManager>().onRepostPressed(widget.post.id);
+                context.read<PostsManager>().onRepostPressed(post.id);
               },
               style: TextButton.styleFrom(
                 foregroundColor: isReposted
@@ -124,7 +145,7 @@ class _DetailPostContentState extends State<DetailPostContent> {
                     : colorScheme.onSurface,
               ),
               label: Text(
-                Format.getCountNumber(widget.post.reposts),
+                Format.getCountNumber(post.reposts),
                 style: textTheme.bodyMedium?.copyWith(
                   color: isReposted ? Colors.white : colorScheme.onSurface,
                 ),
@@ -172,27 +193,7 @@ class _DetailPostContentState extends State<DetailPostContent> {
                         ),
                       );
                     },
-                    child: Image.network(
-                      '$baseUrl/api/files/posts/$postId/${images[index]}',
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          color: Colors.grey.withOpacity(0.1),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: Colors.grey.withOpacity(0.1),
-                        alignment: Alignment.center,
-                        child: const Icon(
-                          Icons.broken_image,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
+                    child: PostImage(postId: postId, image: images[index]),
                   ),
                 ),
               );

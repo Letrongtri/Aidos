@@ -1,5 +1,5 @@
 import 'package:ct312h_project/models/comment.dart';
-import 'package:ct312h_project/ui/shared/avatar.dart';
+import 'package:ct312h_project/ui/shared/app_images.dart';
 import 'package:ct312h_project/viewmodels/auth_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
